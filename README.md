@@ -71,16 +71,16 @@ Install the following dependencies using `pip`:
 
 ### Run Flexiv-Isaac Bridge App
 
-1. Run Flexiv Isaac Bridge app with one robot:
+1. Run Flexiv Isaac Bridge app with one robot added to the scene:
 
         cd <isaac_sim_root_dir>
         ./python.sh standalone_examples/api/omni.isaac.flexiv/flexiv_isaac_bridge_app.py --env exts/omni.isaac.flexiv/data/usd/example_env.usd --robot Rizon4-GYdBow exts/omni.isaac.flexiv/data/usd/Rizon4.usd -0.7 0.31 0.7
 
-   Remove any space in the robot serial number. To see details about the program arguments:
+   To see details about the program arguments:
 
         ./python.sh standalone_examples/api/omni.isaac.flexiv/flexiv_isaac_bridge_app.py --help
 
-   You can upload the commonly used `usd` files to your Nucleus server, then the `usd` path provided to the program can be updated to `omniverse://localhost/Library/xxx.usd`.
+   The robot serial number is the one noted down previously with any space removed. Also, you can upload the commonly used `usd` files to your Nucleus server, then the `usd` path provided to the program can be updated to `omniverse://localhost/Library/xxx.usd`.
 
 2. The app will launch an Isaac Sim window and start the physics loop (i.e. *Play*) automatically.
 3. Go back to Elements Studio, then restart the exited simulator by toggle on the *Connect* button.

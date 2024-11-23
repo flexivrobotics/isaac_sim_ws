@@ -1,0 +1,8 @@
+.vscode
+.vs
+.DS_Store
+.thumbs
+extscache/
+cache/
+*.log
+__pycache__

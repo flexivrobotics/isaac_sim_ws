@@ -29,7 +29,7 @@ Flexiv Elements Studio:
 
         bash initialize_ws.sh <isaac_sim_root_dir>
 
-## Verify setup with example
+## Verify setup
 
 To verify that the workspace setup is successful, run the example Python application:
 

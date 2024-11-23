@@ -7,6 +7,8 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+VERSION = 1.0
+
 import spdlog
 import numpy as np
 from typing import List, Optional
@@ -51,7 +53,7 @@ STATES_TOPIC_PREFIX = "flexiv_isaac_bridge/robot_states/"
 COMMANDS_TOPIC_PREFIX = "flexiv_isaac_bridge/robot_commands/"
 
 
-class RcaBridgeRunner(object):
+class BridgeRunner(object):
     """
     Set up world and run joint impedance control.
 
@@ -81,11 +83,17 @@ class RcaBridgeRunner(object):
         robots: List[List[str]],
         initial_q: np.ndarray = np.zeros(ROBOT_DOF),
     ) -> None:
-        # Save initial q
-        self._initial_q = initial_q
-
         # Initialize logger
         self._logger = spdlog.ConsoleLogger("flexiv_isaac_bridge_app")
+
+        # fmt: off
+        self._logger.info("———————————————————————————————————————————————————————————————")
+        self._logger.info(f"———             Flexiv-Isaac Bridge App - v{VERSION}              ———")
+        self._logger.info("———————————————————————————————————————————————————————————————")
+        # fmt: on
+
+        # Save initial q
+        self._initial_q = initial_q
 
         # Create world
         self._world = World(
@@ -267,7 +275,7 @@ class RcaBridgeRunner(object):
 
 def main():
     # Create runner to handle everything
-    runner = RcaBridgeRunner(
+    runner = BridgeRunner(
         physics_dt=1.0 / PHYSICS_FREQ,
         render_dt=1.0 / RENDER_FREQ,
         robots=args.robot,

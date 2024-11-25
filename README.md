@@ -4,6 +4,12 @@
 
 Add Flexiv robots to NVIDIA Isaac Sim and control them using Flexiv Elements Studio or Flexiv RDK with the actual force/torque controller used on real robots.
 
+## Compatibility
+
+| **Supported OS** | **Supported processor** | **Supported language** |
+| ---------------- | ----------------------- | ---------------------- |
+| Ubuntu 22.04     | x86_64                  | Python                 |
+
 ## Why NVIDIA Isaac Sim + Flexiv Elements Studio?
 
 The built-in simulator of Flexiv Elements Studio uses the same control software as the real Flexiv robots, providing high-fidelity simulation of robot kinematics, dynamics, and most importantly, force-control behaviors, which is not possible with thirdparty controllers like those shipped with Isaac Sim and ROS/ROS2.
@@ -64,7 +70,7 @@ After the example program is up and running, select the `TargetCube` prim under 
 3. Toggle on the *Connect* button for the newly added one, then wait for loading.
 4. When loading is finished, you'll see a robot at its upright pose, with an "Exception" error at the bottom right corner. This is expected because we haven't started Isaac Sim yet. But if you see a normally operating robot, that again means you are running the wrong version of Elements Studio that only supports the built-in physics engine.
 5. At the bottom of the window, click on the small robot icon with a "SIM" tag on it, then a small window will pop up, note down the displayed robot serial number.
-6. In the same small pop-up window, click *CHANGE CONNECTION*, then toggle off the *Connect* button to exit the active simulator. We will restart it later. Note that you do NOT need to close the whole Elements Studio program.
+6. In the same small pop-up window, click *CHANGE CONNECTION*, then toggle off the *Connect* button to close the simulated robot. We will restart it later. Note that you do NOT need to close the whole Elements Studio program.
 
 ### Install Python dependencies
 
@@ -100,14 +106,23 @@ Install the following dependencies using `pip`:
 
 To restart the whole setup after the first run:
 
-1. First start the Flexiv-Isaac Bridge app.
-2. Then start the simulated robot in Elements Studio. Note: you do not need to restart the whole Elements Studio program, just need to start the simulated robot after the Isaac Sim app.
+1. Start the Flexiv-Isaac Bridge app first.
+2. Then start the simulated robot in Elements Studio.
+
+If you have made some changes and need to restart the Isaac Sim app:
+
+1. Close Flexiv-Isaac Bridge app.
+2. In Elements Studio, click *CHANGE CONNECTION*, then toggle off the *Connect* button to close the simulated robot. You do not need to exit the whole Elements Studio program.
+3. Restart Flexiv-Isaac Bridge app.
+4. Toggle on the *Connect* button to restart the simulated robot.
+
+Alternatively, you can leave the simulated robot running and just restart the Isaac Sim app. The simulated robot in Elements Studio will sync with Isaac Sim after the app is restarted. However, soft error might occur and you can just clear them from Elements Studio and continue to normal operations.
 
 ## Multi-robot support
 
 This framework supports simulating and controlling multiple robots:
 
-1. Start the Flexiv-Isaac Bridge app with multiple robots added, use two robots for example:
+1. Start the Flexiv-Isaac Bridge app with multiple robots added, using two robots for example:
 
         cd <isaac_sim_root_dir>
         ./python.sh standalone_examples/api/omni.isaac.flexiv/flexiv_isaac_bridge_app.py --env exts/omni.isaac.flexiv/data/usd/example_env.usd --robot Rizon4-GYdBow exts/omni.isaac.flexiv/data/usd/Rizon4.usd -0.7 0.31 0.7 --robot Rizon4s-TPqXaI exts/omni.isaac.flexiv/data/usd/Rizon4s_with_Grav.usd -0.67 -0.46 0.7

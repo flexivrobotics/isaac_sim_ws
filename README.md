@@ -149,3 +149,13 @@ This framework supports simulating and controlling multiple robots:
 5. Start the first simulated robot on the first computer, then wait for connection with Isaac Sim. You should see one of the robots in Isaac Sim moves a little bit when the connection is established.
 6. Start the second simulated robot on the second computer, then wait for connection with Isaac Sim. You should see the other robot in Isaac Sim moves a little bit when the connection is established.
 7. Execute test projects from both Elements Studios and check that both robots are working in Isaac Sim.
+
+## Collect data from the simulated robot(s)
+
+You can collect data from the simulated robot(s) using [Flexiv DDK](https://github.com/flexivrobotics/flexiv_ddk) (Data Distribution Kit) at up to 1kHz frequency:
+
+1. Set up Flexiv DDK according to the instructions found in the repo.
+2. Start Isaac Sim and Elements Studio.
+3. Run DDK programs to collect data from one or more simulated robots.
+
+Note: the DDK program doesn't have to run on the same computer as the Elements Studio, it can be any computer that's under the same local network as the Elements Studio computer.

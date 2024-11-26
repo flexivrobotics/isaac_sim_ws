@@ -27,6 +27,20 @@ Flexiv Elements Studio:
 - High-performance controller used by real Flexiv robots.
 - User interface
 
+## Demos
+
+### Peg-in-hole
+
+https://github.com/user-attachments/assets/d0a62fc3-f428-444a-bda5-cd41c5125c4b
+
+### Single robot polish
+
+https://github.com/user-attachments/assets/968fd8cd-84de-4678-b9cd-1f5d5df46723
+
+### Dual robot polish
+
+https://github.com/user-attachments/assets/5a35fcc9-539f-445b-a8db-f390ccd397bf
+
 ## Workspace setup
 
 1. Install NVIDIA [Isaac Sim](https://docs.omniverse.nvidia.com/isaacsim/latest/installation/index.html).

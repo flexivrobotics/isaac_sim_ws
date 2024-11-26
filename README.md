@@ -31,15 +31,15 @@ Flexiv Elements Studio:
 
 ### Peg-in-hole
 
-https://github.com/user-attachments/assets/d0a62fc3-f428-444a-bda5-cd41c5125c4b
+https://github.com/user-attachments/assets/e575bf70-9ffb-47a5-8aec-4cda8d25c08e
 
 ### Single robot polish
 
-https://github.com/user-attachments/assets/968fd8cd-84de-4678-b9cd-1f5d5df46723
+https://github.com/user-attachments/assets/a0c39e70-4469-4405-a07d-e0d8a0ad589b
 
 ### Dual robot polish
 
-https://github.com/user-attachments/assets/5a35fcc9-539f-445b-a8db-f390ccd397bf
+https://github.com/user-attachments/assets/7462a9bd-3cfd-40cc-95f7-b4fda0a74f30
 
 ## Workspace setup
 

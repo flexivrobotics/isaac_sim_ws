@@ -7,7 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-VERSION = 1.0
+VERSION = 1.1
 
 import spdlog
 import numpy as np
@@ -20,7 +20,6 @@ from flexivisaacbridge import IsaacNode
 
 # Parse program arguments
 argparser = ArgumentParser()
-
 argparser.add_argument(
     "--robot",
     action="append",
@@ -31,6 +30,12 @@ argparser.add_argument(
 argparser.add_argument(
     "--env",
     help="Path to the usd of the environment to load. If not provided, an empty environment with default ground plane will be used.",
+    required=False,
+)
+argparser.add_argument(
+    "--gpu",
+    action="store_true",
+    help="Enable GPU dynamics. Use this argument if any object in the scene requires GPU for dynamics computation. For example, deformable body material and SDF mesh collider",
     required=False,
 )
 args = argparser.parse_args()
@@ -45,8 +50,8 @@ from omni.isaac.core.utils.stage import add_reference_to_stage
 from omni.isaac.flexiv import Flexiv
 
 # Physics and render loop period [sec]
-PHYSICS_FREQ = 2000.0
 RENDER_FREQ = 60.0
+PHYSICS_FREQ = 2000.0
 
 # lcm topic prefix for robot state and command messages */
 STATES_TOPIC_PREFIX = "flexiv_isaac_bridge/robot_states/"
@@ -97,8 +102,16 @@ class BridgeRunner(object):
 
         # Create world
         self._world = World(
-            stage_units_in_meters=1.0, physics_dt=physics_dt, rendering_dt=render_dt
+            stage_units_in_meters=1.0,
+            physics_dt=physics_dt,
+            rendering_dt=render_dt,
+            set_defaults=False,
         )
+
+        # Enable GPU dynamics if specified
+        if args.gpu:
+            self._world.get_physics_context().enable_gpu_dynamics(True)
+
         # Load environment and reset world
         if args.env is None:
             # Add empty environment to stage

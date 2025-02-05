@@ -97,7 +97,7 @@ Install the following dependencies using `pip`:
 1. Run Flexiv Isaac Bridge app with one robot added to the scene:
 
         cd <isaac_sim_root_dir>
-        ./python.sh standalone_examples/api/omni.isaac.flexiv/flexiv_isaac_bridge_app.py --env exts/omni.isaac.flexiv/data/usd/example_env.usd --robot Rizon4-GYdBow exts/omni.isaac.flexiv/data/usd/Rizon4.usd -0.7 0.31 0.7
+        ./python.sh standalone_examples/api/omni.isaac.flexiv/flexiv_isaac_bridge_app.py --env exts/omni.isaac.flexiv/data/usd/example_env.usd --robot Rizon4-GYdBow exts/omni.isaac.flexiv/data/usd/Rizon4.usd -0.690 0.315 0.709
 
    To see details about the program arguments:
 
@@ -139,7 +139,7 @@ This framework supports simulating and controlling multiple robots:
 1. Start the Flexiv-Isaac Bridge app with multiple robots added, using two robots for example:
 
         cd <isaac_sim_root_dir>
-        ./python.sh standalone_examples/api/omni.isaac.flexiv/flexiv_isaac_bridge_app.py --env exts/omni.isaac.flexiv/data/usd/example_env.usd --robot Rizon4-GYdBow exts/omni.isaac.flexiv/data/usd/Rizon4.usd -0.7 0.31 0.7 --robot Rizon4s-TPqXaI exts/omni.isaac.flexiv/data/usd/Rizon4s_with_Grav.usd -0.67 -0.46 0.7
+        ./python.sh standalone_examples/api/omni.isaac.flexiv/flexiv_isaac_bridge_app.py --env exts/omni.isaac.flexiv/data/usd/example_env.usd --robot Rizon4-GYdBow exts/omni.isaac.flexiv/data/usd/Rizon4.usd -0.690 0.315 0.709 --robot Rizon4s-TPqXaI exts/omni.isaac.flexiv/data/usd/Rizon4s_with_Grav.usd -0.667 -0.464 0.706
 
    Note that additional robots are added by appending `--robot <args ...>` to the program arguments.
 

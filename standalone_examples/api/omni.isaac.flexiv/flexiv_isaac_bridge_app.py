@@ -12,6 +12,7 @@ VERSION = 1.1
 import spdlog
 import numpy as np
 from typing import List, Optional
+from enum import Enum
 from argparse import ArgumentParser
 from dataclasses import dataclass
 from isaacsim import SimulationApp
@@ -58,6 +59,13 @@ STATES_TOPIC_PREFIX = "flexiv_isaac_bridge/robot_states/"
 COMMANDS_TOPIC_PREFIX = "flexiv_isaac_bridge/robot_commands/"
 
 
+# Gripper status
+class GripperStatus(Enum):
+    INIT = 0
+    OPENED = 1
+    CLOSED = 2
+
+
 class BridgeRunner(object):
     """
     Set up world and run joint impedance control.
@@ -76,7 +84,7 @@ class BridgeRunner(object):
         instance: Flexiv
         isaac_node: IsaacNode
         last_connected: bool
-        is_gripper_opened: bool
+        gripper_status: GripperStatus
 
     # Robot degrees of freedom
     ROBOT_DOF = 7
@@ -186,7 +194,7 @@ class BridgeRunner(object):
                     instance=robot,
                     isaac_node=IsaacNode(serial_num),
                     last_connected=False,
-                    is_gripper_opened=True,
+                    gripper_status=GripperStatus.INIT,
                 )
             )
 
@@ -240,17 +248,17 @@ class BridgeRunner(object):
                     # DOUT[0] high = open gripper
                     if dout_list[0]:
                         # Ignore if already opened
-                        if not robot.is_gripper_opened:
+                        if robot.gripper_status != GripperStatus.OPENED:
                             self._logger.info("Opening gripper")
                             robot.instance.gripper.open()
-                            robot.is_gripper_opened = True
+                            robot.gripper_status = GripperStatus.OPENED
                     # DOUT[1] high = close gripper
-                    elif dout_list[1]:
+                    if dout_list[1]:
                         # Ignore if already closed
-                        if robot.is_gripper_opened:
+                        if robot.gripper_status != GripperStatus.CLOSED:
                             self._logger.info("Closing gripper")
                             robot.instance.gripper.close()
-                            robot.is_gripper_opened = False
+                            robot.gripper_status = GripperStatus.CLOSED
 
                 # Set last connected status
                 robot.last_connected = True
@@ -261,6 +269,7 @@ class BridgeRunner(object):
                     self._logger.error(f"Disconnected from robot [{robot.name}]")
                     robot.instance.teleport_to(robot.instance.q)
                     robot.instance.switch_control_mode("position")
+                    robot.gripper_status = GripperStatus.INIT
 
                 # Set last connected status
                 robot.last_connected = False

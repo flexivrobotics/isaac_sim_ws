@@ -71,9 +71,8 @@ After the example program is up and running, select the `TargetCube` prim under 
 
         bash setup_FlexivElements.sh
 
-5. Choose Isaac Sim as the physics engine when prompted. If you don't see such prompt, it means the installation package you received does not support Isaac Sim, please contact again to request the correct one.
-6. After installation is finished, you can start Flexiv Elements Studio from start menu or via the desktop icon.
-7. You can switch the physics engine between built-in and Isaac Sim using the helper script:
+5. After installation is finished, you can start Flexiv Elements Studio from start menu or via the desktop icon.
+6. You can switch the physics engine between built-in and Isaac Sim using the helper script:
 
         bash switch_physics_engine.sh
 

@@ -43,11 +43,15 @@ https://github.com/user-attachments/assets/7462a9bd-3cfd-40cc-95f7-b4fda0a74f30
 
 ## Workspace setup
 
-1. Install NVIDIA [Isaac Sim](https://docs.omniverse.nvidia.com/isaacsim/latest/installation/index.html).
-2. Note down the absolute path Isaac Sim is installed to, i.e. Isaac Sim root directory. The default path is `~/.local/share/ov/pkg/isaac-sim-x.x.x`.
-3. Run the setup script to create symbolic links that map extensions and apps in this repo to Isaac Sim root directory so that Isaac Sim can load them:
+1. Install NVIDIA [Isaac Sim](https://docs.isaacsim.omniverse.nvidia.com/latest/installation/index.html).
+2. Note down Isaac Sim's installation directory, e.g. `~/isaacsim`.
+3. Run the following script in this repo to install Flexiv's Isaac Sim extensions and apps to the Isaac Sim installation directory so that Isaac Sim can load them:
 
-        bash initialize_ws.sh <isaac_sim_root_dir>
+       bash install_ws.sh <isaac_sim_root_dir>
+
+   For example:
+
+       bash install_ws.sh ~/isaacsim
 
 ## Verify setup
 

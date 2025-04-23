@@ -1,4 +1,4 @@
-# Copyright (c) 2021-2023, NVIDIA CORPORATION. All rights reserved.
+# Copyright (c) 2021-2024, NVIDIA CORPORATION. All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -9,11 +9,11 @@
 from typing import Optional
 
 import numpy as np
-from omni.isaac.core.tasks import Stacking as BaseStacking
-from omni.isaac.core.utils.prims import is_prim_path_valid
-from omni.isaac.core.utils.stage import get_stage_units
-from omni.isaac.core.utils.string import find_unique_string_name
-from omni.isaac.flexiv import Flexiv
+from isaacsim.core.api.tasks import Stacking as BaseStacking
+from isaacsim.core.utils.prims import is_prim_path_valid
+from isaacsim.core.utils.stage import get_stage_units
+from isaacsim.core.utils.string import find_unique_string_name
+from isaacsim.robot.manipulators.examples.flexiv import Flexiv
 
 
 class Stacking(BaseStacking):

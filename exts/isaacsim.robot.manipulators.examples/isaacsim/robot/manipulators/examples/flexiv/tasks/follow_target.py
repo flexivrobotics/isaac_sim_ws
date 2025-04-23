@@ -1,4 +1,4 @@
-# Copyright (c) 2021-2023, NVIDIA CORPORATION. All rights reserved.
+# Copyright (c) 2021-2024, NVIDIA CORPORATION. All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -8,11 +8,11 @@
 #
 from typing import Optional
 
+import isaacsim.core.api.tasks as tasks
 import numpy as np
-import omni.isaac.core.tasks as tasks
-from omni.isaac.core.utils.prims import is_prim_path_valid
-from omni.isaac.core.utils.string import find_unique_string_name
-from omni.isaac.flexiv import Flexiv
+from isaacsim.core.utils.prims import is_prim_path_valid
+from isaacsim.core.utils.string import find_unique_string_name
+from isaacsim.robot.manipulators.examples.flexiv import Flexiv
 
 
 class FollowTarget(tasks.FollowTarget):

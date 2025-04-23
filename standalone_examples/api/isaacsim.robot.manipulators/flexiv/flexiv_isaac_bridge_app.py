@@ -7,6 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+# App version
 VERSION = 1.1
 
 import spdlog
@@ -46,9 +47,9 @@ args = argparser.parse_args()
 simulation_app = SimulationApp({"headless": False})
 
 # Import isaac modules after SimulationApp is started
-from omni.isaac.core import World
-from omni.isaac.core.utils.stage import add_reference_to_stage
-from omni.isaac.flexiv import Flexiv
+from isaacsim.core.api import World
+from isaacsim.core.utils.stage import add_reference_to_stage
+from isaacsim.robot.manipulators.examples.flexiv import Flexiv
 
 # Physics and render loop period [sec]
 RENDER_FREQ = 60.0

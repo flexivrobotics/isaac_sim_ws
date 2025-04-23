@@ -1,4 +1,4 @@
-# Copyright (c) 2021-2023, NVIDIA CORPORATION. All rights reserved.
+# Copyright (c) 2021-2024, NVIDIA CORPORATION. All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -7,22 +7,21 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from argparse import ArgumentParser
+from isaacsim import SimulationApp
 
+simulation_app = SimulationApp({"headless": False})
+
+from isaacsim.core.api import World
+from isaacsim.robot.manipulators.examples.flexiv.controllers.rmpflow_controller import RMPFlowController
+from isaacsim.robot.manipulators.examples.flexiv.tasks import FollowTarget
+
+from argparse import ArgumentParser
 argparser = ArgumentParser()
 argparser.add_argument(
     "usd_path",
     help="Absolution path to usd file of Rizon4",
 )
 args = argparser.parse_args()
-
-from isaacsim import SimulationApp
-
-simulation_app = SimulationApp({"headless": False})
-
-from omni.isaac.core import World
-from omni.isaac.flexiv.controllers.rmpflow_controller import RMPFlowController
-from omni.isaac.flexiv.tasks import FollowTarget
 
 my_world = World(stage_units_in_meters=1.0)
 my_task = FollowTarget(name="flexiv_follow_target", usd_path=args.usd_path)

@@ -6,5 +6,5 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from omni.isaac.flexiv.flexiv import Flexiv
-from omni.isaac.flexiv.kinematics_solver import KinematicsSolver
+from isaacsim.robot.manipulators.examples.flexiv.flexiv import Flexiv
+from isaacsim.robot.manipulators.examples.flexiv.kinematics_solver import KinematicsSolver

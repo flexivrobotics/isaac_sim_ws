@@ -1,4 +1,4 @@
-# Copyright (c) 2021-2023, NVIDIA CORPORATION. All rights reserved.
+# Copyright (c) 2021-2024, NVIDIA CORPORATION. All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -6,8 +6,8 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-import omni.isaac.motion_generation as mg
-from omni.isaac.core.articulations import Articulation
+import isaacsim.robot_motion.motion_generation as mg
+from isaacsim.core.prims import SingleArticulation
 
 
 class RMPFlowController(mg.MotionPolicyController):
@@ -15,14 +15,14 @@ class RMPFlowController(mg.MotionPolicyController):
 
     Args:
         name (str): [description]
-        robot_articulation (Articulation): [description]
+        robot_articulation (SingleArticulation): [description]
         physics_dt (float, optional): [description]. Defaults to 1.0/60.0.
     """
 
     def __init__(
         self,
         name: str,
-        robot_articulation: Articulation,
+        robot_articulation: SingleArticulation,
         physics_dt: float = 1.0 / 60.0,
     ) -> None:
         self.rmp_flow_config = (

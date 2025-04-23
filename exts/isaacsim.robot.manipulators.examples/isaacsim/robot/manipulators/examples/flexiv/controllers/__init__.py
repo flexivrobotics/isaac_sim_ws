@@ -6,6 +6,6 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from omni.isaac.flexiv.controllers.pick_place_controller import PickPlaceController
-from omni.isaac.flexiv.controllers.rmpflow_controller import RMPFlowController
-from omni.isaac.flexiv.controllers.stacking_controller import StackingController
+from isaacsim.robot.manipulators.examples.flexiv.controllers.pick_place_controller import PickPlaceController
+from isaacsim.robot.manipulators.examples.flexiv.controllers.rmpflow_controller import RMPFlowController
+from isaacsim.robot.manipulators.examples.flexiv.controllers.stacking_controller import StackingController

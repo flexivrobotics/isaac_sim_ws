@@ -1,4 +1,4 @@
-# Copyright (c) 2022-2023, NVIDIA CORPORATION. All rights reserved.
+# Copyright (c) 2022-2024, NVIDIA CORPORATION. All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -10,13 +10,12 @@
 import numpy as np
 import spdlog
 from typing import Union, List, Optional
-from omni.isaac.nucleus import get_assets_root_path
-from omni.isaac.core.prims.rigid_prim import RigidPrim
-from omni.isaac.core.robots.robot import Robot
-from omni.isaac.core.utils.prims import get_prim_at_path
-from omni.isaac.core.utils.stage import add_reference_to_stage
-from omni.isaac.core.utils.stage import add_reference_to_stage, get_stage_units
-from omni.isaac.manipulators.grippers.parallel_gripper import ParallelGripper
+from isaacsim.core.api.robots.robot import Robot
+from isaacsim.core.prims import SingleRigidPrim
+from isaacsim.core.utils.prims import get_prim_at_path
+from isaacsim.core.utils.stage import add_reference_to_stage
+from isaacsim.robot.manipulators.grippers.parallel_gripper import ParallelGripper
+from isaacsim.storage.native import get_assets_root_path
 
 
 class Flexiv(Robot):
@@ -114,12 +113,12 @@ class Flexiv(Robot):
         return
 
     @property
-    def end_effector(self) -> RigidPrim:
+    def end_effector(self) -> SingleRigidPrim:
         """
         Access reference to the _end_effector member.
 
         Return:
-            RigidPrim: Reference to the end-effector instance.
+            SingleRigidPrim: Reference to the end-effector instance.
         """
         return self._end_effector
 
@@ -201,7 +200,7 @@ class Flexiv(Robot):
         super().initialize(physics_sim_view=physics_sim_view)
 
         # Initialize end-effector
-        self._end_effector = RigidPrim(
+        self._end_effector = SingleRigidPrim(
             prim_path=self._end_effector_prim_path, name=self.name + "_end_effector"
         )
         self._end_effector.initialize(physics_sim_view)

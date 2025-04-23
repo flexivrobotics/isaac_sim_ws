@@ -1,4 +1,4 @@
-# Copyright (c) 2021-2023, NVIDIA CORPORATION. All rights reserved.
+# Copyright (c) 2021-2024, NVIDIA CORPORATION. All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -8,10 +8,10 @@
 #
 from typing import List
 
-import omni.isaac.manipulators.controllers as manipulators_controllers
-from omni.isaac.core.articulations import Articulation
-from omni.isaac.flexiv.controllers.pick_place_controller import PickPlaceController
-from omni.isaac.manipulators.grippers.parallel_gripper import ParallelGripper
+import isaacsim.robot.manipulators.controllers as manipulators_controllers
+from isaacsim.core.prims import SingleArticulation
+from isaacsim.robot.manipulators.examples.franka.controllers.pick_place_controller import PickPlaceController
+from isaacsim.robot.manipulators.grippers.parallel_gripper import ParallelGripper
 
 
 class StackingController(manipulators_controllers.StackingController):
@@ -29,7 +29,7 @@ class StackingController(manipulators_controllers.StackingController):
         self,
         name: str,
         gripper: ParallelGripper,
-        robot_articulation: Articulation,
+        robot_articulation: SingleArticulation,
         picking_order_cube_names: List[str],
         robot_observation_name: str,
     ) -> None:

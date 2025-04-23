@@ -7,14 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from isaacsim import SimulationApp
-
-simulation_app = SimulationApp({"headless": False})
-
-from isaacsim.core.api import World
-from isaacsim.robot.manipulators.examples.flexiv.controllers.rmpflow_controller import RMPFlowController
-from isaacsim.robot.manipulators.examples.flexiv.tasks import FollowTarget
-
+# Parse program arguments
 from argparse import ArgumentParser
 argparser = ArgumentParser()
 argparser.add_argument(
@@ -22,6 +15,15 @@ argparser.add_argument(
     help="Absolution path to usd file of Rizon4",
 )
 args = argparser.parse_args()
+
+# Start simulation
+from isaacsim import SimulationApp
+simulation_app = SimulationApp({"headless": False})
+
+from isaacsim.core.api import World
+from isaacsim.robot.manipulators.examples.flexiv.controllers.rmpflow_controller import RMPFlowController
+from isaacsim.robot.manipulators.examples.flexiv.tasks import FollowTarget
+
 
 my_world = World(stage_units_in_meters=1.0)
 my_task = FollowTarget(name="flexiv_follow_target", usd_path=args.usd_path)

@@ -58,9 +58,9 @@ https://github.com/user-attachments/assets/7462a9bd-3cfd-40cc-95f7-b4fda0a74f30
 To verify that the workspace setup is successful, run the example Python application:
 
     cd <isaac_sim_root_dir>
-    ./python.sh standalone_examples/api/omni.isaac.flexiv/follow_target_with_rmpflow.py exts/omni.isaac.flexiv/data/usd/Rizon4.usd
+    ./python.sh standalone_examples/api/isaacsim.robot.manipulators/flexiv/follow_target_with_rmpflow.py exts/isaacsim.robot.manipulators.examples/data/flexiv/Rizon4.usd
 
-NOTE: If an [Omniverse Nucleus](https://docs.omniverse.nvidia.com/nucleus/latest/index.html) server (remote or local) is set up and running, an Isaac Sim window will pop up and finish loading after about 10 seconds. If no Nucleus server is running, a window will still pop up but will **hang for about 2 minutes** trying to connect with the Nucleus server, please wait patiently. It is highly recommended to set up a local or remote Nucleus server from the Omniverse Launcher to avoid such wait.
+WARNING: When running Isaac Sim for the first time, it takes a couple of minutes to warm up the shader cache. You will notice that the CPU is fully loaded and the Isaac Sim window seems frozen. Please wait patiently and do not force quit the program.
 
 After the example program is up and running, select the `TargetCube` prim under `World` from the Stage view, then drag it around, the robot TCP should follow the cube.
 
@@ -101,13 +101,13 @@ Install the following dependencies using `pip`:
 1. Run Flexiv Isaac Bridge app with one robot added to the scene:
 
         cd <isaac_sim_root_dir>
-        ./python.sh standalone_examples/api/omni.isaac.flexiv/flexiv_isaac_bridge_app.py --env exts/omni.isaac.flexiv/data/usd/example_env.usd --robot Rizon4-GYdBow exts/omni.isaac.flexiv/data/usd/Rizon4.usd -0.690 0.315 0.709
+        ./python.sh standalone_examples/api/isaacsim.robot.manipulators/flexiv/flexiv_isaac_bridge_app.py --env exts/isaacsim.robot.manipulators.examples/data/flexiv/example_env.usd --robot Rizon4-GYdBow exts/isaacsim.robot.manipulators.examples/data/flexiv/Rizon4.usd -0.690 0.315 0.709
 
    To see details about the program arguments:
 
-        ./python.sh standalone_examples/api/omni.isaac.flexiv/flexiv_isaac_bridge_app.py --help
+        ./python.sh standalone_examples/api/isaacsim.robot.manipulators/flexiv/flexiv_isaac_bridge_app.py --help
 
-   The robot serial number is the one noted down previously with any space removed. Also, you can upload the commonly used `usd` files to your Nucleus server, then the `usd` path provided to the program can be updated to `omniverse://localhost/Library/xxx.usd`.
+   The robot serial number is the one noted down previously with any space removed.
 
 2. The app will launch an Isaac Sim window and start the physics loop (i.e. *Play*) automatically.
 3. Go back to Elements Studio, then restart the exited simulator by toggle on the *Connect* button.
@@ -143,7 +143,7 @@ This framework supports simulating and controlling multiple robots:
 1. Start the Flexiv-Isaac Bridge app with multiple robots added, using two robots for example:
 
         cd <isaac_sim_root_dir>
-        ./python.sh standalone_examples/api/omni.isaac.flexiv/flexiv_isaac_bridge_app.py --env exts/omni.isaac.flexiv/data/usd/example_env.usd --robot Rizon4-GYdBow exts/omni.isaac.flexiv/data/usd/Rizon4.usd -0.690 0.315 0.709 --robot Rizon4s-TPqXaI exts/omni.isaac.flexiv/data/usd/Rizon4s_with_Grav.usd -0.667 -0.464 0.706
+        ./python.sh standalone_examples/api/isaacsim.robot.manipulators/flexiv/flexiv_isaac_bridge_app.py --env exts/isaacsim.robot.manipulators.examples/data/flexiv/example_env.usd --robot Rizon4-GYdBow exts/isaacsim.robot.manipulators.examples/data/flexiv/Rizon4.usd -0.690 0.315 0.709 --robot Rizon4s-TPqXaI exts/isaacsim.robot.manipulators.examples/data/flexiv/Rizon4s_with_Grav.usd -0.667 -0.464 0.706
 
    Note that additional robots are added by appending `--robot <args ...>` to the program arguments.
 

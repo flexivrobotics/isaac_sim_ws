@@ -69,7 +69,7 @@ After the example program is up and running, select the `TargetCube` prim under 
 ### Install Flexiv Elements Studio
 
 1. Prepare a Ubuntu 22.04 computer, all operations below are done on this computer.
-2. [Contact Flexiv](https://www.flexiv.com/contact) to obtain an Elements Studio installation package.
+2. [Contact Flexiv](https://www.flexiv.com/contact) to obtain the installation package of Elements Studio.
 3. Extract the package to a non-root directory.
 4. Install Elements Studio:
 

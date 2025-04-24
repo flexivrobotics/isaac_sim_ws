@@ -69,26 +69,27 @@ After the example program is up and running, select the `TargetCube` prim under 
 ### Install Flexiv Elements Studio
 
 1. Prepare a Ubuntu 22.04 computer, all operations below are done on this computer.
-2. [Contact Flexiv](https://www.flexiv.com/contact) to obtain the installation package with Isaac Sim support.
+2. [Contact Flexiv](https://www.flexiv.com/contact) to obtain an Elements Studio installation package.
 3. Extract the package to a non-root directory.
-4. Run setup script:
+4. Install Elements Studio:
 
-        bash setup_FlexivElements.sh
+       bash setup_FlexivElements.sh
 
-5. Choose Isaac Sim as the physics engine when prompted. If you don't see such prompt, it means the installation package you received does not support Isaac Sim, please contact again to request the correct one.
-6. After installation is finished, you can start Flexiv Elements Studio from start menu or via the desktop icon.
-7. You can switch the physics engine between built-in and Isaac Sim using the helper script:
+5. Switch physics engine from built-in to Isaac Sim:
 
-        bash switch_physics_engine.sh
+       bash switch_physics_engine.sh
+
+   Select [Isaac Sim] when prompted.
 
 ### Create a simulated robot in Elements Studio
 
-1. Start Flexiv Elements Studio, then in the Robot Connection window, select *Simulator*, and click *CREATE*.
-2. Choose "Create according to the selected robot type" and select one from the list, then click *CONFIRM*. A new simulated robot will be added to the simulator list.
-3. Toggle on the *Connect* button for the newly added one, then wait for loading.
-4. When loading is finished, you'll see a robot at its upright pose, with an "Exception" error at the bottom right corner. This is expected because we haven't started Isaac Sim yet. But if you see a normally operating robot, that again means you are running the wrong version of Elements Studio that only supports the built-in physics engine.
-5. At the bottom of the window, click on the small robot icon with a "SIM" tag on it, then a small window will pop up, note down the displayed robot serial number.
-6. In the same small pop-up window, click *CHANGE CONNECTION*, then toggle off the *Connect* button to close the simulated robot. We will restart it later. Note that you do NOT need to close the whole Elements Studio program.
+1. Start Flexiv Elements Studio from the application menu.
+2. In the Robot Connection window, select *Simulator*, and click *CREATE*.
+3. Choose "Create according to the selected robot type" and select one from the list, then click *CONFIRM*. A new simulated robot will be added to the simulator list.
+4. Toggle on the *Connect* button for the newly added one, then wait for loading.
+5. When loading is finished, you'll see a robot at its upright pose, with an "Exception" error at the bottom right corner. This is expected because we haven't started Isaac Sim yet. But if you see a normally operating robot, that again means you are running the wrong version of Elements Studio that only supports the built-in physics engine.
+6. At the bottom of the window, click on the small robot icon with a "SIM" tag on it, then a small window will pop up, note down the displayed robot serial number.
+7. In the same small pop-up window, click *CHANGE CONNECTION*, then toggle off the *Connect* button to close the simulated robot. We will restart it later. Note that you do NOT need to close the whole Elements Studio program.
 
 ### Install Python dependencies
 
@@ -100,12 +101,12 @@ Install the following dependencies using `pip`:
 
 1. Run Flexiv Isaac Bridge app with one robot added to the scene:
 
-        cd <isaac_sim_root_dir>
-        ./python.sh standalone_examples/api/isaacsim.robot.manipulators/flexiv/flexiv_isaac_bridge_app.py --env exts/isaacsim.robot.manipulators.examples/data/flexiv/example_env.usd --robot Rizon4-GYdBow exts/isaacsim.robot.manipulators.examples/data/flexiv/Rizon4.usd -0.690 0.315 0.709
+       cd <isaac_sim_root_dir>
+       ./python.sh standalone_examples/api/isaacsim.robot.manipulators/flexiv/flexiv_isaac_bridge_app.py --env exts/isaacsim.robot.manipulators.examples/data/flexiv/example_env.usd --robot Rizon4-GYdBow exts/isaacsim.robot.manipulators.examples/data/flexiv/Rizon4.usd -0.690 0.315 0.709
 
    To see details about the program arguments:
 
-        ./python.sh standalone_examples/api/isaacsim.robot.manipulators/flexiv/flexiv_isaac_bridge_app.py --help
+       ./python.sh standalone_examples/api/isaacsim.robot.manipulators/flexiv/flexiv_isaac_bridge_app.py --help
 
    The robot serial number is the one noted down previously with any space removed.
 
@@ -142,8 +143,8 @@ This framework supports simulating and controlling multiple robots:
 
 1. Start the Flexiv-Isaac Bridge app with multiple robots added, using two robots for example:
 
-        cd <isaac_sim_root_dir>
-        ./python.sh standalone_examples/api/isaacsim.robot.manipulators/flexiv/flexiv_isaac_bridge_app.py --env exts/isaacsim.robot.manipulators.examples/data/flexiv/example_env.usd --robot Rizon4-GYdBow exts/isaacsim.robot.manipulators.examples/data/flexiv/Rizon4.usd -0.690 0.315 0.709 --robot Rizon4s-TPqXaI exts/isaacsim.robot.manipulators.examples/data/flexiv/Rizon4s_with_Grav.usd -0.667 -0.464 0.706
+       cd <isaac_sim_root_dir>
+       ./python.sh standalone_examples/api/isaacsim.robot.manipulators/flexiv/flexiv_isaac_bridge_app.py --env exts/isaacsim.robot.manipulators.examples/data/flexiv/example_env.usd --robot Rizon4-GYdBow exts/isaacsim.robot.manipulators.examples/data/flexiv/Rizon4.usd -0.690 0.315 0.709 --robot Rizon4s-TPqXaI exts/isaacsim.robot.manipulators.examples/data/flexiv/Rizon4s_with_Grav.usd -0.667 -0.464 0.706
 
    Note that additional robots are added by appending `--robot <args ...>` to the program arguments.
 

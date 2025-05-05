@@ -12,12 +12,13 @@ VERSION = 1.1
 
 import spdlog
 import numpy as np
-from typing import List, Optional
+from typing import List
 from enum import Enum
 from argparse import ArgumentParser
 from dataclasses import dataclass
 from isaacsim import SimulationApp
 
+# Middleware for communicating with Elements Studio
 from flexivisaacbridge import IsaacNode
 
 # Parse program arguments

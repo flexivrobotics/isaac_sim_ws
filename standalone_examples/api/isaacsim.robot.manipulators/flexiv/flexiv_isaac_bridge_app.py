@@ -84,7 +84,7 @@ class BridgeRunner(object):
     class SingleRobotData:
         name: str
         instance: Flexiv
-        isaac_node: IsaacNode
+        sim_plugin: flexivsimplugin.UserNode
         last_connected: bool
         gripper_status: GripperStatus
 
@@ -194,7 +194,7 @@ class BridgeRunner(object):
                 self.SingleRobotData(
                     name=serial_num,
                     instance=robot,
-                    isaac_node=IsaacNode(serial_num),
+                    sim_plugin=flexivsimplugin.UserNode(serial_num),
                     last_connected=False,
                     gripper_status=GripperStatus.INIT,
                 )

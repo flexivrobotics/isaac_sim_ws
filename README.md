@@ -66,35 +66,15 @@ After the example program is up and running, select the `TargetCube` prim under 
 
 ## Use Isaac Sim with Flexiv Elements Studio for the first time
 
-### Install Flexiv Elements Studio
+### Set up Flexiv Elements Studio
 
-1. Prepare a Ubuntu 22.04 computer, all operations below are done on this computer.
-2. [Contact Flexiv](https://www.flexiv.com/contact) to obtain the installation package of Elements Studio.
-3. Extract the package to a non-root directory.
-4. Install Elements Studio:
+See instructions from [Flexiv Sim Plugin](https://github.com/flexivrobotics/flexiv_sim_plugin?tab=readme-ov-file#flexiv-elements-studio-setup).
 
-       bash setup_FlexivElements.sh
+### Install Python packages
 
-5. Switch physics engine from built-in to Isaac Sim:
+Install the following packages using `pip`:
 
-       bash switch_physics_engine.sh
-
-   Select [Isaac Sim] when prompted.
-
-### Create a simulated robot in Elements Studio
-
-1. Start Flexiv Elements Studio from the application menu.
-2. In the Robot Connection window, select *Simulator*, and click *CREATE*.
-3. Choose "Create according to the selected robot type" and select one from the list, then click *CONFIRM*. A new simulated robot will be added to the simulator list.
-4. Toggle on the *Connect* button for the newly added one, then wait for loading.
-5. When loading is finished, you'll see a robot at its upright pose, with an "Exception" error at the bottom right corner. This is expected because we haven't started Isaac Sim yet. But if you see a normally operating robot, that again means you are running the wrong version of Elements Studio that only supports the built-in physics engine.
-6. At the bottom of the window, click on the small robot icon with a "SIM" tag on it, then a small window will pop up, note down the displayed robot serial number.
-7. In the same small pop-up window, click *CHANGE CONNECTION*, then toggle off the *Connect* button to close the simulated robot. We will restart it later. Note that you do NOT need to close the whole Elements Studio program.
-
-### Install Python dependencies
-
-Install the following dependencies using `pip`:
-
+- flexivsimplugin
 - spdlog
 
 ### Run Flexiv-Isaac Bridge App

@@ -223,12 +223,16 @@ class BridgeRunner(object):
         """
         for robot in self._robots:
             # Publish fresh robot states to all Flexiv Nodes before doing anything else
-            robot.isaac_node.PublishRobotStates(
-                self._servo_cycle, robot.instance.q.tolist(), robot.instance.dq.tolist()
+            robot.sim_plugin.SendRobotStates(
+                flexivsimplugin.SimRobotStates(
+                    self._servo_cycle,
+                    robot.instance.q.tolist(),
+                    robot.instance.dq.tolist(),
+                )
             )
 
         for robot in self._robots:
-            if robot.isaac_node.connected():
+            if robot.sim_plugin.connected():
                 # Upon reconnection, set joint torque control mode
                 if not robot.last_connected:
                     self._logger.info(f"Connected to robot [{robot.name}]")
@@ -236,15 +240,15 @@ class BridgeRunner(object):
 
                 # Wait for new commands to arrive before proceeding current cycle
                 timeout_ms = 100
-                if not robot.isaac_node.WaitForNewRobotCommands(timeout_ms):
+                if not robot.sim_plugin.WaitForRobotCommands(timeout_ms):
                     self._logger.warn(f"Missed 1 message from [{robot.name}]")
 
                 # Apply joint torques
-                robot.instance.apply_torques(robot.isaac_node.target_torques())
+                robot.instance.apply_torques(robot.sim_plugin.robot_commands().tau_d)
 
                 # Gripper control based on digital output signal
                 dout_list = list(
-                    robot.isaac_node.digital_outputs()
+                    robot.sim_plugin.digital_outputs()
                 )  # Convert map to list
                 if dout_list:
                     # DOUT[0] high = open gripper

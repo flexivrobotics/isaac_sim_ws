@@ -18,8 +18,8 @@ from argparse import ArgumentParser
 from dataclasses import dataclass
 from isaacsim import SimulationApp
 
-# Middleware for communicating with Elements Studio
-from flexivisaacbridge import IsaacNode
+# Middleware plugin for connecting to Flexiv Elements Studio
+import flexivsimplugin
 
 # Parse program arguments
 argparser = ArgumentParser()

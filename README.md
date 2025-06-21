@@ -29,6 +29,10 @@ Flexiv Elements Studio:
 
 ## Demos
 
+### Tower of Hanoi
+
+[![Rizon 4 Masters the Tower of Hanoi Game in Issac Sim with the Flexiv-Isaac Sim Bridge App](https://img.youtube.com/vi/jZT6Ei0L3gk/0.jpg)](https://www.youtube.com/watch?v=jZT6Ei0L3gk)
+
 ### Peg-in-hole
 
 https://github.com/user-attachments/assets/e575bf70-9ffb-47a5-8aec-4cda8d25c08e

@@ -8,7 +8,7 @@
 #
 
 # App version
-VERSION = 1.2
+VERSION = "1.2.1"
 
 import spdlog
 import numpy as np
@@ -103,7 +103,7 @@ class BridgeRunner(object):
 
         # fmt: off
         self._logger.info("———————————————————————————————————————————————————————————————")
-        self._logger.info(f"———             Flexiv-Isaac Bridge App - v{VERSION}              ———")
+        self._logger.info(f"———            Flexiv-Isaac Bridge App - v{VERSION}             ———")
         self._logger.info("———————————————————————————————————————————————————————————————")
         # fmt: on
 

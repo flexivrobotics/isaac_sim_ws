@@ -8,7 +8,7 @@
 #
 
 # App version
-VERSION = 1.2
+VERSION = "1.2.1"
 
 import spdlog
 import numpy as np
@@ -103,7 +103,7 @@ class BridgeRunner(object):
 
         # fmt: off
         self._logger.info("———————————————————————————————————————————————————————————————")
-        self._logger.info(f"———             Flexiv-Isaac Bridge App - v{VERSION}              ———")
+        self._logger.info(f"———            Flexiv-Isaac Bridge App - v{VERSION}             ———")
         self._logger.info("———————————————————————————————————————————————————————————————")
         # fmt: on
 
@@ -248,7 +248,7 @@ class BridgeRunner(object):
 
                 # Gripper control based on digital output signal
                 dout_list = list(
-                    robot.sim_plugin.digital_outputs()
+                    robot.sim_plugin.robot_commands().digital_outputs
                 )  # Convert map to list
                 if dout_list:
                     # DOUT[0] high = open gripper

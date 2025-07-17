@@ -10,6 +10,8 @@
 # App version
 APP_VERSION = "1.3"
 
+# Compatible flexivsimplugin version
+COMPATIBLE_SIM_PLUGIN_VER = "1.2.0"
 
 import spdlog
 import numpy as np
@@ -21,6 +23,13 @@ from isaacsim import SimulationApp
 
 # Middleware plugin for connecting to Flexiv Elements Studio
 import flexivsimplugin
+
+# Check version
+if flexivsimplugin.__version__ != COMPATIBLE_SIM_PLUGIN_VER:
+    raise ImportError(
+        f"flexivsimplugin=={COMPATIBLE_SIM_PLUGIN_VER} is required, but found {flexivsimplugin.__version__}"
+    )
+
 
 # Parse program arguments
 argparser = ArgumentParser()

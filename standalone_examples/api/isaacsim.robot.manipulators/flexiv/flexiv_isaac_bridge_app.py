@@ -250,11 +250,13 @@ class BridgeRunner(object):
 
                 # Wait for new commands to arrive before proceeding current cycle
                 timeout_ms = 100
-                if not robot.sim_plugin.WaitForRobotCommands(timeout_ms):
+                if robot.sim_plugin.WaitForRobotCommands(timeout_ms):
+                    # Apply joint torques
+                    robot.instance.apply_torques(
+                        robot.sim_plugin.robot_commands().target_drives
+                    )
+                else:
                     self._logger.warn(f"Missed 1 message from [{robot.name}]")
-
-                # Apply joint torques
-                robot.instance.apply_torques(robot.sim_plugin.robot_commands().tau_d)
 
                 # Gripper control based on digital output signal
                 dout_list = list(

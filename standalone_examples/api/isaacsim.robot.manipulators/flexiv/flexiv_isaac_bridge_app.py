@@ -36,8 +36,8 @@ argparser = ArgumentParser()
 argparser.add_argument(
     "--robot",
     action="append",
-    nargs=5,
-    help="Add one or more robots specifying [serial_number usd_path pos_x pos_y pos_z], e.g. --robot Rizon4-GYdBow omniverse://localhost/Library/Rizon4.usd -0.7 0.31 0.7 --robot Rizon4s-TPqXaI omniverse://localhost/Library/Rizon4s_with_Grav.usd -0.67 -0.46 0.7",
+    nargs=9,
+    help="Add one or more robots specifying [serial_number usd_path pos_x pos_y pos_z quat_w quat_x quat_y quat_z], e.g. --robot Rizon4-GYdBow omniverse://localhost/Library/Rizon4.usd -0.7 0.31 0.7 --robot Rizon4s-TPqXaI omniverse://localhost/Library/Rizon4s_with_Grav.usd -0.67 -0.46 0.7",
     required=True,
 )
 argparser.add_argument(
@@ -148,6 +148,7 @@ class BridgeRunner(object):
             serial_num = r[0]
             usd_path = r[1]
             pos_in_world = [float(r[2]), float(r[3]), float(r[4])]
+            ori_in_world = [float(r[5]), float(r[6]), float(r[7]), float(r[8])]
 
             # Replace dash with underscore in serial number to avoid prim path error
             serial_num = serial_num.replace("-", "_")
@@ -190,13 +191,14 @@ class BridgeRunner(object):
                     end_effector_prim_name=end_effector_prim_name,
                     usd_path=usd_path,
                     pos_in_world=pos_in_world,
+                    ori_in_world=ori_in_world,
                     gripper_joint_names=gripper_joint_names,
                     gripper_opened_joint_positions=gripper_opened_joint_positions,
                     gripper_closed_joint_positions=gripper_closed_joint_positions,
                 )
             )
             self._logger.info(
-                f"Created robot [/World/Flexiv/{serial_num}] located at {pos_in_world} in world"
+                f"Created robot [/World/Flexiv/{serial_num}] located at [{pos_in_world} {ori_in_world}] in world"
             )
 
             # Append single robot data struct

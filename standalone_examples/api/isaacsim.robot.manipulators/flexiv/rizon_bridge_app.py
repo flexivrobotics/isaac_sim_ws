@@ -37,7 +37,7 @@ argparser.add_argument(
     "--robot",
     action="append",
     nargs=9,
-    help="Add one or more robots specifying [serial_number usd_path pos_x pos_y pos_z quat_w quat_x quat_y quat_z], e.g. --robot Rizon4-GYdBow omniverse://localhost/Library/Rizon4.usd -0.7 0.31 0.7 --robot Rizon4s-TPqXaI omniverse://localhost/Library/Rizon4s_with_Grav.usd -0.67 -0.46 0.7",
+    help="Add one or more robots specifying [serial_number usd_path pos_x pos_y pos_z quat_w quat_x quat_y quat_z]. See README for examples.",
     required=True,
 )
 argparser.add_argument(
@@ -48,7 +48,7 @@ argparser.add_argument(
 argparser.add_argument(
     "--gpu",
     action="store_true",
-    help="Enable GPU dynamics. Use this argument if any object in the scene requires GPU for dynamics computation. For example, deformable body material and SDF mesh collider",
+    help="Enable GPU dynamics. Use this argument if any object in the scene requires GPU for dynamics computation. For example, deformable body material and SDF mesh collider.",
     required=False,
 )
 args = argparser.parse_args()
@@ -66,10 +66,6 @@ from isaacsim.robot.manipulators.grippers.parallel_gripper import ParallelGrippe
 # Physics and render loop period [sec]
 RENDER_FREQ = 60.0
 PHYSICS_FREQ = 2000.0
-
-# lcm topic prefix for robot state and command messages */
-STATES_TOPIC_PREFIX = "flexiv_isaac_bridge/robot_states/"
-COMMANDS_TOPIC_PREFIX = "flexiv_isaac_bridge/robot_commands/"
 
 
 # Gripper status

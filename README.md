@@ -86,7 +86,7 @@ Install the following packages using `pip`:
 1. Run Flexiv Isaac Bridge app with one robot added to the scene:
 
        cd <isaac_sim_root_dir>
-       ./python.sh standalone_examples/api/isaacsim.robot.manipulators/flexiv/rizon_bridge_app.py --env exts/isaacsim.robot.manipulators.examples/data/flexiv/example_env.usd --robot Rizon4-GYdBow exts/isaacsim.robot.manipulators.examples/data/flexiv/Rizon4.usd -0.690 0.315 0.709
+       ./python.sh standalone_examples/api/isaacsim.robot.manipulators/flexiv/rizon_bridge_app.py --env exts/isaacsim.robot.manipulators.examples/data/flexiv/example_env.usd --robot Rizon4-GYdBow exts/isaacsim.robot.manipulators.examples/data/flexiv/Rizon4.usd -0.690 0.315 0.709 1 0 0 0
 
    To see details about the program arguments:
 
@@ -128,7 +128,7 @@ This framework supports simulating and controlling multiple robots:
 1. Start the Flexiv-Isaac Bridge app with multiple robots added, using two robots for example:
 
        cd <isaac_sim_root_dir>
-       ./python.sh standalone_examples/api/isaacsim.robot.manipulators/flexiv/rizon_bridge_app.py --env exts/isaacsim.robot.manipulators.examples/data/flexiv/example_env.usd --robot Rizon4-GYdBow exts/isaacsim.robot.manipulators.examples/data/flexiv/Rizon4.usd -0.690 0.315 0.709 --robot Rizon4s-TPqXaI exts/isaacsim.robot.manipulators.examples/data/flexiv/Rizon4s_with_Grav.usd -0.667 -0.464 0.706
+       ./python.sh standalone_examples/api/isaacsim.robot.manipulators/flexiv/rizon_bridge_app.py --env exts/isaacsim.robot.manipulators.examples/data/flexiv/example_env.usd --robot Rizon4-GYdBow exts/isaacsim.robot.manipulators.examples/data/flexiv/Rizon4.usd -0.690 0.315 0.709 1 0 0 0 --robot Rizon4s-TPqXaI exts/isaacsim.robot.manipulators.examples/data/flexiv/Rizon4s_with_Grav.usd -0.667 -0.464 0.706 1 0 0 0
 
    Note that additional robots are added by appending `--robot <args ...>` to the program arguments.
 

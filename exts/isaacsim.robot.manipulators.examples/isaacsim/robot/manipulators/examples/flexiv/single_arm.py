@@ -46,40 +46,13 @@ class FlexivSingleArm(Robot):
         self._end_effector_prim_path = prim_path + "/" + end_effector_prim_name
         self._logger = spdlog.ConsoleLogger("flexiv::" + name)
 
-        # Add robot primitive to the given path if not already exists
-        prim = get_prim_at_path(prim_path)
-        if not prim.IsValid():
-            # Load usd from provided path
-            if usd_path:
-                self._logger.info(
-                    f"Mounting provided robot usd [{usd_path}] at prim path [{prim_path}]"
-                )
-                add_reference_to_stage(usd_path=usd_path, prim_path=prim_path)
-            # File not found
-            else:
-                raise FileNotFoundError(f"File not found: {usd_path}")
-
-            # Set which primitive in the robot articulation to be used as end effector
-            if end_effector_prim_name is None:
-                end_effector_prim_name = "flange"
-            self._end_effector_prim_path = prim_path + "/" + end_effector_prim_name
-
-        # Init base
+        # Construct base
         super().__init__(
             prim_path=prim_path,
             name=name,
             position=pos_in_world,
             orientation=ori_in_world,
         )
-
-        # Initialize gripper
-        if gripper_joint_names is not None:
-            self._gripper = ParallelGripper(
-                end_effector_prim_path=self._end_effector_prim_path,
-                joint_prim_names=gripper_joint_names,
-                joint_opened_positions=gripper_opened_joint_positions,
-                joint_closed_positions=gripper_closed_joint_positions,
-            )
         return
 
     def switch_control_mode(self, mode: str) -> None:

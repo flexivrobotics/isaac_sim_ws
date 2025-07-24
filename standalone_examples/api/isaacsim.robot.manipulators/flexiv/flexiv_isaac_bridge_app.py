@@ -60,7 +60,7 @@ simulation_app = SimulationApp({"headless": False})
 # Import isaac modules after SimulationApp is started
 from isaacsim.core.api import World
 from isaacsim.core.utils.stage import add_reference_to_stage
-from isaacsim.robot.manipulators.examples.flexiv import FlexivSingleArm
+from isaacsim.robot.manipulators.examples.flexiv import FlexivRizon
 from isaacsim.robot.manipulators.grippers.parallel_gripper import ParallelGripper
 
 # Physics and render loop period [sec]
@@ -94,7 +94,7 @@ class BridgeRunner(object):
     @dataclass
     class SingleRobotData:
         name: str
-        instance: FlexivSingleArm
+        instance: FlexivRizon
         sim_plugin: flexivsimplugin.UserNode
         last_connected: bool
         gripper_status: GripperStatus
@@ -155,7 +155,7 @@ class BridgeRunner(object):
             serial_num = serial_num.replace("-", "_")
 
             # Add this robot to stage
-            prim_path = "/World/FlexivSingleArm/" + serial_num
+            prim_path = "/World/Flexiv/" + serial_num
             self._logger.info(
                 f"Adding robot usd [{usd_path}] to stage at prim path [{prim_path}]"
             )
@@ -197,7 +197,7 @@ class BridgeRunner(object):
 
             # Add robot to stage
             robot = self._world.scene.add(
-                FlexivSingleArm(
+                FlexivRizon(
                     prim_path=prim_path,
                     name=serial_num,
                     end_effector_prim_name=end_effector_prim_name,
@@ -208,7 +208,7 @@ class BridgeRunner(object):
                 )
             )
             self._logger.info(
-                f"Created robot [/World/FlexivSingleArm/{serial_num}] located at [{pos_in_world} {ori_in_world}] in world"
+                f"Created robot [/World/Flexiv/{serial_num}] located at [{pos_in_world} {ori_in_world}] in world"
             )
 
             # Append single robot data struct

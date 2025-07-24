@@ -189,7 +189,7 @@ class BridgeRunner(object):
                     prim_path="/World/FlexivSingleArm/" + serial_num,
                     name=serial_num,
                     end_effector_prim_name=end_effector_prim_name,
-                    usd_path=usd_path,
+                    arm_dof=7,
                     pos_in_world=pos_in_world,
                     ori_in_world=ori_in_world,
                     gripper_joint_names=gripper_joint_names,

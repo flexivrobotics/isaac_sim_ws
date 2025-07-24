@@ -61,6 +61,7 @@ simulation_app = SimulationApp({"headless": False})
 from isaacsim.core.api import World
 from isaacsim.core.utils.stage import add_reference_to_stage
 from isaacsim.robot.manipulators.examples.flexiv import FlexivSingleArm
+from isaacsim.robot.manipulators.grippers.parallel_gripper import ParallelGripper
 
 # Physics and render loop period [sec]
 RENDER_FREQ = 60.0
@@ -153,29 +154,40 @@ class BridgeRunner(object):
             # Replace dash with underscore in serial number to avoid prim path error
             serial_num = serial_num.replace("-", "_")
 
+            # Add this robot to stage
+            prim_path = "/World/FlexivSingleArm/" + serial_num
+            self._logger.info(
+                f"Adding robot usd [{usd_path}] to stage at prim path [{prim_path}]"
+            )
+            add_reference_to_stage(usd_path=usd_path, prim_path=prim_path)
+
             # Configure gripper if the usd name suggests a gripper exists in the model
-            gripper_joint_names = None
-            gripper_opened_joint_positions = None
-            gripper_closed_joint_positions = None
-            end_effector_prim_name = None
+            gripper = None
+            end_effector_prim_name = "flange"
             if "Grav" in usd_path:
-                # This gripper only has one actuation joint, but the API requires two,
+                # This gripper has only one actuation joint, but the API requires two,
                 # thus providing a non-actuation joint (gains = 0) as a place holder
-                gripper_joint_names = ["finger_joint", "right_outer_knuckle_joint"]
-                gripper_opened_joint_positions = np.array([45.0, 0])
-                gripper_closed_joint_positions = np.array([-8.88, 0])
                 end_effector_prim_name = "Grav_gripper/right_finger_tip"
+                gripper = ParallelGripper(
+                    end_effector_prim_path=prim_path + "/" + end_effector_prim_name,
+                    joint_prim_names=["finger_joint", "right_outer_knuckle_joint"],
+                    joint_opened_positions=np.array([45.0, 0]),
+                    joint_closed_positions=np.array([-8.88, 0]),
+                )
                 self._logger.info(
                     "The usd name suggests a Grav gripper exists in the model, gripper control will be enabled"
                 )
             elif "Robotiq" in usd_path:
-                # This gripper only has one actuation joint, but the API requires two,
+                # This gripper has only one actuation joint, but the API requires two,
                 # thus providing a non-actuation joint (gains = 0) as a place holder
-                gripper_joint_names = ["finger_joint", "right_inner_finger_joint"]
-                gripper_opened_joint_positions = np.array([0, 0])
-                gripper_closed_joint_positions = np.array([45, 0])
                 end_effector_prim_name = (
                     "Robotiq_2F_85_flattened/Robotiq_2F_85/right_inner_finger"
+                )
+                gripper = ParallelGripper(
+                    end_effector_prim_path=prim_path + "/" + end_effector_prim_name,
+                    joint_prim_names=["finger_joint", "right_inner_finger_joint"],
+                    joint_opened_positions=np.array([0, 0]),
+                    joint_closed_positions=np.array([45, 0]),
                 )
                 self._logger.info(
                     "The usd name suggests a Robotiq gripper exists in the model, gripper control will be enabled"
@@ -186,15 +198,13 @@ class BridgeRunner(object):
             # Add robot to stage
             robot = self._world.scene.add(
                 FlexivSingleArm(
-                    prim_path="/World/FlexivSingleArm/" + serial_num,
+                    prim_path=prim_path,
                     name=serial_num,
                     end_effector_prim_name=end_effector_prim_name,
                     arm_dof=7,
                     pos_in_world=pos_in_world,
                     ori_in_world=ori_in_world,
-                    gripper_joint_names=gripper_joint_names,
-                    gripper_opened_joint_positions=gripper_opened_joint_positions,
-                    gripper_closed_joint_positions=gripper_closed_joint_positions,
+                    gripper=gripper,
                 )
             )
             self._logger.info(

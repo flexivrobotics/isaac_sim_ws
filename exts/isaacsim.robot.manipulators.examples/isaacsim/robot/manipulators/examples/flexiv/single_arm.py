@@ -58,20 +58,9 @@ class FlexivSingleArm(Robot):
                     f"Mounting provided robot usd [{usd_path}] at prim path [{prim_path}]"
                 )
                 add_reference_to_stage(usd_path=usd_path, prim_path=prim_path)
-            # Load usd from assets library
+            # File not found
             else:
-                default_usd_path = "/Isaac/Robots/Flexiv/Rizon4/flexiv_rizon4.usd"
-                self._logger.warn(
-                    f"Robot usd is not provided, using default usd from Isaac Sim asset library"
-                )
-                self._logger.info(
-                    f"Mounting default robot usd [{default_usd_path}] at prim path [{prim_path}]"
-                )
-                assets_root_path = get_assets_root_path()
-                if assets_root_path is None:
-                    self._logger.error("Cannot find Isaac Sim assets folder")
-                usd_path = assets_root_path + default_usd_path
-                add_reference_to_stage(usd_path=usd_path, prim_path=prim_path)
+                raise FileNotFoundError(f"File not found: {usd_path}")
 
             # Set which primitive in the robot articulation to be used as end effector
             if end_effector_prim_name is None:

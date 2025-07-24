@@ -9,11 +9,9 @@
 
 import numpy as np
 import spdlog
-from typing import Sequence, Optional, Union, List
+from typing import Optional, List
 from isaacsim.core.api.robots.robot import Robot
 from isaacsim.core.prims import SingleRigidPrim
-from isaacsim.core.utils.prims import get_prim_at_path
-from isaacsim.core.utils.stage import add_reference_to_stage
 from isaacsim.robot.manipulators.grippers.gripper import Gripper
 from isaacsim.robot.manipulators.grippers.parallel_gripper import ParallelGripper
 from isaacsim.robot.manipulators.grippers.surface_gripper import SurfaceGripper
@@ -28,8 +26,8 @@ class FlexivSingleArm(Robot):
         name (str): name of this robot articulation.
         end_effector_prim_name (str): name of the primitive in the robot articulation to be used as end effector.
         arm_dof (int): degrees of freedom of the robotic arm, excluding any gripper DoF.
-        pos_in_world (Optional[Sequence[float]]): position (x, y, z) of the robot in world [m].
-        ori_in_world (Optional[Sequence[float]]): orientation (quaternion w, x, y, z) of the robot in world [].
+        pos_in_world (Optional[List[float]]): position (x, y, z) of the robot in world [m].
+        ori_in_world (Optional[List[float]]): orientation (quaternion w, x, y, z) of the robot in world [].
         gripper (Optional[Gripper]): Constructed gripper instance.
     """
 
@@ -39,8 +37,8 @@ class FlexivSingleArm(Robot):
         name: str,
         end_effector_prim_name: str,
         arm_dof: int,
-        pos_in_world: Optional[Sequence[float]] = None,
-        ori_in_world: Optional[Sequence[float]] = None,
+        pos_in_world: Optional[List[float]] = None,
+        ori_in_world: Optional[List[float]] = None,
         gripper: Optional[Gripper] = None,
     ) -> None:
         self._arm_dof = arm_dof
@@ -97,64 +95,68 @@ class FlexivSingleArm(Robot):
         return self._gripper
 
     @property
-    def q(self) -> np.ndarray:
+    def q(self) -> List[float]:
         """
         Get current joint positions.
 
         Return:
-            np.ndarray: Joint positions [rad].
+            List[float]: Joint positions [rad].
         """
         if self._articulation_view.is_physics_handle_valid():
-            return self.get_joint_positions(joint_indices=np.arange(0, self._arm_dof))
+            return self.get_joint_positions(
+                joint_indices=np.arange(0, self._arm_dof)
+            ).tolist()
         else:
-            return np.zeros(self._arm_dof)
+            return np.zeros(self._arm_dof).tolist()
 
     @property
-    def dq(self) -> np.ndarray:
+    def dq(self) -> List[float]:
         """
         Get current joint velocities.
 
         Return:
-            np.ndarray: Joint velocities [rad/s].
+            List[float]: Joint velocities [rad/s].
         """
         if self._articulation_view.is_physics_handle_valid():
-            return self.get_joint_velocities(joint_indices=np.arange(0, self._arm_dof))
+            return self.get_joint_velocities(
+                joint_indices=np.arange(0, self._arm_dof)
+            ).tolist()
         else:
-            return np.zeros(self._arm_dof)
+            return np.zeros(self._arm_dof).tolist()
 
     @property
-    def tau(self) -> np.ndarray:
+    def tau(self) -> List[float]:
         """
         Get current joint torques.
 
         Return:
-            np.ndarray: Joint torques [Nm].
+            List[float]: Joint torques [Nm].
         """
         if self._articulation_view.is_physics_handle_valid():
             return self.get_measured_joint_efforts(
                 joint_indices=np.arange(0, self._arm_dof)
-            )
+            ).tolist()
         else:
-            return np.zeros(self._arm_dof)
+            return np.zeros(self._arm_dof).tolist()
 
-    def apply_torques(self, tau_d: Union[List, np.ndarray]) -> None:
+    def apply_torques(self, tau_d: List[float]) -> None:
         """
         Apply desired joint torques to the robot articulation.
 
         Params:
-            tau_d (Union[List, np.ndarray]): Desired joint torques.
+            tau_d (List[float]): Desired joint torques.
         """
         # Apply only to robot joints, leave out gripper joints, which are controlled by gripper controller
         self.set_joint_efforts(tau_d, joint_indices=np.arange(0, self._arm_dof))
         return
 
-    def teleport_to(self, q_d: Union[List, np.ndarray]) -> None:
+    def teleport_to(self, q_d: List[float]) -> None:
         """
         Instantly teleport robot joints to desired positions. This is usually used to set robot to initial positions.
         No control is involved in the process. Call apply_torques() immediately after to kick in the joint controls.
 
         Params:
-            q_d (Union[List, np.ndarray]): Desired joint positions.
+            q_d (List[float]): Desired joint positions.
         """
         self.set_joint_positions(q_d, joint_indices=np.arange(0, self._arm_dof))
         return

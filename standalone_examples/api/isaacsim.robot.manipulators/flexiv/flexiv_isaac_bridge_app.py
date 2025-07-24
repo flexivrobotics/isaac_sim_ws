@@ -248,8 +248,8 @@ class BridgeRunner(object):
             robot.sim_plugin.SendRobotStates(
                 flexivsimplugin.SimRobotStates(
                     self._servo_cycle,
-                    robot.instance.q.tolist(),
-                    robot.instance.dq.tolist(),
+                    robot.instance.q,
+                    robot.instance.dq,
                 )
             )
 

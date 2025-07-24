@@ -18,9 +18,9 @@ from isaacsim.robot.manipulators.grippers.parallel_gripper import ParallelGrippe
 from isaacsim.storage.native import get_assets_root_path
 
 
-class Flexiv(Robot):
+class FlexivSingleArm(Robot):
     """
-    Flexiv 7-DOF robot control interface.
+    Control interface of a single Flexiv robotic arm.
 
     Params:
         prim_path (str): Primitive path of this robot articulation in the stage. E.g. /World/Flexiv
@@ -107,7 +107,9 @@ class Flexiv(Robot):
         self._articulation_view.set_gains(kps=self._default_kps, kds=self._default_kds)
 
         # Set control mode for all robot joints, but leave gripper joints unchanged
-        self._articulation_view.switch_control_mode(mode, joint_indices=np.arange(0, 7))
+        self._articulation_view.switch_control_mode(
+            mode, joint_indices=np.arange(0, self.num_dof)
+        )
 
         self._logger.info(f"Control mode switched to [{mode}]")
         return
@@ -141,9 +143,9 @@ class Flexiv(Robot):
             np.ndarray: Joint positions [rad].
         """
         if self._articulation_view.is_physics_handle_valid():
-            return self.get_joint_positions(joint_indices=np.arange(0, 7))
+            return self.get_joint_positions(joint_indices=np.arange(0, self.num_dof))
         else:
-            return np.zeros(7)
+            return np.zeros(self.num_dof)
 
     @property
     def dq(self) -> np.ndarray:
@@ -154,9 +156,9 @@ class Flexiv(Robot):
             np.ndarray: Joint velocities [rad/s].
         """
         if self._articulation_view.is_physics_handle_valid():
-            return self.get_joint_velocities(joint_indices=np.arange(0, 7))
+            return self.get_joint_velocities(joint_indices=np.arange(0, self.num_dof))
         else:
-            return np.zeros(7)
+            return np.zeros(self.num_dof)
 
     @property
     def tau(self) -> np.ndarray:
@@ -167,9 +169,11 @@ class Flexiv(Robot):
             np.ndarray: Joint torques [Nm].
         """
         if self._articulation_view.is_physics_handle_valid():
-            return self.get_measured_joint_efforts(joint_indices=np.arange(0, 7))
+            return self.get_measured_joint_efforts(
+                joint_indices=np.arange(0, self.num_dof)
+            )
         else:
-            return np.zeros(7)
+            return np.zeros(self.num_dof)
 
     def apply_torques(self, tau_d: Union[List, np.ndarray]) -> None:
         """
@@ -179,7 +183,7 @@ class Flexiv(Robot):
             tau_d (Union[List, np.ndarray]): Desired joint torques.
         """
         # Apply only to robot joints, leave out gripper joints, which are controlled by gripper controller
-        self.set_joint_efforts(tau_d, joint_indices=np.arange(0, 7))
+        self.set_joint_efforts(tau_d, joint_indices=np.arange(0, self.num_dof))
         return
 
     def teleport_to(self, q_d: Union[List, np.ndarray]) -> None:
@@ -190,7 +194,7 @@ class Flexiv(Robot):
         Params:
             q_d (Union[List, np.ndarray]): Desired joint positions.
         """
-        self.set_joint_positions(q_d, joint_indices=np.arange(0, 7))
+        self.set_joint_positions(q_d, joint_indices=np.arange(0, self.num_dof))
         return
 
     def initialize(self, physics_sim_view=None) -> None:

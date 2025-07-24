@@ -60,7 +60,7 @@ simulation_app = SimulationApp({"headless": False})
 # Import isaac modules after SimulationApp is started
 from isaacsim.core.api import World
 from isaacsim.core.utils.stage import add_reference_to_stage
-from isaacsim.robot.manipulators.examples.flexiv import Flexiv
+from isaacsim.robot.manipulators.examples.flexiv import FlexivSingleArm
 
 # Physics and render loop period [sec]
 RENDER_FREQ = 60.0
@@ -93,7 +93,7 @@ class BridgeRunner(object):
     @dataclass
     class SingleRobotData:
         name: str
-        instance: Flexiv
+        instance: FlexivSingleArm
         sim_plugin: flexivsimplugin.UserNode
         last_connected: bool
         gripper_status: GripperStatus
@@ -185,8 +185,8 @@ class BridgeRunner(object):
 
             # Add robot to stage
             robot = self._world.scene.add(
-                Flexiv(
-                    prim_path="/World/Flexiv/" + serial_num,
+                FlexivSingleArm(
+                    prim_path="/World/FlexivSingleArm/" + serial_num,
                     name=serial_num,
                     end_effector_prim_name=end_effector_prim_name,
                     usd_path=usd_path,
@@ -198,7 +198,7 @@ class BridgeRunner(object):
                 )
             )
             self._logger.info(
-                f"Created robot [/World/Flexiv/{serial_num}] located at [{pos_in_world} {ori_in_world}] in world"
+                f"Created robot [/World/FlexivSingleArm/{serial_num}] located at [{pos_in_world} {ori_in_world}] in world"
             )
 
             # Append single robot data struct

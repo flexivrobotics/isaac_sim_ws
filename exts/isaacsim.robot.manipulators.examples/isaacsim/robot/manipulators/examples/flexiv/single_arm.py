@@ -9,13 +9,14 @@
 
 import numpy as np
 import spdlog
-from typing import Union, List, Optional
+from typing import Sequence, Optional, Union, List
 from isaacsim.core.api.robots.robot import Robot
 from isaacsim.core.prims import SingleRigidPrim
 from isaacsim.core.utils.prims import get_prim_at_path
 from isaacsim.core.utils.stage import add_reference_to_stage
+from isaacsim.robot.manipulators.grippers.gripper import Gripper
 from isaacsim.robot.manipulators.grippers.parallel_gripper import ParallelGripper
-from isaacsim.storage.native import get_assets_root_path
+from isaacsim.robot.manipulators.grippers.surface_gripper import SurfaceGripper
 
 
 class FlexivSingleArm(Robot):
@@ -25,28 +26,24 @@ class FlexivSingleArm(Robot):
     Params:
         prim_path (str): Primitive path of this robot articulation in the stage. E.g. /World/Flexiv
         name (str): name of this robot articulation.
-        end_effector_prim_name (Optional[str]): name of the primitive in the robot articulation to be used as end effector.
-        usd_path (Optional[str]): path to robot usd file. If not specified, flexiv_rizon4.usd from Isaac Sim assets library will be used.
-        pos_in_world (Optional[Union[np.ndarray, List[float]]]): position (x, y, z) of the robot in world [m].
-        ori_in_world (Optional[Union[np.ndarray, List[float]]]): orientation (quaternion w, x, y, z) of the robot in world [].
-        gripper_joint_names (Optional[List[str]], optional): names of the gripper's actuation joints.
-        gripper_opened_joint_positions (Optional[np.ndarray], optional): joint positions of the left finger joint and the right finger joint respectively when opened.
-        gripper_closed_joint_positions (Optional[np.ndarray], optional): joint positions of the left finger joint and the right finger joint respectively when closed.
+        end_effector_prim_name (str): name of the primitive in the robot articulation to be used as end effector.
+        pos_in_world (Optional[Sequence[float]]): position (x, y, z) of the robot in world [m].
+        ori_in_world (Optional[Sequence[float]]): orientation (quaternion w, x, y, z) of the robot in world [].
+        gripper (Optional[Gripper]): Constructed gripper instance.
     """
 
     def __init__(
         self,
         prim_path: str,
         name: str,
-        end_effector_prim_name: Optional[str] = None,
-        usd_path: Optional[str] = None,
-        pos_in_world: Optional[Union[np.ndarray, List[float]]] = None,
-        ori_in_world: Optional[Union[np.ndarray, List[float]]] = None,
-        gripper_joint_names: Optional[List[str]] = None,
-        gripper_opened_joint_positions: Optional[np.ndarray] = None,
-        gripper_closed_joint_positions: Optional[np.ndarray] = None,
+        end_effector_prim_name: str,
+        pos_in_world: Optional[Sequence[float]] = None,
+        ori_in_world: Optional[Sequence[float]] = None,
+        gripper: Optional[Gripper] = None,
     ) -> None:
-        # Initialize logger
+        self._gripper = gripper
+        self._end_effector = None
+        self._end_effector_prim_path = prim_path + "/" + end_effector_prim_name
         self._logger = spdlog.ConsoleLogger("flexiv::" + name)
 
         # Add robot primitive to the given path if not already exists

@@ -84,12 +84,12 @@ class FlexivSingleArm(Robot):
         return self._end_effector
 
     @property
-    def gripper(self) -> ParallelGripper:
+    def gripper(self) -> Gripper:
         """
         Access reference to the _gripper member.
 
         Return:
-            ParallelGripper: Reference to the gripper instance.
+            Gripper: Reference to the gripper instance.
         """
         return self._gripper
 
@@ -168,15 +168,8 @@ class FlexivSingleArm(Robot):
         )
         self._end_effector.initialize(physics_sim_view)
 
-        # Joints output torque instead of acceleration
-        self.get_articulation_controller().set_effort_modes("force")
-
-        # Save default gains becaues calling _articulation_view.switch_control_mode() will change _articulation_view._default_kps,
-        # which makes switching control mode from "effort" back to "position" not possible
-        self._default_kps, self._default_kds = self._articulation_view.get_gains()
-
-        # Initialize gripper if added
-        if hasattr(self, "_gripper"):
+        # Initialize gripper if any
+        if isinstance(self._gripper, ParallelGripper):
             self._gripper.initialize(
                 physics_sim_view=physics_sim_view,
                 articulation_apply_action_func=self.apply_action,
@@ -184,6 +177,17 @@ class FlexivSingleArm(Robot):
                 set_joint_positions_func=self.set_joint_positions,
                 dof_names=self.dof_names,
             )
+        elif isinstance(self._gripper, SurfaceGripper):
+            self._gripper.initialize(
+                physics_sim_view=physics_sim_view, articulation_num_dofs=self.num_dof
+            )
+
+        # Joints output torque instead of acceleration
+        self.get_articulation_controller().set_effort_modes("force")
+
+        # Save default gains becaues calling _articulation_view.switch_control_mode() will change _articulation_view._default_kps,
+        # which makes switching control mode from "effort" back to "position" not possible
+        self._default_kps, self._default_kds = self._articulation_view.get_gains()
         return
 
     def post_reset(self) -> None:
@@ -191,6 +195,7 @@ class FlexivSingleArm(Robot):
         Post reset articulation
         """
         super().post_reset()
-        if hasattr(self, "_gripper"):
+        self._end_effector.post_reset()
+        if self._gripper is not None:
             self._gripper.post_reset()
         return

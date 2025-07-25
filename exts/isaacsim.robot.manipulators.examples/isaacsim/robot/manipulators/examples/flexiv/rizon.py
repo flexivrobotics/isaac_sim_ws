@@ -58,7 +58,7 @@ class FlexivRizon(Robot):
 
     def switch_control_mode(self, mode: str) -> None:
         """
-        Switch control mode for all robot joints.
+        Switch control mode for all robot joints, gripper excluded.
 
         Params:
             mode (str): Desired control mode, options are "position", "velocity", and "effort".
@@ -97,7 +97,7 @@ class FlexivRizon(Robot):
     @property
     def q(self) -> List[float]:
         """
-        Get current joint positions.
+        Get current positions of all robot joints, gripper excluded.
 
         Return:
             List[float]: Joint positions [rad].
@@ -112,7 +112,7 @@ class FlexivRizon(Robot):
     @property
     def dq(self) -> List[float]:
         """
-        Get current joint velocities.
+        Get current velocities of all robot joints, gripper excluded.
 
         Return:
             List[float]: Joint velocities [rad/s].
@@ -127,7 +127,7 @@ class FlexivRizon(Robot):
     @property
     def tau(self) -> List[float]:
         """
-        Get current joint torques.
+        Get current torques of all robot joints, gripper excluded.
 
         Return:
             List[float]: Joint torques [Nm].
@@ -141,7 +141,7 @@ class FlexivRizon(Robot):
 
     def apply_torques(self, tau_d: List[float]) -> None:
         """
-        Apply desired joint torques to the robot articulation.
+        Apply desired torques to all robot joints, gripper excluded.
 
         Params:
             tau_d (List[float]): Desired joint torques.
@@ -152,7 +152,7 @@ class FlexivRizon(Robot):
 
     def teleport_to(self, q_d: List[float]) -> None:
         """
-        Instantly teleport robot joints to desired positions. This is usually used to set robot to initial positions.
+        Instantly teleport all robot joints to desired positions. This is usually used to set robot to initial positions.
         No control is involved in the process. Call apply_torques() immediately after to kick in the joint controls.
 
         Params:

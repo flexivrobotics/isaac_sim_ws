@@ -83,7 +83,7 @@ class BridgeRunner(object):
         physics_dt (float): Physics loop period of the scene [sec].
         render_dt (float): Render loop period of the scene [sec].
         robots (List[List[str]]): 3d list with size n by 3. n robots, each contains a string list [serial_number, usd_path, pos_in_world].
-        initial_q (np.ndarray, optional): Initial joint positions [rad].
+        initial_q (List[float], optional): Initial joint positions [rad].
     """
 
     # Data struct for a single robot
@@ -103,7 +103,7 @@ class BridgeRunner(object):
         physics_dt,
         render_dt,
         robots: List[List[str]],
-        initial_q: np.ndarray = np.zeros(ROBOT_DOF),
+        initial_q: List[float] = [0.0] * ROBOT_DOF,
     ) -> None:
         # Initialize logger
         self._logger = spdlog.ConsoleLogger("rizon_bridge_app")
@@ -197,14 +197,14 @@ class BridgeRunner(object):
                     prim_path=prim_path,
                     name=serial_num,
                     end_effector_prim_name=end_effector_prim_name,
-                    arm_dof=7,
+                    arm_dof=BridgeRunner.ROBOT_DOF,
                     pos_in_world=pos_in_world,
                     ori_in_world=ori_in_world,
                     gripper=gripper,
                 )
             )
             self._logger.info(
-                f"Created robot [/World/Flexiv/{serial_num}] located at [{pos_in_world} {ori_in_world}] in world"
+                f"Created robot [/World/Flexiv/{serial_num}] located at {pos_in_world} {ori_in_world} in world"
             )
 
             # Append single robot data struct
@@ -327,7 +327,7 @@ def main():
         physics_dt=1.0 / PHYSICS_FREQ,
         render_dt=1.0 / RENDER_FREQ,
         robots=args.robot,
-        initial_q=np.array([0.0, -0.698132, 0.0, 1.5708, 0.0, 0.698132, 0.0]),
+        initial_q=[0.0, -0.698132, 0.0, 1.5708, 0.0, 0.698132, 0.0],
     )
     runner.run()
     simulation_app.close()

@@ -293,8 +293,8 @@ class BridgeRunner(object):
                 if robot.last_connected:
                     # Upon disconnection, transit this robot from torque control to position control to hold its current pose
                     self._logger.error(f"Disconnected from robot [{robot.name}]")
-                    robot.instance.teleport_to(robot.instance.q)
                     robot.instance.switch_control_mode("position")
+                    robot.instance.teleport_to(robot.instance.q)
                     robot.gripper_status = GripperStatus.INIT
 
                 # Set last connected status
@@ -312,12 +312,15 @@ class BridgeRunner(object):
             # Reset world if needed
             if self._world.is_stopped() and not self._reset_needed:
                 self._reset_needed = True
+                for robot in self._robots:
+                    robot.last_connected = False
             if self._world.is_playing():
                 if self._reset_needed:
                     self._world.reset()
                     self._reset_needed = False
                     # Put robot to initial pose
                     for robot in self._robots:
+                        robot.instance.switch_control_mode("position")
                         robot.instance.teleport_to(self._initial_q)
 
 

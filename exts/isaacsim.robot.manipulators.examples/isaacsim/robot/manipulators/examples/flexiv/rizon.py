@@ -190,7 +190,7 @@ class FlexivRizon(Robot):
         # Joints output torque instead of acceleration
         self.get_articulation_controller().set_effort_modes("force")
 
-        # Save default gains becaues calling _articulation_view.switch_control_mode() will change _articulation_view._default_kps,
+        # Save default gains because calling _articulation_view.switch_control_mode() will change _articulation_view._default_kps,
         # which makes switching control mode from "effort" back to "position" not possible
         self._default_kps, self._default_kds = self._articulation_view.get_gains()
         return

@@ -55,7 +55,7 @@ args = argparser.parse_args()
 
 
 # Start simulation main window
-simulation_app = SimulationApp({"headless": False})
+simulation_app = SimulationApp({"headless": False, "width": 1920, "height": 1080})
 
 # Import isaac modules after SimulationApp is started
 from isaacsim.core.api import World

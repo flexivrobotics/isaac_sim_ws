@@ -36,7 +36,6 @@ if flexivsimplugin.__version__ != COMPATIBLE_SIM_PLUGIN_VER:
 argparser = ArgumentParser()
 argparser.add_argument("--config", required=True, help="Path to YAML config file")
 args = argparser.parse_args()
-config = yaml.safe_load(open(args.config))
 
 # Start simulation main window
 simulation_app = SimulationApp({"headless": False, "width": 1920, "height": 1080})
@@ -44,6 +43,7 @@ simulation_app = SimulationApp({"headless": False, "width": 1920, "height": 1080
 # Import isaac modules after SimulationApp is started
 from isaacsim.core.api import World
 from isaacsim.core.utils.stage import add_reference_to_stage
+from isaacsim.sensors.camera import Camera
 from isaacsim.robot.manipulators.examples.flexiv import FlexivRizon
 from isaacsim.robot.manipulators.grippers.parallel_gripper import ParallelGripper
 
@@ -66,7 +66,7 @@ class BridgeRunner(object):
     Params:
         physics_dt (float): Physics loop period of the scene [sec].
         render_dt (float): Render loop period of the scene [sec].
-        robots_config (List[Dict]): Configurations of all added robots.
+        config (Dict): Configurations parsed from the config file.
         initial_q (List[float], optional): Initial joint positions [rad].
     """
 
@@ -86,7 +86,7 @@ class BridgeRunner(object):
         self,
         physics_dt,
         render_dt,
-        robots_config: List[Dict],
+        config: Dict,
         initial_q: List[float] = [0.0] * ROBOT_DOF,
     ) -> None:
         # Initialize logger
@@ -110,7 +110,7 @@ class BridgeRunner(object):
         )
 
         # Enable GPU dynamics if specified
-        if config.get("gpu", False):
+        if config.get("gpu_dynamics", False):
             self._world.get_physics_context().enable_gpu_dynamics(True)
 
         # Load environment and reset world
@@ -123,9 +123,28 @@ class BridgeRunner(object):
             self._world.scene.add_default_ground_plane()
         self._world.reset()
 
+        # Add cameras
+        self._cameras = []
+        for c in config.get("cameras", []):
+            cam_name = c["name"]
+            pos_in_world = [float(c["position"][i]) for i in ["x", "y", "z"]]
+            ori_in_world = [float(c["orientation"][i]) for i in ["w", "x", "y", "z"]]
+            self._cameras.append(
+                Camera(
+                    prim_path="/World/" + cam_name,
+                    frequency=c["fps"],
+                    resolution=tuple(c["resolution"]),
+                    position=pos_in_world,
+                    orientation=ori_in_world,
+                )
+            )
+            self._logger.info(
+                f"Added camera [/World/{cam_name}] located at {pos_in_world} {ori_in_world} in world"
+            )
+
         # Create data struct for all robots and add them to stage
         self._robots = []
-        for r in robots_config:
+        for r in config.get("robots", []):
             # Parse config of this robot
             serial_num = r["serial_number"]
             usd_path = r["usd"]
@@ -189,7 +208,7 @@ class BridgeRunner(object):
                 )
             )
             self._logger.info(
-                f"Created robot [/World/Flexiv/{serial_num}] located at {pos_in_world} {ori_in_world} in world"
+                f"Added robot [/World/Flexiv/{serial_num}] located at {pos_in_world} {ori_in_world} in world"
             )
 
             # Append single robot data struct
@@ -208,6 +227,10 @@ class BridgeRunner(object):
 
         # Reset world once
         self._world.reset()
+
+        # Initialize cameras
+        for cam in self._cameras:
+            cam.initialize()
 
         # Initialize other members
         self._reset_needed = False
@@ -314,7 +337,7 @@ def main():
     runner = BridgeRunner(
         physics_dt=1.0 / PHYSICS_FREQ,
         render_dt=1.0 / RENDER_FREQ,
-        robots_config=config["robots"],
+        config=yaml.safe_load(open(args.config)),
         initial_q=[0.0, -0.698132, 0.0, 1.5708, 0.0, 0.698132, 0.0],
     )
     runner.run()

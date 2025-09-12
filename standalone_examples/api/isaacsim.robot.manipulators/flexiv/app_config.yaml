@@ -1,4 +1,4 @@
-# Configuration of one or more robots to add to the scene
+# One or more robots to add to the scene
 robots:
   - serial_number: "Rizon4-00001" # Serial number of robot 1
     usd: "/path/to/robot1.usd"    # Path to the usd file of robot 1
@@ -24,7 +24,7 @@ robots:
       y: 0.0
       z: 0.0
   
-  # more robots ...
+  # More robots ...
 
 # Path to the usd of the environment to load. 
 # If not provided, an empty environment with default ground plane will be used.
@@ -33,3 +33,33 @@ env_usd: "/path/to/environment.usd"
 # Enable GPU dynamics. Use this argument if any object in the scene requires GPU for dynamics computation. 
 # For example, deformable body material and SDF mesh collider.
 gpu: false
+
+# One or more cameras to add to the scene
+cameras:
+  - name: "cam_1"                 # Unique name of camera 1
+    resolution: [1280, 720]       # Resolution of camera 1
+    fps: 30                       # Frames per second of camera 1
+    position:                     # Position in world to put camera 1
+      x: 0.0
+      y: 0.0
+      z: 0.0
+    orientation:                  # Orientation (quaternion) of camera 1
+      w: 1.0
+      x: 0.0
+      y: 0.0
+      z: 0.0
+
+  - name: "cam_2"                 # Unique name of camera 2
+    resolution: [1280, 720]       # Resolution of camera 2
+    fps: 30                       # Frames per second of camera 2
+    position:                     # Position in world to put camera 2
+      x: 0.0
+      y: 0.0
+      z: 0.0
+    orientation:                  # Orientation (quaternion) of camera 2
+      w: 1.0
+      x: 0.0
+      y: 0.0
+      z: 0.0
+
+  # More cameras ...

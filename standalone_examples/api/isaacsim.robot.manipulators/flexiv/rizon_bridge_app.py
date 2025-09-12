@@ -13,9 +13,10 @@ APP_VERSION = "1.3"
 # Compatible flexivsimplugin version
 COMPATIBLE_SIM_PLUGIN_VER = "1.2.0"
 
+import yaml
 import spdlog
 import numpy as np
-from typing import List
+from typing import List, Dict
 from enum import Enum
 from argparse import ArgumentParser
 from dataclasses import dataclass
@@ -31,28 +32,11 @@ if flexivsimplugin.__version__ != COMPATIBLE_SIM_PLUGIN_VER:
     )
 
 
-# Parse program arguments
+# Load config file
 argparser = ArgumentParser()
-argparser.add_argument(
-    "--robot",
-    action="append",
-    nargs=9,
-    help="Add one or more robots specifying [serial_number usd_path pos_x pos_y pos_z quat_w quat_x quat_y quat_z]. See README for examples.",
-    required=True,
-)
-argparser.add_argument(
-    "--env",
-    help="Path to the usd of the environment to load. If not provided, an empty environment with default ground plane will be used.",
-    required=False,
-)
-argparser.add_argument(
-    "--gpu",
-    action="store_true",
-    help="Enable GPU dynamics. Use this argument if any object in the scene requires GPU for dynamics computation. For example, deformable body material and SDF mesh collider.",
-    required=False,
-)
+argparser.add_argument("--config", required=True, help="Path to YAML config file")
 args = argparser.parse_args()
-
+config = yaml.safe_load(open(args.config))
 
 # Start simulation main window
 simulation_app = SimulationApp({"headless": False, "width": 1920, "height": 1080})
@@ -82,7 +66,7 @@ class BridgeRunner(object):
     Params:
         physics_dt (float): Physics loop period of the scene [sec].
         render_dt (float): Render loop period of the scene [sec].
-        robots (List[List[str]]): 3d list with size n by 3. n robots, each contains a string list [serial_number, usd_path, pos_in_world].
+        robots_config (List[Dict]): Configurations of all added robots.
         initial_q (List[float], optional): Initial joint positions [rad].
     """
 
@@ -102,7 +86,7 @@ class BridgeRunner(object):
         self,
         physics_dt,
         render_dt,
-        robots: List[List[str]],
+        robots_config: List[Dict],
         initial_q: List[float] = [0.0] * ROBOT_DOF,
     ) -> None:
         # Initialize logger
@@ -126,26 +110,27 @@ class BridgeRunner(object):
         )
 
         # Enable GPU dynamics if specified
-        if args.gpu:
+        if config.get("gpu", False):
             self._world.get_physics_context().enable_gpu_dynamics(True)
 
         # Load environment and reset world
-        if args.env is None:
+        env_usd = config.get("env_usd", "")
+        if env_usd:
+            # Add user-provided environment to stage
+            add_reference_to_stage(usd_path=env_usd, prim_path="/World")
+        else:
             # Add empty environment to stage
             self._world.scene.add_default_ground_plane()
-        else:
-            # Add user-provided environment to stage
-            add_reference_to_stage(usd_path=args.env, prim_path="/World")
         self._world.reset()
 
         # Create data struct for all robots and add them to stage
         self._robots = []
-        for r in robots:
-            # Parse arguments
-            serial_num = r[0]
-            usd_path = r[1]
-            pos_in_world = [float(r[2]), float(r[3]), float(r[4])]
-            ori_in_world = [float(r[5]), float(r[6]), float(r[7]), float(r[8])]
+        for r in robots_config:
+            # Parse config of this robot
+            serial_num = r["serial_number"]
+            usd_path = r["usd"]
+            pos_in_world = [float(r["position"][i]) for i in ["x", "y", "z"]]
+            ori_in_world = [float(r["orientation"][i]) for i in ["w", "x", "y", "z"]]
 
             # Replace dash with underscore in serial number to avoid prim path error
             serial_num = serial_num.replace("-", "_")
@@ -329,7 +314,7 @@ def main():
     runner = BridgeRunner(
         physics_dt=1.0 / PHYSICS_FREQ,
         render_dt=1.0 / RENDER_FREQ,
-        robots=args.robot,
+        robots_config=config["robots"],
         initial_q=[0.0, -0.698132, 0.0, 1.5708, 0.0, 0.698132, 0.0],
     )
     runner.run()

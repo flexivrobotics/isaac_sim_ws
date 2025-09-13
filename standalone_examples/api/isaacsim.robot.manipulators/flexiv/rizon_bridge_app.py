@@ -137,6 +137,9 @@ class BridgeRunner(object):
                 orientation=ori_in_world,
             )
             camera.set_focal_length(c["focal_length"])
+            camera.set_world_pose(
+                position=pos_in_world, orientation=ori_in_world, camera_axes="usd"
+            )
             self._cameras.append(camera)
             self._logger.info(
                 f"Added camera [/World/{cam_name}] located at {pos_in_world} {ori_in_world} in world"

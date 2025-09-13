@@ -2,11 +2,11 @@
 robots:
   - serial_number: "Rizon4-00001" # Serial number of robot 1
     usd: "/path/to/robot1.usd"    # Path to the usd file of robot 1
-    position:                     # Position in world to put robot 1
+    position:                     # Position in world frame to put robot 1
       x: 0.0
       y: 0.0
       z: 0.0
-    orientation:                  # Orientation (quaternion) in world to put robot 1
+    orientation:                  # Orientation (quaternion) in world frame to put robot 1
       w: 1.0
       x: 0.0
       y: 0.0
@@ -14,11 +14,11 @@ robots:
 
   - serial_number: "Rizon4-00002" # Serial number of robot 2
     usd: "/path/to/robot2.usd"    # Path to the usd file of robot 2
-    position:                     # Position in world to put robot 2
+    position:                     # Position in world frame to put robot 2
       x: 1.0
       y: 0.0
       z: 0.0
-    orientation:                  # Orientation (quaternion) in world to put robot 2
+    orientation:                  # Orientation (quaternion) in world frame to put robot 2
       w: 1.0
       x: 0.0
       y: 0.0
@@ -40,11 +40,11 @@ cameras:
     resolution: [1280, 720] # Resolution of camera 1
     fps: 30                 # Frames per second of camera 1
     focal_length: 2.5       # Focal length in meter of camera 1
-    position:               # Position in world to put camera 1
+    position:               # Position in world frame to put camera 1
       x: 0.0
       y: 0.0
       z: 0.0
-    orientation:            # Orientation (quaternion) in world to put camera 1
+    orientation:            # Orientation (quaternion) in USD frame to put camera 1
       w: 1.0
       x: 0.0
       y: 0.0
@@ -54,11 +54,11 @@ cameras:
     resolution: [1280, 720] # Resolution of camera 2
     fps: 30                 # Frames per second of camera 2
     focal_length: 2.5       # Focal length in meter of camera 2
-    position:               # Position in world to put camera 2
+    position:               # Position in world frame to put camera 2
       x: 0.0
       y: 0.0
       z: 0.0
-    orientation:            # Orientation (quaternion) in world to put camera 2
+    orientation:            # Orientation (quaternion) in USD frame to put camera 2
       w: 1.0
       x: 0.0
       y: 0.0

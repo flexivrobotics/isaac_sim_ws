@@ -129,15 +129,15 @@ class BridgeRunner(object):
             cam_name = c["name"]
             pos_in_world = [float(c["position"][i]) for i in ["x", "y", "z"]]
             ori_in_world = [float(c["orientation"][i]) for i in ["w", "x", "y", "z"]]
-            self._cameras.append(
-                Camera(
-                    prim_path="/World/" + cam_name,
-                    frequency=c["fps"],
-                    resolution=tuple(c["resolution"]),
-                    position=pos_in_world,
-                    orientation=ori_in_world,
-                )
+            camera = Camera(
+                prim_path="/World/" + cam_name,
+                frequency=c["fps"],
+                resolution=tuple(c["resolution"]),
+                position=pos_in_world,
+                orientation=ori_in_world,
             )
+            camera.set_focal_length(c["focal_length"])
+            self._cameras.append(camera)
             self._logger.info(
                 f"Added camera [/World/{cam_name}] located at {pos_in_world} {ori_in_world} in world"
             )

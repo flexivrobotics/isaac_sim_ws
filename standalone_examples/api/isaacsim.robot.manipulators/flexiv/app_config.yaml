@@ -39,6 +39,7 @@ cameras:
   - name: "camera_1"        # Unique name of camera 1
     resolution: [1280, 720] # Resolution of camera 1
     fps: 30                 # Frames per second of camera 1
+    focal_length: 2.5       # Focal length in meter of camera 1
     position:               # Position in world to put camera 1
       x: 0.0
       y: 0.0
@@ -52,6 +53,7 @@ cameras:
   - name: "camera_2"        # Unique name of camera 2
     resolution: [1280, 720] # Resolution of camera 2
     fps: 30                 # Frames per second of camera 2
+    focal_length: 2.5       # Focal length in meter of camera 2
     position:               # Position in world to put camera 2
       x: 0.0
       y: 0.0

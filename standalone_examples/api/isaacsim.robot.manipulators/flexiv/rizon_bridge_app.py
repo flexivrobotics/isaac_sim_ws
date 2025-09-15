@@ -137,6 +137,7 @@ class BridgeRunner(object):
                 orientation=ori_in_world,
             )
             camera.set_focal_length(c["focal_length"])
+            # Use the same camera axes as the Isaac Sim UI
             camera.set_world_pose(
                 position=pos_in_world, orientation=ori_in_world, camera_axes="usd"
             )

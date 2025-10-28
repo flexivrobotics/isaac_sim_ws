@@ -6,5 +6,5 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from isaacsim.robot.manipulators.examples.flexiv.rizon import FlexivRizon
+from isaacsim.robot.manipulators.examples.flexiv.flexiv_serial import FlexivSerial
 from isaacsim.robot.manipulators.examples.flexiv.kinematics_solver import KinematicsSolver

@@ -17,9 +17,9 @@ from isaacsim.robot.manipulators.grippers.parallel_gripper import ParallelGrippe
 from isaacsim.robot.manipulators.grippers.surface_gripper import SurfaceGripper
 
 
-class FlexivRizon(Robot):
+class FlexivSerial(Robot):
     """
-    Control interface for one Flexiv Rizon series robot.
+    Control interface for one Flexiv serial robot.
 
     Params:
         prim_path (str): Primitive path of this robot articulation in the stage. E.g. /World/Flexiv

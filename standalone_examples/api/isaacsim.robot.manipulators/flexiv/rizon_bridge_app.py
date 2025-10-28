@@ -44,7 +44,7 @@ simulation_app = SimulationApp({"headless": False, "width": 1920, "height": 1080
 from isaacsim.core.api import World
 from isaacsim.core.utils.stage import add_reference_to_stage
 from isaacsim.sensors.camera import Camera
-from isaacsim.robot.manipulators.examples.flexiv import FlexivRizon
+from isaacsim.robot.manipulators.examples.flexiv import FlexivSerial
 from isaacsim.robot.manipulators.grippers.parallel_gripper import ParallelGripper
 
 # Physics and render loop period [sec]
@@ -74,7 +74,7 @@ class BridgeRunner(object):
     @dataclass
     class SingleRobotData:
         name: str
-        instance: FlexivRizon
+        instance: FlexivSerial
         sim_plugin: flexivsimplugin.UserNode
         last_connected: bool
         gripper_status: GripperStatus
@@ -201,7 +201,7 @@ class BridgeRunner(object):
 
             # Add robot to stage
             robot = self._world.scene.add(
-                FlexivRizon(
+                FlexivSerial(
                     prim_path=prim_path,
                     name=serial_num,
                     end_effector_prim_name=end_effector_prim_name,

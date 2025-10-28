@@ -1,4 +1,5 @@
-# One or more robots to add to the scene
+# One or more robots to add to the scene.
+# NOTE: Add or remove [serial_number] blocks to control which robots are added to the scene.
 robots:
   - serial_number: "Rizon4-00001" # Serial number of robot 1
     usd: "/path/to/robot1.usd"    # Path to the usd file of robot 1
@@ -34,7 +35,9 @@ env_usd: "/path/to/environment.usd"
 # For example, deformable body material and SDF mesh collider.
 gpu_dynamics: false
 
-# One or more cameras to add to the scene
+# One or more cameras to add to the scene .
+# NOTE: Add or remove [name] blocks to control which cameras are added to the scene. 
+#       Remove or comment out the whole [cameras] section if no camera is needed.
 cameras:
   - name: "camera_1"        # Unique name of camera 1
     resolution: [1280, 720] # Resolution of camera 1

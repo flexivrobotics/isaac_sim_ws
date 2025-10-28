@@ -90,12 +90,12 @@ class BridgeRunner(object):
         initial_q: List[float] = [0.0] * ROBOT_DOF,
     ) -> None:
         # Initialize logger
-        self._logger = spdlog.ConsoleLogger("rizon_bridge_app")
+        self._logger = spdlog.ConsoleLogger("Flexiv-Isaac Bridge App")
 
         # fmt: off
-        self._logger.info("———————————————————————————————————————————————————————————————")
-        self._logger.info(f"———          Flexiv-Isaac Bridge App [Rizon] - v{APP_VERSION}         ———")
-        self._logger.info("———————————————————————————————————————————————————————————————")
+        self._logger.info("——————————————————————————————————————————————————————————")
+        self._logger.info(f"———            Flexiv-Isaac Bridge App v{APP_VERSION}            ———")
+        self._logger.info("——————————————————————————————————————————————————————————")
         # fmt: on
 
         # Save initial q

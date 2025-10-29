@@ -83,20 +83,15 @@ Install the following packages using `pip`:
 
 ### Run Flexiv-Isaac Bridge App
 
-1. Run Flexiv Isaac Bridge app with one robot added to the scene:
+1. Edit the configuration file `standalone_examples/api/isaacsim.robot.manipulators/flexiv/app_config.yaml` according to the instructions in it.
+2. Start Flexiv-Isaac Bridge App using configurations in `app_config.yaml`:
 
        cd <isaac_sim_root_dir>
-       ./python.sh standalone_examples/api/isaacsim.robot.manipulators/flexiv/flexiv_isaac_bridge_app.py --env exts/isaacsim.robot.manipulators.examples/data/flexiv/example_env.usd --robot Rizon4-GYdBow exts/isaacsim.robot.manipulators.examples/data/flexiv/Rizon4.usd -0.690 0.315 0.709
+       ./python.sh standalone_examples/api/isaacsim.robot.manipulators/flexiv/flexiv_isaac_bridge_app.py --config standalone_examples/api/isaacsim.robot.manipulators/flexiv/app_config.yaml
 
-   To see details about the program arguments:
-
-       ./python.sh standalone_examples/api/isaacsim.robot.manipulators/flexiv/flexiv_isaac_bridge_app.py --help
-
-   The robot serial number is the one noted down previously with any space removed.
-
-2. The app will launch an Isaac Sim window and start the physics loop (i.e. *Play*) automatically.
-3. Go back to Elements Studio, then restart the exited simulator by toggle on the *Connect* button.
-4. Wait for the connection to establish. If the connection is successful, you should see in Elements Studio a robot at home pose with no error.
+3. The app will launch an Isaac Sim window and start the physics loop (i.e. *Play*) automatically.
+4. Go back to Elements Studio, then restart the exited simulator by toggle on the *Connect* button.
+5. Wait for the connection to establish. If the connection is successful, you should see in Elements Studio a robot at home pose with no error.
 
 ### Verify everything is working
 
@@ -125,19 +120,18 @@ Alternatively, you can leave the simulated robot running and just restart the Is
 
 This framework supports simulating and controlling multiple robots:
 
-1. Start the Flexiv-Isaac Bridge app with multiple robots added, using two robots for example:
+1. Add multiple robots in the configuration file `standalone_examples/api/isaacsim.robot.manipulators/flexiv/app_config.yaml`.
+2. Start Flexiv-Isaac Bridge App using the updated configurations in `app_config.yaml`:
 
        cd <isaac_sim_root_dir>
-       ./python.sh standalone_examples/api/isaacsim.robot.manipulators/flexiv/flexiv_isaac_bridge_app.py --env exts/isaacsim.robot.manipulators.examples/data/flexiv/example_env.usd --robot Rizon4-GYdBow exts/isaacsim.robot.manipulators.examples/data/flexiv/Rizon4.usd -0.690 0.315 0.709 --robot Rizon4s-TPqXaI exts/isaacsim.robot.manipulators.examples/data/flexiv/Rizon4s_with_Grav.usd -0.667 -0.464 0.706
+       ./python.sh standalone_examples/api/isaacsim.robot.manipulators/flexiv/flexiv_isaac_bridge_app.py --config standalone_examples/api/isaacsim.robot.manipulators/flexiv/app_config.yaml
 
-   Note that additional robots are added by appending `--robot <args ...>` to the program arguments.
-
-2. Find a second Ubuntu 22.04 computer, connect it to the first computer via Ethernet cable. Then on the first computer, check that this wired Ethernet connection is visible in the network settings, then change the IPv4 setting of this wired connection to "Shared to other computers". Alternatively, connect both computers to the same network router via **wired** connection.
-3. Make sure both computers are able to ping each other.
-4. Install Flexiv Elements Studio on the **second** computer, then create a new simulated robot. Now each computer has a robot controller with Elements Studio.
-5. Start the first simulated robot on the first computer, then wait for connection with Isaac Sim. You should see one of the robots in Isaac Sim moves a little bit when the connection is established.
-6. Start the second simulated robot on the second computer, then wait for connection with Isaac Sim. You should see the other robot in Isaac Sim moves a little bit when the connection is established.
-7. Execute test projects from both Elements Studios and check that both robots are working in Isaac Sim.
+3. Find a second Ubuntu 22.04 computer, connect it to the first computer via Ethernet cable. Then on the first computer, check that this wired Ethernet connection is visible in the network settings, then change the IPv4 setting of this wired connection to "Shared to other computers". Alternatively, connect both computers to the same network router via **wired** connection.
+4. Make sure both computers are able to ping each other.
+5. Install Flexiv Elements Studio on the **second** computer, then create a new simulated robot. Now each computer has a robot controller with Elements Studio.
+6. Start the first simulated robot on the first computer, then wait for connection with Isaac Sim. You should see one of the robots in Isaac Sim moves a little bit when the connection is established.
+7. Start the second simulated robot on the second computer, then wait for connection with Isaac Sim. You should see the other robot in Isaac Sim moves a little bit when the connection is established.
+8. Execute test projects from both Elements Studios and check that both robots are working in Isaac Sim.
 
 ## Collect data from the simulated robot(s)
 

@@ -8,11 +8,15 @@
 #
 
 # App version
-VERSION = "1.2.1"
+APP_VERSION = "1.3"
 
+# Compatible flexivsimplugin version
+COMPATIBLE_SIM_PLUGIN_VER = "1.2.0"
+
+import yaml
 import spdlog
 import numpy as np
-from typing import List
+from typing import List, Dict
 from enum import Enum
 from argparse import ArgumentParser
 from dataclasses import dataclass
@@ -21,44 +25,31 @@ from isaacsim import SimulationApp
 # Middleware plugin for connecting to Flexiv Elements Studio
 import flexivsimplugin
 
-# Parse program arguments
+# Check version
+if flexivsimplugin.__version__ != COMPATIBLE_SIM_PLUGIN_VER:
+    raise ImportError(
+        f"flexivsimplugin=={COMPATIBLE_SIM_PLUGIN_VER} is required, but found {flexivsimplugin.__version__}"
+    )
+
+
+# Load config file
 argparser = ArgumentParser()
-argparser.add_argument(
-    "--robot",
-    action="append",
-    nargs=5,
-    help="Add one or more robots specifying [serial_number usd_path pos_x pos_y pos_z], e.g. --robot Rizon4-GYdBow omniverse://localhost/Library/Rizon4.usd -0.7 0.31 0.7 --robot Rizon4s-TPqXaI omniverse://localhost/Library/Rizon4s_with_Grav.usd -0.67 -0.46 0.7",
-    required=True,
-)
-argparser.add_argument(
-    "--env",
-    help="Path to the usd of the environment to load. If not provided, an empty environment with default ground plane will be used.",
-    required=False,
-)
-argparser.add_argument(
-    "--gpu",
-    action="store_true",
-    help="Enable GPU dynamics. Use this argument if any object in the scene requires GPU for dynamics computation. For example, deformable body material and SDF mesh collider",
-    required=False,
-)
+argparser.add_argument("--config", required=True, help="Path to YAML config file")
 args = argparser.parse_args()
 
-
 # Start simulation main window
-simulation_app = SimulationApp({"headless": False})
+simulation_app = SimulationApp({"headless": False, "width": 1920, "height": 1080})
 
 # Import isaac modules after SimulationApp is started
 from isaacsim.core.api import World
 from isaacsim.core.utils.stage import add_reference_to_stage
-from isaacsim.robot.manipulators.examples.flexiv import Flexiv
+from isaacsim.sensors.camera import Camera
+from isaacsim.robot.manipulators.examples.flexiv import FlexivSerial
+from isaacsim.robot.manipulators.grippers.parallel_gripper import ParallelGripper
 
 # Physics and render loop period [sec]
 RENDER_FREQ = 60.0
 PHYSICS_FREQ = 2000.0
-
-# lcm topic prefix for robot state and command messages */
-STATES_TOPIC_PREFIX = "flexiv_isaac_bridge/robot_states/"
-COMMANDS_TOPIC_PREFIX = "flexiv_isaac_bridge/robot_commands/"
 
 
 # Gripper status
@@ -75,15 +66,15 @@ class BridgeRunner(object):
     Params:
         physics_dt (float): Physics loop period of the scene [sec].
         render_dt (float): Render loop period of the scene [sec].
-        robots (List[List[str]]): 3d list with size n by 3. n robots, each contains a string list [serial_number, usd_path, pos_in_world].
-        initial_q (np.ndarray, optional): Initial joint positions [rad].
+        config (Dict): Configurations parsed from the config file.
+        initial_q (List[float], optional): Initial joint positions [rad].
     """
 
     # Data struct for a single robot
     @dataclass
     class SingleRobotData:
         name: str
-        instance: Flexiv
+        instance: FlexivSerial
         sim_plugin: flexivsimplugin.UserNode
         last_connected: bool
         gripper_status: GripperStatus
@@ -95,16 +86,16 @@ class BridgeRunner(object):
         self,
         physics_dt,
         render_dt,
-        robots: List[List[str]],
-        initial_q: np.ndarray = np.zeros(ROBOT_DOF),
+        config: Dict,
+        initial_q: List[float] = [0.0] * ROBOT_DOF,
     ) -> None:
         # Initialize logger
-        self._logger = spdlog.ConsoleLogger("flexiv_isaac_bridge_app")
+        self._logger = spdlog.ConsoleLogger("Flexiv-Isaac Bridge App")
 
         # fmt: off
-        self._logger.info("———————————————————————————————————————————————————————————————")
-        self._logger.info(f"———            Flexiv-Isaac Bridge App - v{VERSION}             ———")
-        self._logger.info("———————————————————————————————————————————————————————————————")
+        self._logger.info("——————————————————————————————————————————————————————————")
+        self._logger.info(f"———            Flexiv-Isaac Bridge App v{APP_VERSION}            ———")
+        self._logger.info("——————————————————————————————————————————————————————————")
         # fmt: on
 
         # Save initial q
@@ -119,52 +110,88 @@ class BridgeRunner(object):
         )
 
         # Enable GPU dynamics if specified
-        if args.gpu:
+        if config.get("gpu_dynamics", False):
             self._world.get_physics_context().enable_gpu_dynamics(True)
 
         # Load environment and reset world
-        if args.env is None:
+        env_usd = config.get("env_usd", "")
+        if env_usd:
+            # Add user-provided environment to stage
+            add_reference_to_stage(usd_path=env_usd, prim_path="/World")
+        else:
             # Add empty environment to stage
             self._world.scene.add_default_ground_plane()
-        else:
-            # Add user-provided environment to stage
-            add_reference_to_stage(usd_path=args.env, prim_path="/World")
         self._world.reset()
+
+        # Add cameras
+        self._cameras = []
+        for c in config.get("cameras", []):
+            cam_name = c["name"]
+            pos_in_world = [float(c["position"][i]) for i in ["x", "y", "z"]]
+            ori_in_world = [float(c["orientation"][i]) for i in ["w", "x", "y", "z"]]
+            camera = Camera(
+                prim_path="/World/" + cam_name,
+                frequency=c["fps"],
+                resolution=tuple(c["resolution"]),
+                position=pos_in_world,
+                orientation=ori_in_world,
+            )
+            camera.set_focal_length(c["focal_length"])
+            # Use the same camera axes as the Isaac Sim UI
+            camera.set_world_pose(
+                position=pos_in_world, orientation=ori_in_world, camera_axes="usd"
+            )
+            self._cameras.append(camera)
+            self._logger.info(
+                f"Added camera [/World/{cam_name}] located at {pos_in_world} {ori_in_world} in world"
+            )
 
         # Create data struct for all robots and add them to stage
         self._robots = []
-        for r in robots:
-            # Parse arguments
-            serial_num = r[0]
-            usd_path = r[1]
-            pos_in_world = [float(r[2]), float(r[3]), float(r[4])]
+        for r in config.get("robots", []):
+            # Parse config of this robot
+            serial_num = r["serial_number"]
+            usd_path = r["usd"]
+            pos_in_world = [float(r["position"][i]) for i in ["x", "y", "z"]]
+            ori_in_world = [float(r["orientation"][i]) for i in ["w", "x", "y", "z"]]
 
             # Replace dash with underscore in serial number to avoid prim path error
             serial_num = serial_num.replace("-", "_")
 
+            # Add this robot to stage
+            prim_path = "/World/Flexiv/" + serial_num
+            self._logger.info(
+                f"Adding robot usd [{usd_path}] to stage at prim path [{prim_path}]"
+            )
+            add_reference_to_stage(usd_path=usd_path, prim_path=prim_path)
+
             # Configure gripper if the usd name suggests a gripper exists in the model
-            gripper_joint_names = None
-            gripper_opened_joint_positions = None
-            gripper_closed_joint_positions = None
-            end_effector_prim_name = None
+            gripper = None
+            end_effector_prim_name = "flange"
             if "Grav" in usd_path:
-                # This gripper only has one actuation joint, but the API requires two,
+                # This gripper has only one actuation joint, but the API requires two,
                 # thus providing a non-actuation joint (gains = 0) as a place holder
-                gripper_joint_names = ["finger_joint", "right_outer_knuckle_joint"]
-                gripper_opened_joint_positions = np.array([45.0, 0])
-                gripper_closed_joint_positions = np.array([-8.88, 0])
                 end_effector_prim_name = "Grav_gripper/right_finger_tip"
+                gripper = ParallelGripper(
+                    end_effector_prim_path=prim_path + "/" + end_effector_prim_name,
+                    joint_prim_names=["finger_joint", "right_outer_knuckle_joint"],
+                    joint_opened_positions=np.array([45.0, 0]),
+                    joint_closed_positions=np.array([-8.88, 0]),
+                )
                 self._logger.info(
                     "The usd name suggests a Grav gripper exists in the model, gripper control will be enabled"
                 )
             elif "Robotiq" in usd_path:
-                # This gripper only has one actuation joint, but the API requires two,
+                # This gripper has only one actuation joint, but the API requires two,
                 # thus providing a non-actuation joint (gains = 0) as a place holder
-                gripper_joint_names = ["finger_joint", "right_inner_finger_joint"]
-                gripper_opened_joint_positions = np.array([0, 0])
-                gripper_closed_joint_positions = np.array([45, 0])
                 end_effector_prim_name = (
                     "Robotiq_2F_85_flattened/Robotiq_2F_85/right_inner_finger"
+                )
+                gripper = ParallelGripper(
+                    end_effector_prim_path=prim_path + "/" + end_effector_prim_name,
+                    joint_prim_names=["finger_joint", "right_inner_finger_joint"],
+                    joint_opened_positions=np.array([0, 0]),
+                    joint_closed_positions=np.array([45, 0]),
                 )
                 self._logger.info(
                     "The usd name suggests a Robotiq gripper exists in the model, gripper control will be enabled"
@@ -174,19 +201,18 @@ class BridgeRunner(object):
 
             # Add robot to stage
             robot = self._world.scene.add(
-                Flexiv(
-                    prim_path="/World/Flexiv/" + serial_num,
+                FlexivSerial(
+                    prim_path=prim_path,
                     name=serial_num,
                     end_effector_prim_name=end_effector_prim_name,
-                    usd_path=usd_path,
+                    arm_dof=BridgeRunner.ROBOT_DOF,
                     pos_in_world=pos_in_world,
-                    gripper_joint_names=gripper_joint_names,
-                    gripper_opened_joint_positions=gripper_opened_joint_positions,
-                    gripper_closed_joint_positions=gripper_closed_joint_positions,
+                    ori_in_world=ori_in_world,
+                    gripper=gripper,
                 )
             )
             self._logger.info(
-                f"Created robot [/World/Flexiv/{serial_num}] located at {pos_in_world} in world"
+                f"Added robot [/World/Flexiv/{serial_num}] located at {pos_in_world} {ori_in_world} in world"
             )
 
             # Append single robot data struct
@@ -205,6 +231,10 @@ class BridgeRunner(object):
 
         # Reset world once
         self._world.reset()
+
+        # Initialize cameras
+        for cam in self._cameras:
+            cam.initialize()
 
         # Initialize other members
         self._reset_needed = False
@@ -226,8 +256,8 @@ class BridgeRunner(object):
             robot.sim_plugin.SendRobotStates(
                 flexivsimplugin.SimRobotStates(
                     self._servo_cycle,
-                    robot.instance.q.tolist(),
-                    robot.instance.dq.tolist(),
+                    robot.instance.q,
+                    robot.instance.dq,
                 )
             )
 
@@ -240,11 +270,13 @@ class BridgeRunner(object):
 
                 # Wait for new commands to arrive before proceeding current cycle
                 timeout_ms = 100
-                if not robot.sim_plugin.WaitForRobotCommands(timeout_ms):
+                if robot.sim_plugin.WaitForRobotCommands(timeout_ms):
+                    # Apply joint torques
+                    robot.instance.apply_torques(
+                        robot.sim_plugin.robot_commands().target_drives
+                    )
+                else:
                     self._logger.warn(f"Missed 1 message from [{robot.name}]")
-
-                # Apply joint torques
-                robot.instance.apply_torques(robot.sim_plugin.robot_commands().tau_d)
 
                 # Gripper control based on digital output signal
                 dout_list = list(
@@ -273,8 +305,8 @@ class BridgeRunner(object):
                 if robot.last_connected:
                     # Upon disconnection, transit this robot from torque control to position control to hold its current pose
                     self._logger.error(f"Disconnected from robot [{robot.name}]")
-                    robot.instance.teleport_to(robot.instance.q)
                     robot.instance.switch_control_mode("position")
+                    robot.instance.teleport_to(robot.instance.q)
                     robot.gripper_status = GripperStatus.INIT
 
                 # Set last connected status
@@ -292,12 +324,15 @@ class BridgeRunner(object):
             # Reset world if needed
             if self._world.is_stopped() and not self._reset_needed:
                 self._reset_needed = True
+                for robot in self._robots:
+                    robot.last_connected = False
             if self._world.is_playing():
                 if self._reset_needed:
                     self._world.reset()
                     self._reset_needed = False
                     # Put robot to initial pose
                     for robot in self._robots:
+                        robot.instance.switch_control_mode("position")
                         robot.instance.teleport_to(self._initial_q)
 
 
@@ -306,8 +341,8 @@ def main():
     runner = BridgeRunner(
         physics_dt=1.0 / PHYSICS_FREQ,
         render_dt=1.0 / RENDER_FREQ,
-        robots=args.robot,
-        initial_q=np.array([0.0, -0.698132, 0.0, 1.5708, 0.0, 0.698132, 0.0]),
+        config=yaml.safe_load(open(args.config)),
+        initial_q=[0.0, -0.698132, 0.0, 1.5708, 0.0, 0.698132, 0.0],
     )
     runner.run()
     simulation_app.close()

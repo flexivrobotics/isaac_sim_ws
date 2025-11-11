@@ -12,7 +12,7 @@ import isaacsim.core.api.tasks as tasks
 import numpy as np
 from isaacsim.core.utils.prims import is_prim_path_valid
 from isaacsim.core.utils.string import find_unique_string_name
-from isaacsim.robot.manipulators.examples.flexiv import Flexiv
+from isaacsim.robot.manipulators.examples.flexiv import FlexivSerial
 
 
 class FollowTarget(tasks.FollowTarget):
@@ -55,11 +55,11 @@ class FollowTarget(tasks.FollowTarget):
         self._usd_path = usd_path
         return
 
-    def set_robot(self) -> Flexiv:
+    def set_robot(self) -> FlexivSerial:
         """[summary]
 
         Returns:
-            Flexiv: [description]
+            FlexivSerial: [description]
         """
         if self._flexiv_prim_path is None:
             self._flexiv_prim_path = find_unique_string_name(

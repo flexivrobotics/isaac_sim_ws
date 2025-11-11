@@ -13,7 +13,7 @@ from isaacsim.core.api.tasks import Stacking as BaseStacking
 from isaacsim.core.utils.prims import is_prim_path_valid
 from isaacsim.core.utils.stage import get_stage_units
 from isaacsim.core.utils.string import find_unique_string_name
-from isaacsim.robot.manipulators.examples.flexiv import Flexiv
+from isaacsim.robot.manipulators.examples.flexiv import FlexivSerial
 
 
 class Stacking(BaseStacking):
@@ -47,11 +47,11 @@ class Stacking(BaseStacking):
         )
         return
 
-    def set_robot(self) -> Flexiv:
+    def set_robot(self) -> FlexivSerial:
         """[summary]
 
         Returns:
-            Flexiv: [description]
+            FlexivSerial: [description]
         """
         flexiv_prim_path = find_unique_string_name(
             initial_name="/World/Flexiv",
@@ -61,4 +61,4 @@ class Stacking(BaseStacking):
             initial_name="Rizon4",
             is_unique_fn=lambda x: not self.scene.object_exists(x),
         )
-        return Flexiv(prim_path=flexiv_prim_path, name=flexiv_robot_name)
+        return FlexivSerial(prim_path=flexiv_prim_path, name=flexiv_robot_name)

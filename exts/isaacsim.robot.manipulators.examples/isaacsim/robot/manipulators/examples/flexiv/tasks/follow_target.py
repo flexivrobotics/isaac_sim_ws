@@ -12,7 +12,8 @@ import isaacsim.core.api.tasks as tasks
 import numpy as np
 from isaacsim.core.utils.prims import is_prim_path_valid
 from isaacsim.core.utils.string import find_unique_string_name
-from isaacsim.robot.manipulators.examples.flexiv import Flexiv
+from isaacsim.core.utils.stage import add_reference_to_stage
+from isaacsim.robot.manipulators.examples.flexiv import FlexivSerial
 
 
 class FollowTarget(tasks.FollowTarget):
@@ -55,11 +56,11 @@ class FollowTarget(tasks.FollowTarget):
         self._usd_path = usd_path
         return
 
-    def set_robot(self) -> Flexiv:
+    def set_robot(self) -> FlexivSerial:
         """[summary]
 
         Returns:
-            Flexiv: [description]
+            FlexivSerial: [description]
         """
         if self._flexiv_prim_path is None:
             self._flexiv_prim_path = find_unique_string_name(
@@ -71,8 +72,13 @@ class FollowTarget(tasks.FollowTarget):
                 initial_name="Rizon4",
                 is_unique_fn=lambda x: not self.scene.object_exists(x),
             )
-        return Flexiv(
+
+        add_reference_to_stage(
+            usd_path=self._usd_path, prim_path=self._flexiv_prim_path
+        )
+
+        return FlexivSerial(
             prim_path=self._flexiv_prim_path,
             name=self._flexiv_robot_name,
-            usd_path=self._usd_path,
+            end_effector_prim_name="flange",
         )

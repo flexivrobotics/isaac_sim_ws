@@ -43,6 +43,8 @@ class FlexivSerial(Robot):
     ) -> None:
         self._arm_dof = arm_dof
         self._gripper = gripper
+        self._default_kps = None
+        self._default_kds = None
         self._end_effector = None
         self._end_effector_prim_path = prim_path + "/" + end_effector_prim_name
         self._logger = spdlog.ConsoleLogger("flexiv::" + name)
@@ -64,7 +66,10 @@ class FlexivSerial(Robot):
             mode (str): Desired control mode, options are "position", "velocity", and "effort".
         """
         # Reset default gains for articulation view
-        self._articulation_view.set_gains(kps=self._default_kps, kds=self._default_kds)
+        if self._default_kps is not None and self._default_kds is not None:
+            self._articulation_view.set_gains(
+                kps=self._default_kps, kds=self._default_kds
+            )
 
         # Set control mode for all robot joints, but leave gripper joints unchanged
         self._articulation_view.switch_control_mode(

@@ -7,26 +7,23 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-# Parse program arguments
-from argparse import ArgumentParser
-argparser = ArgumentParser()
-argparser.add_argument(
-    "usd_path",
-    help="Absolution path to usd file of Rizon4",
-)
-args = argparser.parse_args()
-
 # Start simulation
 from isaacsim import SimulationApp
+
 simulation_app = SimulationApp({"headless": False})
 
 from isaacsim.core.api import World
-from isaacsim.robot.manipulators.examples.flexiv.controllers.rmpflow_controller import RMPFlowController
+from isaacsim.robot.manipulators.examples.flexiv.controllers.rmpflow_controller import (
+    RMPFlowController,
+)
 from isaacsim.robot.manipulators.examples.flexiv.tasks import FollowTarget
+from isaacsim.storage.native import get_assets_root_path
 
+# Use Rizon4 usd stored in Isaac Sim assets
+usd_path = get_assets_root_path() + "/Isaac/Robots/Flexiv/Rizon4/flexiv_rizon4.usd"
 
 my_world = World(stage_units_in_meters=1.0)
-my_task = FollowTarget(name="flexiv_follow_target", usd_path=args.usd_path)
+my_task = FollowTarget(name="flexiv_follow_target", usd_path=usd_path)
 my_world.add_task(my_task)
 my_world.reset()
 task_params = my_world.get_task("flexiv_follow_target").get_params()

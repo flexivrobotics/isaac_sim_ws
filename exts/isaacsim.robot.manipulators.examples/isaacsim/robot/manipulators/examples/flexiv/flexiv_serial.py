@@ -36,7 +36,7 @@ class FlexivSerial(Robot):
         prim_path: str,
         name: str,
         end_effector_prim_name: str,
-        arm_dof: int,
+        arm_dof: int = 7,
         pos_in_world: Optional[List[float]] = None,
         ori_in_world: Optional[List[float]] = None,
         gripper: Optional[Gripper] = None,

@@ -1,8 +1,37 @@
-# Isaac Sim Workspace
+# Flexiv Isaac Sim Workspace
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 
-Add Flexiv robots to NVIDIA Isaac Sim and control them using Flexiv Elements Studio or Flexiv RDK with the actual force/torque controller used on real robots.
+
+## Overview
+
+This workspace is an example integration of **NVIDIA Isaac Sim** with **Flexiv Elements Studio**, connected via [Flexiv Sim Plugin](https://github.com/flexivrobotics/flexiv_sim_plugin). It demonstrates how to use the Flexiv Sim Plugin API alongside the Nvidia Isaac Sim API to relay robot control commands and physics state between Elements Studio and Isaac Sim, so that simulated Flexiv robots are driven by the same force-torque controller used on real robots and can be programmed with the Flexiv RDK.
+
+```
+┌─────────────────────────────────────────┐
+│       User Program with RDK Client      │
+│          (send robot commands)          │
+└───────────────────┬─────────────────────┘
+                    │ RDK API
+                    ▼
+┌─────────────────────────────────────────┐
+│         Flexiv Elements Studio          │
+│   (simulated controller + RDK Server)   │
+└───────────────────┬─────────────────────┘
+                    │ Flexiv Sim Plugin API
+                    ▼
+┌─────────────────────────────────────────┐
+│          Flexiv Isaac Sim Workspace     │
+│ (Flexiv Sim Plugin API + Isaac Sim API) │
+└───────────────────┬─────────────────────┘
+                    │ Isaac Sim API
+                    ▼
+┌─────────────────────────────────────────┐
+│           NVIDIA Isaac Sim              │
+│           (physics engine)              │
+└─────────────────────────────────────────┘
+```
+
 
 ## Compatibility
 
@@ -10,40 +39,31 @@ Add Flexiv robots to NVIDIA Isaac Sim and control them using Flexiv Elements Stu
 | ---------------- | ----------------------- | ---------------------- |
 | Ubuntu 22.04     | x86_64                  | Python                 |
 
-## Why NVIDIA Isaac Sim + Flexiv Elements Studio?
-
-The built-in simulator of Flexiv Elements Studio uses the same control software as the real Flexiv robots, providing high-fidelity simulation of robot kinematics, dynamics, and most importantly, force-control behaviors, which is not possible with thirdparty controllers like those shipped with Isaac Sim and ROS/ROS2.
-
-However, the built-in simulator of Flexiv Elements Studio only supports simulating one robot and a simple scene. To solve this issue, the Flexiv-Isaac Bridge App is developed to utilize Isaac Sim as the vendor for world representation and physics engine, while keeping the control software and user interface provided by Flexiv Elements Studio. The roles can be briefly described as:
-
-NVIDIA Isaac Sim:
-
-- World representation.
-- Scene creation.
-- Physics engine.
-
-Flexiv Elements Studio:
-
-- High-performance controller used by real Flexiv robots.
-- User interface
 
 ## Demos
 
-### Tower of Hanoi
+### 1. Tower of Hanoi
 
 [![Rizon 4 Masters the Tower of Hanoi Game in Issac Sim with the Flexiv-Isaac Sim Bridge App](https://img.youtube.com/vi/jZT6Ei0L3gk/0.jpg)](https://www.youtube.com/watch?v=jZT6Ei0L3gk)
 
-### Peg-in-hole
+### 2. Peg-in-hole
 
 https://github.com/user-attachments/assets/e575bf70-9ffb-47a5-8aec-4cda8d25c08e
 
-### Single robot polish
+### 3. Single robot polish
 
 https://github.com/user-attachments/assets/a0c39e70-4469-4405-a07d-e0d8a0ad589b
 
-### Dual robot polish
+### 4. Dual robot polish
 
 https://github.com/user-attachments/assets/7462a9bd-3cfd-40cc-95f7-b4fda0a74f30
+
+
+## Pre-requisites
+
+Before using the Flexiv Isaac Sim Workspace, follow the setup instructions in
+[Flexiv Sim Plugin](https://github.com/flexivrobotics/flexiv_sim_plugin?tab=readme-ov-file#flexiv-elements-studio-setup).
+
 
 ## Workspace setup
 
@@ -68,18 +88,6 @@ WARNING: When running Isaac Sim for the first time, it takes a couple of minutes
 
 After the example program is up and running, select the `TargetCube` prim under `World` from the Stage view, then drag it around, the robot TCP should follow the cube.
 
-## Use Isaac Sim with Flexiv Elements Studio for the first time
-
-### Set up Flexiv Elements Studio
-
-See instructions from [Flexiv Sim Plugin](https://github.com/flexivrobotics/flexiv_sim_plugin?tab=readme-ov-file#flexiv-elements-studio-setup).
-
-### Install Python packages
-
-Install the following packages using `pip`:
-
-- flexivsimplugin
-- spdlog
 
 ### Run Flexiv-Isaac Bridge App
 

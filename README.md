@@ -35,9 +35,12 @@ This workspace is an example integration of **NVIDIA Isaac Sim** with **Flexiv E
 
 ## Compatibility
 
-| **Supported OS** | **Supported processor** | **Supported language** |
-| ---------------- | ----------------------- | ---------------------- |
-| Ubuntu 22.04     | x86_64                  | Python                 |
+| **Supported OS** | **Supported processor** | **Supported language** | **Isaac Sim version** |
+| ---------------- | ----------------------- | ---------------------- | --------------------- |
+| Ubuntu 22.04     | x86_64                  | Python                 | 5.x                   |
+
+> This branch targets **NVIDIA Isaac Sim 5.x**. For Isaac Sim 6.x, use the
+> `isaac-sim-6` branch.
 
 
 ## Demos

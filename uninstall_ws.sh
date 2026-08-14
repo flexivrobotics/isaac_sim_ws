@@ -1,5 +1,8 @@
 #!/bin/bash
 # Uninstall Flexiv's Isaac Sim workspace from the NVIDIA Isaac Sim installation directory.
+#
+# Isaac Sim 6.x note: the extension sub-tree is installed under extsDeprecated/
+# (see install_ws.sh), so it is removed from there.
 
 # Absolute path of this script
 SCRIPT_PATH="$(dirname $(readlink -f $0))"
@@ -15,6 +18,6 @@ fi
 ISAAC_ROOT=$1
 
 # Uninstalled files
-rm -rf $ISAAC_ROOT/exts/isaacsim.robot.manipulators.examples/isaacsim/robot/manipulators/examples/flexiv
-rm -rf $ISAAC_ROOT/exts/isaacsim.robot.manipulators.examples/data/flexiv
+rm -rf $ISAAC_ROOT/extsDeprecated/isaacsim.robot.manipulators.examples/isaacsim/robot/manipulators/examples/flexiv
+rm -rf $ISAAC_ROOT/extsDeprecated/isaacsim.robot.manipulators.examples/data/flexiv
 rm -rf $ISAAC_ROOT/standalone_examples/api/isaacsim.robot.manipulators/flexiv

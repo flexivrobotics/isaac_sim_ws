@@ -35,9 +35,12 @@ This workspace is an example integration of **NVIDIA Isaac Sim** with **Flexiv E
 
 ## Compatibility
 
-| **Supported OS** | **Supported processor** | **Supported language** |
-| ---------------- | ----------------------- | ---------------------- |
-| Ubuntu 22.04     | x86_64                  | Python                 |
+| **Supported OS** | **Supported processor** | **Supported language** | **Isaac Sim version** |
+| ---------------- | ----------------------- | ---------------------- | --------------------- |
+| Ubuntu 22.04     | x86_64                  | Python                 | 6.x                   |
+
+> This branch targets **NVIDIA Isaac Sim 6.x**. For Isaac Sim 5.x, use the
+> `isaac-sim-5` branch.
 
 
 ## Demos
@@ -77,12 +80,17 @@ Before using the Flexiv Isaac Sim Workspace, follow the setup instructions in
 
        bash install_ws.sh ~/isaacsim
 
+4. Install the Python dependencies into Isaac Sim's bundled Python:
+
+       cd <isaac_sim_root_dir>
+       ./python.sh -m pip install spdlog
+
 ## Verify setup
 
 To verify that the workspace setup is successful, run the example Python application:
 
     cd <isaac_sim_root_dir>
-    ./python.sh standalone_examples/api/isaacsim.robot.manipulators/flexiv/follow_target_with_rmpflow.py exts/isaacsim.robot.manipulators.examples/data/flexiv/Rizon4.usd
+    ./python.sh standalone_examples/api/isaacsim.robot.manipulators/flexiv/follow_target_with_rmpflow.py extsDeprecated/isaacsim.robot.manipulators.examples/data/flexiv/Rizon4.usd
 
 WARNING: When running Isaac Sim for the first time, it takes a couple of minutes to warm up the shader cache. You will notice that the CPU is fully loaded and the Isaac Sim window seems frozen. Please wait patiently and do not force quit the program.
 

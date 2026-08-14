@@ -41,6 +41,13 @@ args = argparser.parse_args()
 simulation_app = SimulationApp({"headless": False, "width": 1920, "height": 1080})
 
 # Import isaac modules after SimulationApp is started
+# The Flexiv examples live in the isaacsim.robot.manipulators.examples extension,
+# which Isaac Sim 6.x ships as deprecated and does not enable by default. Enable
+# it so its Python modules (imported below) become importable.
+from isaacsim.core.utils.extensions import enable_extension
+
+enable_extension("isaacsim.robot.manipulators.examples")
+
 from isaacsim.core.api import World
 from isaacsim.core.utils.stage import add_reference_to_stage
 from isaacsim.sensors.camera import Camera

@@ -87,14 +87,20 @@ Before using the Flexiv Isaac Sim Workspace, follow the setup instructions in
 
 5. Install the `flexivsimplugin` Python package into Isaac Sim's bundled Python.
    This is the middleware that connects the Flexiv-Isaac Bridge App to Elements
-   Studio; follow the [Flexiv Sim Plugin](https://github.com/flexivrobotics/flexiv_sim_plugin)
-   setup, but make sure it is installed under Isaac Sim's Python (`./python.sh
-   -m pip ...`), not your system Python — the app runs under `./python.sh`.
+   Studio, so its version must match your robot software (Elements Studio) and
+   RDK version.
 
-   > The bridge app checks `flexivsimplugin.__version__` against the
-   > `COMPATIBLE_SIM_PLUGIN_VER` constant at the top of
-   > `flexiv_isaac_bridge_app.py` and refuses to start on a mismatch. Make sure
-   > the installed plugin version matches that constant.
+   Look up the plugin version compatible with your robot software (Elements
+   Studio) version in the
+   [Flexiv Sim Plugin release notes](https://github.com/flexivrobotics/flexiv_sim_plugin/releases):
+   each release lists the robot software and RDK versions it is compatible with.
+   The matching release tag (e.g. `v1.2`) is the plugin version to install.
+
+   Then install that version into Isaac Sim's bundled Python (replace
+   `<version>` with the number from the lookup, without the leading `v`):
+
+       cd <isaac_sim_root_dir>
+       ./python.sh -m pip install -i https://test.pypi.org/simple/ flexivsimplugin==<version>
 
 ## Verify setup
 
@@ -104,11 +110,6 @@ To verify that the workspace setup is successful, run the example Python applica
     ./python.sh standalone_examples/api/isaacsim.robot.manipulators/flexiv/follow_target_with_rmpflow.py extsDeprecated/isaacsim.robot.manipulators.examples/data/flexiv/Rizon4.usd
 
 WARNING: When running Isaac Sim for the first time, it takes a couple of minutes to warm up the shader cache. You will notice that the CPU is fully loaded and the Isaac Sim window seems frozen. Please wait patiently and do not force quit the program.
-
-> Troubleshooting: if startup fails with `NVML_ERROR_LIB_RM_VERSION_MISMATCH` or
-> `CUDA error 804`, your loaded NVIDIA kernel module and the installed userspace
-> libraries are out of sync (common right after a driver upgrade). Reboot to
-> load the matching module, then confirm with `nvidia-smi`.
 
 After the example program is up and running, select the `TargetCube` prim under `World` from the Stage view, then drag it around, the robot TCP should follow the cube.
 

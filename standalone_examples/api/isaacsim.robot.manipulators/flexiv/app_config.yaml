@@ -2,7 +2,7 @@
 # NOTE: Add or remove [serial_number] blocks to control which robots are added to the scene.
 robots:
   - serial_number: "Rizon4-00001" # Serial number of robot 1
-    usd: "/path/to/robot1.usd"    # Absolute path to the usd file of robot 1, see exts/isaacsim.robot.manipulators.examples/data/flexiv/
+    usd: "/path/to/robot1.usd"    # Absolute path to the usd file of robot 1, see extsDeprecated/isaacsim.robot.manipulators.examples/data/flexiv/
     position:                     # Position in world frame to put robot 1
       x: 0.0
       y: 0.0
@@ -29,7 +29,7 @@ robots:
 
 # Absolute path to the usd file of the environment to load. 
 # If not provided, an empty environment with default ground plane will be used. You can also start with the example environment 
-# located at exts/isaacsim.robot.manipulators.examples/data/flexiv/example_env.usd
+# located at extsDeprecated/isaacsim.robot.manipulators.examples/data/flexiv/example_env.usd
 env_usd: "/path/to/environment.usd"
 
 # Enable GPU dynamics. Use this argument if any object in the scene requires GPU for dynamics computation. 

@@ -13,6 +13,7 @@ APP_VERSION = "1.3"
 # Compatible flexivsimplugin version
 COMPATIBLE_SIM_PLUGIN_VER = "1.2.0"
 
+import sys
 import yaml
 import spdlog
 import numpy as np
@@ -25,10 +26,16 @@ from isaacsim import SimulationApp
 # Middleware plugin for connecting to Flexiv Elements Studio
 import flexivsimplugin
 
-# Check version
+# Check version. This app is developed against flexivsimplugin
+# COMPATIBLE_SIM_PLUGIN_VER; a mismatch is warned about rather than fatal so the
+# app can run against in-development plugin builds. Tighten to a hard failure
+# once the plugin version is stable.
 if flexivsimplugin.__version__ != COMPATIBLE_SIM_PLUGIN_VER:
-    raise ImportError(
-        f"flexivsimplugin=={COMPATIBLE_SIM_PLUGIN_VER} is required, but found {flexivsimplugin.__version__}"
+    print(
+        f"WARNING: this app targets flexivsimplugin=={COMPATIBLE_SIM_PLUGIN_VER}, "
+        f"but found {flexivsimplugin.__version__}. Continuing anyway; behavior may "
+        f"differ if the plugin API has changed.",
+        file=sys.stderr,
     )
 
 

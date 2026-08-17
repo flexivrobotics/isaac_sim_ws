@@ -64,8 +64,9 @@ https://github.com/user-attachments/assets/7462a9bd-3cfd-40cc-95f7-b4fda0a74f30
 
 ## Pre-requisites
 
-Before using the Flexiv Isaac Sim Workspace, follow the setup instructions in
-[Flexiv Sim Plugin](https://github.com/flexivrobotics/flexiv_sim_plugin?tab=readme-ov-file#flexiv-elements-studio-setup).
+Before using the Flexiv Isaac Sim Workspace, install Flexiv Elements Studio and
+create a simulated robot by following
+[Flexiv Elements Studio Setup](https://github.com/flexivrobotics/flexiv_sim_plugin/blob/main/docs/elements_studio_setup.md).
 
 
 ## Workspace setup
@@ -92,12 +93,7 @@ Before using the Flexiv Isaac Sim Workspace, follow the setup instructions in
 
    Look up the plugin version compatible with your robot software (Elements
    Studio) version in the
-   [Flexiv Sim Plugin release notes](https://github.com/flexivrobotics/flexiv_sim_plugin/releases):
-   each release lists the robot software and RDK versions it is compatible with.
-   The matching release tag (e.g. `v1.2`) is the plugin version to install.
-
-   Then install that version into Isaac Sim's bundled Python (replace
-   `<version>` with the number from the lookup, without the leading `v`):
+   [Flexiv Sim Plugin release notes](https://github.com/flexivrobotics/flexiv_sim_plugin/releases).
 
        cd <isaac_sim_root_dir>
        ./python.sh -m pip install -i https://test.pypi.org/simple/ flexivsimplugin==<version>

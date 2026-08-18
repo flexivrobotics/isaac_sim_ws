@@ -13,6 +13,7 @@ APP_VERSION = "1.3"
 # Compatible flexivsimplugin version
 COMPATIBLE_SIM_PLUGIN_VER = "1.2.0"
 
+import os
 import sys
 import yaml
 import spdlog
@@ -350,12 +351,36 @@ class BridgeRunner(object):
                         robot.instance.teleport_to(self._initial_q)
 
 
+def resolve_usd_paths(config):
+    """Resolve relative ``usd`` / ``env_usd`` paths in the config.
+
+    Relative paths are resolved against the Isaac Sim installation root (the
+    ``ISAAC_PATH`` environment variable, set by ``python.sh``), so the default
+    config works regardless of the current working directory. Absolute paths are
+    left unchanged. This lets the shipped config point at the bundled example
+    assets under ``extsDeprecated/`` without hardcoding a machine-specific path.
+    """
+    isaac_root = os.environ.get("ISAAC_PATH", "")
+
+    def resolve(path):
+        if path and not os.path.isabs(path):
+            return os.path.join(isaac_root, path)
+        return path
+
+    if config.get("env_usd"):
+        config["env_usd"] = resolve(config["env_usd"])
+    for robot in config.get("robots", []):
+        if robot.get("usd"):
+            robot["usd"] = resolve(robot["usd"])
+    return config
+
+
 def main():
     # Create runner to handle everything
     runner = BridgeRunner(
         physics_dt=1.0 / PHYSICS_FREQ,
         render_dt=1.0 / RENDER_FREQ,
-        config=yaml.safe_load(open(args.config)),
+        config=resolve_usd_paths(yaml.safe_load(open(args.config))),
         initial_q=[0.0, -0.698132, 0.0, 1.5708, 0.0, 0.698132, 0.0],
     )
     runner.run()

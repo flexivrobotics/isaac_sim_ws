@@ -5,7 +5,7 @@
 # Set each robot's `serial_number` to match the simulated robot you created in Flexiv Elements Studio.
 # The `usd` and `env_usd` paths may be absolute, or relative to the Isaac Sim installation root.
 robots:
-  - serial_number: "Rizon4-6LAJnR" # Serial number of robot 1
+  - serial_number: "Rizon4-00001" # Serial number of robot 1
     usd: "extsDeprecated/isaacsim.robot.manipulators.examples/data/flexiv/Rizon4.usd" # Robot 1 USD
     position:                     # Position in world frame to put robot 1
       x: 0.0

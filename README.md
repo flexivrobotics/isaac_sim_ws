@@ -112,11 +112,11 @@ After the example program is up and running, select the `TargetCube` prim under 
 
 ### Run Flexiv-Isaac Bridge App
 
-1. Edit the configuration file `standalone_examples/api/isaacsim.robot.manipulators/flexiv/app_config.yaml` according to the instructions in it.
-2. Start Flexiv-Isaac Bridge App using configurations in `app_config.yaml`:
+1. Edit the configuration file `standalone_examples/api/isaacsim.robot.manipulators/flexiv/single_arm_app_config.yaml` according to the instructions in it.
+2. Start Flexiv-Isaac Bridge App using configurations in `single_arm_app_config.yaml`:
 
        cd <isaac_sim_root_dir>
-       ./python.sh standalone_examples/api/isaacsim.robot.manipulators/flexiv/flexiv_isaac_bridge_app.py --config standalone_examples/api/isaacsim.robot.manipulators/flexiv/app_config.yaml
+       ./python.sh standalone_examples/api/isaacsim.robot.manipulators/flexiv/flexiv_isaac_bridge_app.py --config standalone_examples/api/isaacsim.robot.manipulators/flexiv/single_arm_app_config.yaml
 
 3. The app will launch an Isaac Sim window and start the physics loop (i.e. *Play*) automatically.
 4. Go back to Elements Studio, then restart the exited simulator by toggle on the *Connect* button.
@@ -149,11 +149,11 @@ Alternatively, you can leave the simulated robot running and just restart the Is
 
 This framework supports simulating and controlling multiple robots:
 
-1. Add multiple robots in the configuration file `standalone_examples/api/isaacsim.robot.manipulators/flexiv/app_config.yaml`.
-2. Start Flexiv-Isaac Bridge App using the updated configurations in `app_config.yaml`:
+1. Add multiple robots in the configuration file `standalone_examples/api/isaacsim.robot.manipulators/flexiv/dual_arm_app_config.yaml`.
+2. Start Flexiv-Isaac Bridge App using the updated configurations in `dual_arm_app_config.yaml`:
 
        cd <isaac_sim_root_dir>
-       ./python.sh standalone_examples/api/isaacsim.robot.manipulators/flexiv/flexiv_isaac_bridge_app.py --config standalone_examples/api/isaacsim.robot.manipulators/flexiv/app_config.yaml
+       ./python.sh standalone_examples/api/isaacsim.robot.manipulators/flexiv/flexiv_isaac_bridge_app.py --config standalone_examples/api/isaacsim.robot.manipulators/flexiv/dual_arm_app_config.yaml
 
 3. Find a second Ubuntu 22.04 computer, connect it to the first computer via Ethernet cable. Then on the first computer, check that this wired Ethernet connection is visible in the network settings, then change the IPv4 setting of this wired connection to "Shared to other computers". Alternatively, connect both computers to the same network router via **wired** connection.
 4. Make sure both computers are able to ping each other.

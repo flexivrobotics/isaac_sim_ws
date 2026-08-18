@@ -1,17 +1,12 @@
 # One or more robots to add to the scene.
-# NOTE: Add or remove [serial_number] blocks to control which robots are added to the scene.
 #
-# The `usd` and `env_usd` paths may be absolute, or relative to the Isaac Sim
-# installation root (the directory you run `python.sh` from). Relative paths let
-# this config point at the bundled example robots and environments shipped under
-# extsDeprecated/isaacsim.robot.manipulators.examples/data/flexiv/ without
-# hardcoding a machine-specific path.
-#
-# REQUIRED: set each robot's `serial_number` to match the simulated robot you
-# created in Flexiv Elements Studio.
+# NOTE:
+# Add or remove [serial_number] blocks to control which robots are added to the scene.
+# Each robot's `serial_number` to match the simulated robot you created in Flexiv Elements Studio.
+# The `usd` and `env_usd` paths may be absolute, or relative to the Isaac Sim installation root
 robots:
-  - serial_number: "Rizon4-6LAJnR" # Serial number of robot 1 (set to your simulated robot's serial)
-    usd: "extsDeprecated/isaacsim.robot.manipulators.examples/data/flexiv/Rizon4.usd" # Robot 1 USD; see that folder for other robot models
+  - serial_number: "Rizon4-00001" # Serial number of robot 1
+    usd: "extsDeprecated/isaacsim.robot.manipulators.examples/data/flexiv/Rizon4.usd" # Robot 1 USD
     position:                     # Position in world frame to put robot 1
       x: 0.0
       y: 0.0

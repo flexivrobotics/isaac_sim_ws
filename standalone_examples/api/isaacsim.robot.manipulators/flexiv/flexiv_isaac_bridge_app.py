@@ -11,7 +11,7 @@
 APP_VERSION = "1.3"
 
 # Compatible flexivsimplugin version
-COMPATIBLE_SIM_PLUGIN_VER = "1.2.0"
+COMPATIBLE_SIM_PLUGIN_VER = "1.3.0"
 
 import os
 import sys
@@ -170,6 +170,17 @@ class BridgeRunner(object):
             pos_in_world = [float(r["position"][i]) for i in ["x", "y", "z"]]
             ori_in_world = [float(r["orientation"][i]) for i in ["w", "x", "y", "z"]]
 
+            # Determine from the serial number whether this model carries a wrist force-torque
+            # sensor. The "s" variants report it, e.g. "Rizon 4s-ROn3YJ" / "Rizon10s-000001".
+            # The model token before the dash may be written with or without a space
+            # ("Rizon 4s" or "Rizon4s"), so normalize by stripping whitespace before matching.
+            model = serial_num.split("-")[0].strip().lower().replace(" ", "")
+            has_ft_sensor = model in ("rizon4s", "rizon10s")
+            if has_ft_sensor:
+                self._logger.info(
+                    f"Robot [{serial_num}] is an 's' variant; wrist force-torque sensor enabled"
+                )
+
             # Replace dash with underscore in serial number to avoid prim path error
             serial_num = serial_num.replace("-", "_")
 
@@ -224,6 +235,7 @@ class BridgeRunner(object):
                     pos_in_world=pos_in_world,
                     ori_in_world=ori_in_world,
                     gripper=gripper,
+                    has_ft_sensor=has_ft_sensor,
                 )
             )
             self._logger.info(
@@ -268,13 +280,23 @@ class BridgeRunner(object):
         """
         for robot in self._robots:
             # Publish fresh robot states to all Flexiv Nodes before doing anything else
-            robot.sim_plugin.SendRobotStates(
-                flexivsimplugin.SimRobotStates(
+            if robot.instance.has_ft_sensor:
+                # "s" variants also report a simulated wrist 6-DoF force-torque sensor reading
+                wrist_force, wrist_torque = robot.instance.wrist_wrench
+                robot_states = flexivsimplugin.SimRobotStates(
+                    self._servo_cycle,
+                    robot.instance.q,
+                    robot.instance.dq,
+                    wrist_force,
+                    wrist_torque,
+                )
+            else:
+                robot_states = flexivsimplugin.SimRobotStates(
                     self._servo_cycle,
                     robot.instance.q,
                     robot.instance.dq,
                 )
-            )
+            robot.sim_plugin.SendRobotStates(robot_states)
 
         for robot in self._robots:
             if robot.sim_plugin.connected():

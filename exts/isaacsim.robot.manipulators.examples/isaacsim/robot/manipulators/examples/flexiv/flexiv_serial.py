@@ -33,15 +33,12 @@ class FlexivSerial(Robot):
             variants, e.g. Rizon 4s / Rizon 10s). When True, wrist_wrench reports a simulated reading.
     """
 
-    # Name of the last actuated arm joint. Everything distal to it (link7 + flange + any tool) is
-    # what the physical wrist force-torque sensor measures, so its reaction wrench is our sensor source.
-    _FT_JOINT_NAME = "joint7"
-
-    # Hard-coded offset [m] along link7's +z from the joint7 (link7) frame to the sensor frame,
-    # placing the sensor origin halfway between the joint7 and flange frames. Measured from the USD,
-    # the flange origin sits 0.124 m from the link7/joint7 origin along +z with zero x/y (identical for
-    # Rizon 4s and 10s), so halfway is 0.062 m. Refine against the real sensor mounting if needed.
-    _FT_SENSOR_Z_OFFSET = 0.062
+    # Fixed sensing joint of the wrist force-torque sensor, present only in the "s" model USDs.
+    # link7 is split into link7_proximal and link7_distal at the sensor plane, joined by this
+    # fixed joint; everything distal to it (link7_distal + flange + any tool) is exactly what the
+    # physical wrist sensor measures. Isaac reports the reaction wrench in the child (link7_distal)
+    # frame, which IS the sensor frame, so no extra frame offset is needed here.
+    _FT_JOINT_NAME = "link7_ft_sensor"
 
     def __init__(
         self,
@@ -175,13 +172,15 @@ class FlexivSerial(Robot):
     def wrist_wrench(self) -> (List[float], List[float]):
         """
         Get the simulated wrist 6-DoF force-torque sensor reading, expressed in the sensor frame
-        (halfway between the joint7 and flange frames) and reported as the force/torque the robot
-        applies ON the environment (Flexiv convention), matching the real Rizon wrist sensor.
+        (the link7_ft_sensor sensing joint / link7_distal frame) and reported as the force/torque
+        the robot applies ON the environment (Flexiv convention), matching the real Rizon wrist
+        sensor.
 
-        The reading is derived from the reaction wrench measured at joint7, which captures everything
-        distal to the sensor: link7, the flange frame, and any attached tool (gravity, inertia, and
-        contact). Isaac reports that reaction in the child link (link7) frame as the force/torque of
-        the parent side on link7; negating it yields the force the wrist exerts on the environment.
+        The reading is the reaction wrench measured at the link7_ft_sensor sensing joint, which
+        captures exactly what is distal to the sensor: link7_distal, the flange frame, and any
+        attached tool (gravity, inertia, and contact). Isaac reports that reaction in the child
+        (link7_distal) frame -- which is the sensor frame, so no frame shift is needed. Negating it
+        yields the force the wrist exerts on the environment.
 
         Return:
             (List[float], List[float]): (wrist_force [f_x, f_y, f_z] in N,
@@ -193,23 +192,16 @@ class FlexivSerial(Robot):
         if not self._articulation_view.is_physics_handle_valid():
             return [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]
 
-        # Reaction wrench at joint7, reported in the link7 frame as [f_x, f_y, f_z, m_x, m_y, m_z].
+        # Reaction wrench at the sensing joint, reported in the link7_distal (sensor) frame as
+        # [f_x, f_y, f_z, m_x, m_y, m_z].
         wrench = self.get_measured_joint_forces(
             joint_indices=np.array([self._ft_force_row])
         )[0]
 
-        # Negate: measured value is the reaction (parent-on-link7); the real sensor reports the
-        # force/torque the robot applies on the environment (link7-on-parent equivalent).
+        # Negate: measured value is the reaction (proximal-on-distal); the real sensor reports the
+        # force/torque the robot applies on the environment (distal-on-proximal equivalent).
         force = -wrench[0:3]
         torque = -wrench[3:6]
-
-        # Shift the torque reference point from the link7 (joint7) frame origin to the sensor origin,
-        # a pure translation of _FT_SENSOR_Z_OFFSET along link7's +z. The two frames are aligned in
-        # orientation, so the force is unchanged and only the moment arm r x f is removed:
-        #   tau_sensor = tau_link7 - r x f,  with r = (0, 0, offset).
-        # r x f = (-offset*f_y, offset*f_x, 0).
-        offset = self._FT_SENSOR_Z_OFFSET
-        torque = torque - np.array([-offset * force[1], offset * force[0], 0.0])
 
         return force.tolist(), torque.tolist()
 
@@ -235,6 +227,31 @@ class FlexivSerial(Robot):
         self.set_joint_positions(q_d, joint_indices=np.arange(0, self._arm_dof))
         return
 
+    def _resolve_ft_force_row(self) -> int:
+        """
+        Resolve the row index into get_measured_joint_forces() for the sensing joint.
+
+        The force array has one row per articulation joint plus a leading base-link row, so the row
+        for joint J is (joint order index of J) + 1. The sensing joint is a fixed joint, so it is
+        not in the actuated-DoF map; look it up by name in the articulation joint ordering. The
+        physics metadata exposes this either as a name->index dict (joint_indices) or a name list
+        (joint_names), depending on the backend, so handle both.
+
+        Return:
+            int: row index into the get_measured_joint_forces() output.
+        """
+        meta = self._articulation_view._metadata
+        indices = getattr(meta, "joint_indices", None)
+        if isinstance(indices, dict) and self._FT_JOINT_NAME in indices:
+            return indices[self._FT_JOINT_NAME] + 1
+        names = getattr(meta, "joint_names", None)
+        if names is not None and self._FT_JOINT_NAME in list(names):
+            return list(names).index(self._FT_JOINT_NAME) + 1
+        raise KeyError(
+            f"joint [{self._FT_JOINT_NAME}] not found in articulation metadata "
+            f"(joint_indices/joint_names)"
+        )
+
     def initialize(self, physics_sim_view=None) -> None:
         """
         Initialize the articulation interface, set up torque drive mode
@@ -242,11 +259,13 @@ class FlexivSerial(Robot):
         super().initialize(physics_sim_view=physics_sim_view)
 
         # Resolve the row index into get_measured_joint_forces() for the wrist sensor joint. That
-        # call returns one row per link's incoming joint, offset by one from the DoF index (row 0 is
-        # the base link), so the wrist joint's row is get_dof_index(joint7) + 1.
+        # call returns one row per articulation joint (row 0 is the base link's incoming joint), so
+        # the row for a given joint is joint_index + 1. The sensing joint (link7_ft_sensor) is a
+        # FIXED joint with no DoF, so it must be looked up by name in the articulation metadata's
+        # joint_indices map rather than via get_dof_index (which only covers actuated DoFs).
         if self._has_ft_sensor:
             try:
-                self._ft_force_row = self.get_dof_index(self._FT_JOINT_NAME) + 1
+                self._ft_force_row = self._resolve_ft_force_row()
             except Exception as e:
                 self._ft_force_row = None
                 self._logger.error(

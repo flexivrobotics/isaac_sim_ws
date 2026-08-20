@@ -10,7 +10,7 @@ from typing import List, Optional
 
 import isaacsim.robot.manipulators.controllers as manipulators_controllers
 from isaacsim.core.prims import SingleArticulation
-from isaacsim.robot.manipulators.examples.franka.controllers.rmpflow_controller import RMPFlowController
+from isaacsim.robot.manipulators.examples.flexiv.controllers.rmpflow_controller import RMPFlowController
 from isaacsim.robot.manipulators.grippers.parallel_gripper import ParallelGripper
 
 

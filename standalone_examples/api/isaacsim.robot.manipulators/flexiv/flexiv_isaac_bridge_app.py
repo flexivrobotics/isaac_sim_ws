@@ -11,8 +11,10 @@
 APP_VERSION = "1.3"
 
 # Compatible flexivsimplugin version
-COMPATIBLE_SIM_PLUGIN_VER = "1.2.0"
+COMPATIBLE_SIM_PLUGIN_VER = "1.3.0"
 
+import os
+import sys
 import yaml
 import spdlog
 import numpy as np
@@ -25,10 +27,16 @@ from isaacsim import SimulationApp
 # Middleware plugin for connecting to Flexiv Elements Studio
 import flexivsimplugin
 
-# Check version
+# Check version. This app is developed against flexivsimplugin
+# COMPATIBLE_SIM_PLUGIN_VER; a mismatch is warned about rather than fatal so the
+# app can run against in-development plugin builds. Tighten to a hard failure
+# once the plugin version is stable.
 if flexivsimplugin.__version__ != COMPATIBLE_SIM_PLUGIN_VER:
-    raise ImportError(
-        f"flexivsimplugin=={COMPATIBLE_SIM_PLUGIN_VER} is required, but found {flexivsimplugin.__version__}"
+    print(
+        f"WARNING: this app targets flexivsimplugin=={COMPATIBLE_SIM_PLUGIN_VER}, "
+        f"but found {flexivsimplugin.__version__}. Continuing anyway; behavior may "
+        f"differ if the plugin API has changed.",
+        file=sys.stderr,
     )
 
 
@@ -41,6 +49,13 @@ args = argparser.parse_args()
 simulation_app = SimulationApp({"headless": False, "width": 1920, "height": 1080})
 
 # Import isaac modules after SimulationApp is started
+# The Flexiv examples live in the isaacsim.robot.manipulators.examples extension,
+# which Isaac Sim 6.x ships as deprecated and does not enable by default. Enable
+# it so its Python modules (imported below) become importable.
+from isaacsim.core.utils.extensions import enable_extension
+
+enable_extension("isaacsim.robot.manipulators.examples")
+
 from isaacsim.core.api import World
 from isaacsim.core.utils.stage import add_reference_to_stage
 from isaacsim.sensors.camera import Camera
@@ -155,6 +170,17 @@ class BridgeRunner(object):
             pos_in_world = [float(r["position"][i]) for i in ["x", "y", "z"]]
             ori_in_world = [float(r["orientation"][i]) for i in ["w", "x", "y", "z"]]
 
+            # Determine from the serial number whether this model carries a wrist force-torque
+            # sensor. The "s" variants report it, e.g. "Rizon 4s-ROn3YJ" / "Rizon10s-000001".
+            # The model token before the dash may be written with or without a space
+            # ("Rizon 4s" or "Rizon4s"), so normalize by stripping whitespace before matching.
+            model = serial_num.split("-")[0].strip().lower().replace(" ", "")
+            has_ft_sensor = model in ("rizon4s", "rizon10s")
+            if has_ft_sensor:
+                self._logger.info(
+                    f"Robot [{serial_num}] is an 's' variant; wrist force-torque sensor enabled"
+                )
+
             # Replace dash with underscore in serial number to avoid prim path error
             serial_num = serial_num.replace("-", "_")
 
@@ -209,6 +235,7 @@ class BridgeRunner(object):
                     pos_in_world=pos_in_world,
                     ori_in_world=ori_in_world,
                     gripper=gripper,
+                    has_ft_sensor=has_ft_sensor,
                 )
             )
             self._logger.info(
@@ -253,13 +280,23 @@ class BridgeRunner(object):
         """
         for robot in self._robots:
             # Publish fresh robot states to all Flexiv Nodes before doing anything else
-            robot.sim_plugin.SendRobotStates(
-                flexivsimplugin.SimRobotStates(
+            if robot.instance.has_ft_sensor:
+                # "s" variants also report a simulated wrist 6-DoF force-torque sensor reading
+                wrist_force, wrist_torque = robot.instance.wrist_wrench
+                robot_states = flexivsimplugin.SimRobotStates(
+                    self._servo_cycle,
+                    robot.instance.q,
+                    robot.instance.dq,
+                    wrist_force,
+                    wrist_torque,
+                )
+            else:
+                robot_states = flexivsimplugin.SimRobotStates(
                     self._servo_cycle,
                     robot.instance.q,
                     robot.instance.dq,
                 )
-            )
+            robot.sim_plugin.SendRobotStates(robot_states)
 
         for robot in self._robots:
             if robot.sim_plugin.connected():
@@ -336,12 +373,36 @@ class BridgeRunner(object):
                         robot.instance.teleport_to(self._initial_q)
 
 
+def resolve_usd_paths(config):
+    """Resolve relative ``usd`` / ``env_usd`` paths in the config.
+
+    Relative paths are resolved against the Isaac Sim installation root (the
+    ``ISAAC_PATH`` environment variable, set by ``python.sh``), so the default
+    config works regardless of the current working directory. Absolute paths are
+    left unchanged. This lets the shipped config point at the bundled example
+    assets under ``extsDeprecated/`` without hardcoding a machine-specific path.
+    """
+    isaac_root = os.environ.get("ISAAC_PATH", "")
+
+    def resolve(path):
+        if path and not os.path.isabs(path):
+            return os.path.join(isaac_root, path)
+        return path
+
+    if config.get("env_usd"):
+        config["env_usd"] = resolve(config["env_usd"])
+    for robot in config.get("robots", []):
+        if robot.get("usd"):
+            robot["usd"] = resolve(robot["usd"])
+    return config
+
+
 def main():
     # Create runner to handle everything
     runner = BridgeRunner(
         physics_dt=1.0 / PHYSICS_FREQ,
         render_dt=1.0 / RENDER_FREQ,
-        config=yaml.safe_load(open(args.config)),
+        config=resolve_usd_paths(yaml.safe_load(open(args.config))),
         initial_q=[0.0, -0.698132, 0.0, 1.5708, 0.0, 0.698132, 0.0],
     )
     runner.run()

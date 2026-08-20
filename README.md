@@ -35,9 +35,12 @@ This workspace is an example integration of **NVIDIA Isaac Sim** with **Flexiv E
 
 ## Compatibility
 
-| **Supported OS** | **Supported processor** | **Supported language** |
-| ---------------- | ----------------------- | ---------------------- |
-| Ubuntu 22.04     | x86_64                  | Python                 |
+| **Supported OS** | **Supported processor** | **Supported language** | **Isaac Sim version** |
+| ---------------- | ----------------------- | ---------------------- | --------------------- |
+| Ubuntu 22.04     | x86_64                  | Python                 | 6.x                   |
+
+> This branch targets **NVIDIA Isaac Sim 6.x**. For Isaac Sim 5.x, use the
+> `isaac-sim-5` branch.
 
 
 ## Demos
@@ -61,8 +64,9 @@ https://github.com/user-attachments/assets/7462a9bd-3cfd-40cc-95f7-b4fda0a74f30
 
 ## Pre-requisites
 
-Before using the Flexiv Isaac Sim Workspace, follow the setup instructions in
-[Flexiv Sim Plugin](https://github.com/flexivrobotics/flexiv_sim_plugin?tab=readme-ov-file#flexiv-elements-studio-setup).
+Before using the Flexiv Isaac Sim Workspace, install Flexiv Elements Studio and
+create a simulated robot by following
+[Flexiv Elements Studio Setup](https://github.com/flexivrobotics/flexiv_sim_plugin/blob/main/docs/elements_studio_setup.md).
 
 
 ## Workspace setup
@@ -77,12 +81,29 @@ Before using the Flexiv Isaac Sim Workspace, follow the setup instructions in
 
        bash install_ws.sh ~/isaacsim
 
+4. Install the Python dependencies into Isaac Sim's bundled Python:
+
+       cd <isaac_sim_root_dir>
+       ./python.sh -m pip install spdlog
+
+5. Install the `flexivsimplugin` Python package into Isaac Sim's bundled Python.
+   This is the middleware that connects the Flexiv-Isaac Bridge App to Elements
+   Studio, so its version must match your robot software (Elements Studio) and
+   RDK version.
+
+   Look up the plugin version compatible with your robot software (Elements
+   Studio) version in the
+   [Flexiv Sim Plugin release notes](https://github.com/flexivrobotics/flexiv_sim_plugin/releases).
+
+       cd <isaac_sim_root_dir>
+       ./python.sh -m pip install -i https://test.pypi.org/simple/ flexivsimplugin==<version>
+
 ## Verify setup
 
 To verify that the workspace setup is successful, run the example Python application:
 
     cd <isaac_sim_root_dir>
-    ./python.sh standalone_examples/api/isaacsim.robot.manipulators/flexiv/follow_target_with_rmpflow.py exts/isaacsim.robot.manipulators.examples/data/flexiv/Rizon4.usd
+    ./python.sh standalone_examples/api/isaacsim.robot.manipulators/flexiv/follow_target_with_rmpflow.py extsDeprecated/isaacsim.robot.manipulators.examples/data/flexiv/Rizon4.usd
 
 WARNING: When running Isaac Sim for the first time, it takes a couple of minutes to warm up the shader cache. You will notice that the CPU is fully loaded and the Isaac Sim window seems frozen. Please wait patiently and do not force quit the program.
 
@@ -91,11 +112,11 @@ After the example program is up and running, select the `TargetCube` prim under 
 
 ### Run Flexiv-Isaac Bridge App
 
-1. Edit the configuration file `standalone_examples/api/isaacsim.robot.manipulators/flexiv/app_config.yaml` according to the instructions in it.
-2. Start Flexiv-Isaac Bridge App using configurations in `app_config.yaml`:
+1. Edit the configuration file `standalone_examples/api/isaacsim.robot.manipulators/flexiv/single_arm_app_config.yaml` according to the instructions in it.
+2. Start Flexiv-Isaac Bridge App using configurations in `single_arm_app_config.yaml`:
 
        cd <isaac_sim_root_dir>
-       ./python.sh standalone_examples/api/isaacsim.robot.manipulators/flexiv/flexiv_isaac_bridge_app.py --config standalone_examples/api/isaacsim.robot.manipulators/flexiv/app_config.yaml
+       ./python.sh standalone_examples/api/isaacsim.robot.manipulators/flexiv/flexiv_isaac_bridge_app.py --config standalone_examples/api/isaacsim.robot.manipulators/flexiv/single_arm_app_config.yaml
 
 3. The app will launch an Isaac Sim window and start the physics loop (i.e. *Play*) automatically.
 4. Go back to Elements Studio, then restart the exited simulator by toggle on the *Connect* button.
@@ -128,11 +149,11 @@ Alternatively, you can leave the simulated robot running and just restart the Is
 
 This framework supports simulating and controlling multiple robots:
 
-1. Add multiple robots in the configuration file `standalone_examples/api/isaacsim.robot.manipulators/flexiv/app_config.yaml`.
-2. Start Flexiv-Isaac Bridge App using the updated configurations in `app_config.yaml`:
+1. Add multiple robots in the configuration file `standalone_examples/api/isaacsim.robot.manipulators/flexiv/dual_arm_app_config.yaml`.
+2. Start Flexiv-Isaac Bridge App using the updated configurations in `dual_arm_app_config.yaml`:
 
        cd <isaac_sim_root_dir>
-       ./python.sh standalone_examples/api/isaacsim.robot.manipulators/flexiv/flexiv_isaac_bridge_app.py --config standalone_examples/api/isaacsim.robot.manipulators/flexiv/app_config.yaml
+       ./python.sh standalone_examples/api/isaacsim.robot.manipulators/flexiv/flexiv_isaac_bridge_app.py --config standalone_examples/api/isaacsim.robot.manipulators/flexiv/dual_arm_app_config.yaml
 
 3. Find a second Ubuntu 22.04 computer, connect it to the first computer via Ethernet cable. Then on the first computer, check that this wired Ethernet connection is visible in the network settings, then change the IPv4 setting of this wired connection to "Shared to other computers". Alternatively, connect both computers to the same network router via **wired** connection.
 4. Make sure both computers are able to ping each other.

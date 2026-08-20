@@ -12,6 +12,13 @@ from isaacsim import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
 
+# The Flexiv examples live in the isaacsim.robot.manipulators.examples extension,
+# which Isaac Sim 6.x ships as deprecated and does not enable by default. Enable
+# it so its Python modules become importable.
+from isaacsim.core.utils.extensions import enable_extension
+
+enable_extension("isaacsim.robot.manipulators.examples")
+
 from isaacsim.core.api import World
 from isaacsim.robot.manipulators.examples.flexiv.controllers.rmpflow_controller import (
     RMPFlowController,

@@ -29,7 +29,16 @@ class FlexivSerial(Robot):
         pos_in_world (Optional[List[float]]): position (x, y, z) of the robot in world [m].
         ori_in_world (Optional[List[float]]): orientation (quaternion w, x, y, z) of the robot in world [].
         gripper (Optional[Gripper]): Constructed gripper instance.
+        has_ft_sensor (bool): Whether this model carries a wrist 6-DoF force-torque sensor (the "s"
+            variants, e.g. Rizon 4s / Rizon 10s). When True, wrist_wrench reports a simulated reading.
     """
+
+    # Fixed sensing joint of the wrist force-torque sensor, present only in the "s" model USDs.
+    # link7 is split into link7_proximal and link7_distal at the sensor plane, joined by this
+    # fixed joint; everything distal to it (link7_distal + flange + any tool) is exactly what the
+    # physical wrist sensor measures. Isaac reports the reaction wrench in the child (link7_distal)
+    # frame, which IS the sensor frame, so no extra frame offset is needed here.
+    _FT_JOINT_NAME = "link7_ft_sensor"
 
     def __init__(
         self,
@@ -40,6 +49,7 @@ class FlexivSerial(Robot):
         pos_in_world: Optional[List[float]] = None,
         ori_in_world: Optional[List[float]] = None,
         gripper: Optional[Gripper] = None,
+        has_ft_sensor: bool = False,
     ) -> None:
         self._arm_dof = arm_dof
         self._gripper = gripper
@@ -47,6 +57,10 @@ class FlexivSerial(Robot):
         self._default_kds = None
         self._end_effector = None
         self._end_effector_prim_path = prim_path + "/" + end_effector_prim_name
+        self._has_ft_sensor = has_ft_sensor
+        # Row index into get_measured_joint_forces() output for the wrist sensor joint. Resolved in
+        # initialize() once the articulation metadata is available.
+        self._ft_force_row = None
         self._logger = spdlog.ConsoleLogger("flexiv::" + name)
 
         # Construct base
@@ -144,6 +158,53 @@ class FlexivSerial(Robot):
         else:
             return np.zeros(self._arm_dof).tolist()
 
+    @property
+    def has_ft_sensor(self) -> bool:
+        """
+        Whether this model carries a wrist 6-DoF force-torque sensor.
+
+        Return:
+            bool: True for the "s" variants (Rizon 4s / Rizon 10s).
+        """
+        return self._has_ft_sensor
+
+    @property
+    def wrist_wrench(self) -> (List[float], List[float]):
+        """
+        Get the simulated wrist 6-DoF force-torque sensor reading, expressed in the sensor frame
+        (the link7_ft_sensor sensing joint / link7_distal frame) and reported as the force/torque
+        the robot applies ON the environment (Flexiv convention), matching the real Rizon wrist
+        sensor.
+
+        The reading is the reaction wrench measured at the link7_ft_sensor sensing joint, which
+        captures exactly what is distal to the sensor: link7_distal, the flange frame, and any
+        attached tool (gravity, inertia, and contact). Isaac reports that reaction in the child
+        (link7_distal) frame -- which is the sensor frame, so no frame shift is needed. Negating it
+        yields the force the wrist exerts on the environment.
+
+        Return:
+            (List[float], List[float]): (wrist_force [f_x, f_y, f_z] in N,
+            wrist_torque [m_x, m_y, m_z] in Nm). Returns zeros before the physics handle is valid.
+        """
+        if not self._has_ft_sensor or self._ft_force_row is None:
+            return [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]
+
+        if not self._articulation_view.is_physics_handle_valid():
+            return [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]
+
+        # Reaction wrench at the sensing joint, reported in the link7_distal (sensor) frame as
+        # [f_x, f_y, f_z, m_x, m_y, m_z].
+        wrench = self.get_measured_joint_forces(
+            joint_indices=np.array([self._ft_force_row])
+        )[0]
+
+        # Negate: measured value is the reaction (proximal-on-distal); the real sensor reports the
+        # force/torque the robot applies on the environment (distal-on-proximal equivalent).
+        force = -wrench[0:3]
+        torque = -wrench[3:6]
+
+        return force.tolist(), torque.tolist()
+
     def apply_torques(self, tau_d: List[float]) -> None:
         """
         Apply desired torques to all robot joints, gripper excluded.
@@ -166,11 +227,51 @@ class FlexivSerial(Robot):
         self.set_joint_positions(q_d, joint_indices=np.arange(0, self._arm_dof))
         return
 
+    def _resolve_ft_force_row(self) -> int:
+        """
+        Resolve the row index into get_measured_joint_forces() for the sensing joint.
+
+        The force array has one row per articulation joint plus a leading base-link row, so the row
+        for joint J is (joint order index of J) + 1. The sensing joint is a fixed joint, so it is
+        not in the actuated-DoF map; look it up by name in the articulation joint ordering. The
+        physics metadata exposes this either as a name->index dict (joint_indices) or a name list
+        (joint_names), depending on the backend, so handle both.
+
+        Return:
+            int: row index into the get_measured_joint_forces() output.
+        """
+        meta = self._articulation_view._metadata
+        indices = getattr(meta, "joint_indices", None)
+        if isinstance(indices, dict) and self._FT_JOINT_NAME in indices:
+            return indices[self._FT_JOINT_NAME] + 1
+        names = getattr(meta, "joint_names", None)
+        if names is not None and self._FT_JOINT_NAME in list(names):
+            return list(names).index(self._FT_JOINT_NAME) + 1
+        raise KeyError(
+            f"joint [{self._FT_JOINT_NAME}] not found in articulation metadata "
+            f"(joint_indices/joint_names)"
+        )
+
     def initialize(self, physics_sim_view=None) -> None:
         """
         Initialize the articulation interface, set up torque drive mode
         """
         super().initialize(physics_sim_view=physics_sim_view)
+
+        # Resolve the row index into get_measured_joint_forces() for the wrist sensor joint. That
+        # call returns one row per articulation joint (row 0 is the base link's incoming joint), so
+        # the row for a given joint is joint_index + 1. The sensing joint (link7_ft_sensor) is a
+        # FIXED joint with no DoF, so it must be looked up by name in the articulation metadata's
+        # joint_indices map rather than via get_dof_index (which only covers actuated DoFs).
+        if self._has_ft_sensor:
+            try:
+                self._ft_force_row = self._resolve_ft_force_row()
+            except Exception as e:
+                self._ft_force_row = None
+                self._logger.error(
+                    f"Failed to resolve force-torque sensor joint [{self._FT_JOINT_NAME}], "
+                    f"wrist wrench will report zeros: {e}"
+                )
 
         # Initialize end-effector
         self._end_effector = SingleRigidPrim(

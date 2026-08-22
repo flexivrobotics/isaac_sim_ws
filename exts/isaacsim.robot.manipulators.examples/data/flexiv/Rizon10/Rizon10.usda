@@ -1,0 +1,87 @@
+#usda 1.0
+(
+    customLayerData = {
+        dictionary SimReady_Metadata = {
+            string license = "Apache-2.0"
+            dictionary validation = {
+                string profile = "Robot-Body-Runnable"
+                string profile_version = "1.0.0"
+                dictionary validated_features = {
+                    dictionary "2026-08-21" = {
+                        dictionary FET001_BASE_NEUTRAL = {
+                            string dependencies = "[]"
+                            bool passed = 1
+                            string version = "0.1.0"
+                        }
+                        dictionary FET004_ROBOT_PHYSX = {
+                            string dependencies = "[]"
+                            bool passed = 1
+                            string version = "0.1.0"
+                        }
+                        dictionary FET021_ROBOT_CORE_RUNNABLE = {
+                            string dependencies = "[]"
+                            bool passed = 1
+                            string version = "0.2.0"
+                        }
+                        dictionary FET022_DRIVEN_JOINTS_PHYSX = {
+                            string dependencies = "[{'FET004_ROBOT_PHYSX': {'version': '0.1.0'}}]"
+                            bool passed = 1
+                            string version = "0.1.0"
+                        }
+                        dictionary FET024_BASE_ARTICULATION_NEUTRAL = {
+                            string dependencies = "[]"
+                            bool passed = 1
+                            string version = "0.1.0"
+                        }
+                        dictionary FET024_BASE_ARTICULATION_PHYSX = {
+                            string dependencies = "[{'FET024_BASE_ARTICULATION_NEUTRAL': {'version': '0.1.0'}}]"
+                            bool passed = 1
+                            string version = "0.1.0"
+                        }
+                    }
+                }
+            }
+        }
+        string asset_name = "Rizon10"
+        string asset_type = "robot"
+        string creator = "URDF USD Converter v0.1.2"
+        string license = "Apache-2.0"
+        string source_file = "Rizon10.urdf"
+        string usd_date_generated = "2026-08-21T22:48:13.914030+00:00"
+    }
+    defaultPrim = "Rizon10"
+    doc = """Generated from Composed Stage of root layer /home/brian/dev/flexiv_workcell_builder/components/system_description/flexiv/usd/Flexiv/Rizon10/Rizon10.usd/Rizon10.usda
+
+
+Generated from Composed Stage of root layer /home/brian/dev/flexiv_workcell_builder/components/system_description/flexiv/usd/Flexiv/Rizon10/payloads/base.usd
+"""
+    kilogramsPerUnit = 1
+    metersPerUnit = 1
+    upAxis = "Z"
+)
+
+def Xform "Rizon10" (
+    prepend references = @./payloads/base.usda@
+    variants = {
+        string Physics = "physx"
+    }
+    append variantSets = "Physics"
+)
+{
+    variantSet "Physics" = {
+        "none" {
+
+        }
+        "physics" (
+            prepend payload = @./payloads/Physics/physics.usda@
+        ) {
+
+        }
+        "physx" (
+            prepend payload = @./payloads/Physics/physx.usda@
+        ) {
+
+        }
+    }
+}
+

@@ -1,0 +1,472 @@
+#usda 1.0
+(
+    customLayerData = {
+        string creator = "URDF USD Converter v0.1.2"
+    }
+    doc = """Generated from Composed Stage of root layer /home/brian/dev/flexiv_workcell_builder/components/system_description/flexiv/usd/Flexiv/Rizon4M/Rizon4M.usd/Rizon4M.usda
+
+
+Generated from Composed Stage of root layer /home/brian/dev/flexiv_workcell_builder/components/system_description/flexiv/usd/Flexiv/Rizon4M/payloads/base.usd
+"""
+    kilogramsPerUnit = 1
+    metersPerUnit = 1
+    upAxis = "Z"
+)
+
+def Scope "Instances"
+{
+    def Xform "shell" (
+        prepend references = @./geometries.usd@</Geometries/shell>
+    )
+    {
+        over "shell" (
+            apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            custom rel material:binding
+            prepend rel material:binding = </Instances/shell/VisualMaterials/robot>
+        }
+
+        def Scope "VisualMaterials"
+        {
+            def Material "robot" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/robot>
+            )
+            {
+            }
+        }
+    }
+
+    def Xform "shell_1" (
+        prepend references = @./geometries.usd@</Geometries/shell_1>
+    )
+    {
+        over "shell_1"
+        {
+            token subsetFamily:materialBind:familyType = "partition"
+
+            over "GeomSubset_001" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/shell_1/VisualMaterials/cover>
+            }
+
+            over "GeomSubset_002" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/shell_1/VisualMaterials/robot_1>
+            }
+        }
+
+        def Scope "VisualMaterials"
+        {
+            def Material "cover" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/cover>
+            )
+            {
+            }
+
+            def Material "robot_1" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/robot>
+            )
+            {
+            }
+        }
+    }
+
+    def Xform "ring" (
+        prepend references = @./geometries.usd@</Geometries/ring>
+    )
+    {
+        over "ring" (
+            apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            custom rel material:binding
+            prepend rel material:binding = </Instances/ring/VisualMaterials/Material>
+        }
+
+        def Scope "VisualMaterials"
+        {
+            def Material "Material" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/robot>
+            )
+            {
+            }
+        }
+    }
+
+    def Xform "shell_2" (
+        prepend references = @./geometries.usd@</Geometries/shell_2>
+    )
+    {
+        over "shell_2"
+        {
+            token subsetFamily:materialBind:familyType = "partition"
+
+            over "GeomSubset_001" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/shell_2/VisualMaterials/cover_1>
+            }
+
+            over "GeomSubset_002" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/shell_2/VisualMaterials/robot_2>
+            }
+        }
+
+        def Scope "VisualMaterials"
+        {
+            def Material "cover_1" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/cover>
+            )
+            {
+            }
+
+            def Material "robot_2" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/robot>
+            )
+            {
+            }
+        }
+    }
+
+    def Xform "shell_3" (
+        prepend references = @./geometries.usd@</Geometries/shell_3>
+    )
+    {
+        over "shell_3"
+        {
+            token subsetFamily:materialBind:familyType = "partition"
+
+            over "GeomSubset_001" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/shell_3/VisualMaterials/cover_2>
+            }
+
+            over "GeomSubset_002" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/shell_3/VisualMaterials/robot_3>
+            }
+        }
+
+        def Scope "VisualMaterials"
+        {
+            def Material "cover_2" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/cover>
+            )
+            {
+            }
+
+            def Material "robot_3" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/robot>
+            )
+            {
+            }
+        }
+    }
+
+    def Xform "shell_4" (
+        prepend references = @./geometries.usd@</Geometries/shell_4>
+    )
+    {
+        over "shell_4"
+        {
+            token subsetFamily:materialBind:familyType = "partition"
+
+            over "GeomSubset_001" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/shell_4/VisualMaterials/cover_3>
+            }
+
+            over "GeomSubset_002" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/shell_4/VisualMaterials/robot_4>
+            }
+        }
+
+        def Scope "VisualMaterials"
+        {
+            def Material "cover_3" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/cover>
+            )
+            {
+            }
+
+            def Material "robot_4" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/robot>
+            )
+            {
+            }
+        }
+    }
+
+    def Xform "shell_5" (
+        prepend references = @./geometries.usd@</Geometries/shell_5>
+    )
+    {
+        over "shell_5"
+        {
+            token subsetFamily:materialBind:familyType = "partition"
+
+            over "GeomSubset_001" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/shell_5/VisualMaterials/cover_4>
+            }
+
+            over "GeomSubset_002" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/shell_5/VisualMaterials/robot_5>
+            }
+        }
+
+        def Scope "VisualMaterials"
+        {
+            def Material "cover_4" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/cover>
+            )
+            {
+            }
+
+            def Material "robot_5" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/robot>
+            )
+            {
+            }
+        }
+    }
+
+    def Xform "shell_6" (
+        prepend references = @./geometries.usd@</Geometries/shell_6>
+    )
+    {
+        over "shell_6"
+        {
+            token subsetFamily:materialBind:familyType = "partition"
+
+            over "GeomSubset_001" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/shell_6/VisualMaterials/cover_5>
+            }
+
+            over "GeomSubset_002" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/shell_6/VisualMaterials/robot_6>
+            }
+        }
+
+        def Scope "VisualMaterials"
+        {
+            def Material "cover_5" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/cover>
+            )
+            {
+            }
+
+            def Material "robot_6" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/robot>
+            )
+            {
+            }
+        }
+    }
+
+    def Xform "link7_assm_new_part_0" (
+        prepend references = @./geometries.usd@</Geometries/link7_assm_new_part_0>
+    )
+    {
+        over "link7_assm_new_part_0" (
+            apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            custom rel material:binding
+            prepend rel material:binding = </Instances/link7_assm_new_part_0/VisualMaterials/robot_7>
+        }
+
+        def Scope "VisualMaterials"
+        {
+            def Material "robot_7" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/robot>
+            )
+            {
+            }
+        }
+    }
+
+    def Xform "link7_assm_new_part_1" (
+        prepend references = @./geometries.usd@</Geometries/link7_assm_new_part_1>
+    )
+    {
+        over "link7_assm_new_part_1" (
+            apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            custom rel material:binding
+            prepend rel material:binding = </Instances/link7_assm_new_part_1/VisualMaterials/robot_7>
+        }
+
+        def Scope "VisualMaterials"
+        {
+            def Material "robot_7" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/robot>
+            )
+            {
+            }
+        }
+    }
+
+    def Xform "convex_mesh" (
+        prepend references = @./geometries.usd@</Geometries/convex_mesh>
+    )
+    {
+        over "convex_mesh" (
+            apiSchemas = ["PhysicsCollisionAPI", "NewtonCollisionAPI", "PhysicsMeshCollisionAPI", "NewtonMeshCollisionAPI"]
+        )
+        {
+            token physics:approximation = "convexHull"
+            token purpose = "guide"
+        }
+    }
+
+    def Xform "convex_mesh_1" (
+        prepend references = @./geometries.usd@</Geometries/convex_mesh_1>
+    )
+    {
+        over "convex_mesh_1" (
+            apiSchemas = ["PhysicsCollisionAPI", "NewtonCollisionAPI", "PhysicsMeshCollisionAPI", "NewtonMeshCollisionAPI"]
+        )
+        {
+            token physics:approximation = "convexHull"
+            token purpose = "guide"
+        }
+    }
+
+    def Xform "convex_mesh_2" (
+        prepend references = @./geometries.usd@</Geometries/convex_mesh_2>
+    )
+    {
+        over "convex_mesh_2" (
+            apiSchemas = ["PhysicsCollisionAPI", "NewtonCollisionAPI", "PhysicsMeshCollisionAPI", "NewtonMeshCollisionAPI"]
+        )
+        {
+            token physics:approximation = "convexHull"
+            token purpose = "guide"
+        }
+    }
+
+    def Xform "convex_mesh_3" (
+        prepend references = @./geometries.usd@</Geometries/convex_mesh_3>
+    )
+    {
+        over "convex_mesh_3" (
+            apiSchemas = ["PhysicsCollisionAPI", "NewtonCollisionAPI", "PhysicsMeshCollisionAPI", "NewtonMeshCollisionAPI"]
+        )
+        {
+            token physics:approximation = "convexHull"
+            token purpose = "guide"
+        }
+    }
+
+    def Xform "convex_mesh_4" (
+        prepend references = @./geometries.usd@</Geometries/convex_mesh_4>
+    )
+    {
+        over "convex_mesh_4" (
+            apiSchemas = ["PhysicsCollisionAPI", "NewtonCollisionAPI", "PhysicsMeshCollisionAPI", "NewtonMeshCollisionAPI"]
+        )
+        {
+            token physics:approximation = "convexHull"
+            token purpose = "guide"
+        }
+    }
+
+    def Xform "convex_mesh_5" (
+        prepend references = @./geometries.usd@</Geometries/convex_mesh_5>
+    )
+    {
+        over "convex_mesh_5" (
+            apiSchemas = ["PhysicsCollisionAPI", "NewtonCollisionAPI", "PhysicsMeshCollisionAPI", "NewtonMeshCollisionAPI"]
+        )
+        {
+            token physics:approximation = "convexHull"
+            token purpose = "guide"
+        }
+    }
+
+    def Xform "convex_mesh_6" (
+        prepend references = @./geometries.usd@</Geometries/convex_mesh_6>
+    )
+    {
+        over "convex_mesh_6" (
+            apiSchemas = ["PhysicsCollisionAPI", "NewtonCollisionAPI", "PhysicsMeshCollisionAPI", "NewtonMeshCollisionAPI"]
+        )
+        {
+            token physics:approximation = "convexHull"
+            token purpose = "guide"
+        }
+    }
+
+    def Xform "convex_mesh_7" (
+        prepend references = @./geometries.usd@</Geometries/convex_mesh_7>
+    )
+    {
+        over "convex_mesh_7" (
+            apiSchemas = ["PhysicsCollisionAPI", "NewtonCollisionAPI", "PhysicsMeshCollisionAPI", "NewtonMeshCollisionAPI"]
+        )
+        {
+            token physics:approximation = "convexHull"
+            token purpose = "guide"
+        }
+    }
+}
+

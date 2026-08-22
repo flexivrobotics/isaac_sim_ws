@@ -1,0 +1,332 @@
+#usda 1.0
+(
+    customLayerData = {
+        string creator = "URDF USD Converter v0.1.2"
+    }
+    defaultPrim = "Rizon4s"
+    doc = """Generated from Composed Stage of root layer /home/brian/dev/flexiv_workcell_builder/components/system_description/flexiv/usd/Flexiv/Rizon4s/Rizon4s.usd/Rizon4s.usda
+
+
+Generated from Composed Stage of root layer /home/brian/dev/flexiv_workcell_builder/components/system_description/flexiv/usd/Flexiv/Rizon4s/payloads/base.usd
+"""
+    kilogramsPerUnit = 1
+    metersPerUnit = 1
+    upAxis = "Z"
+)
+
+def "Rizon4s" (
+    prepend apiSchemas = ["PhysicsArticulationRootAPI"]
+)
+{
+    over "Geometry"
+    {
+        over "base_link" (
+            prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+        )
+        {
+            point3f physics:centerOfMass = (0.0002, -0.0007, 0.0871)
+            float3 physics:diagonalInertia = (0.00999881, 0.0182, 0.01840119)
+            float physics:mass = 3.788
+            quatf physics:principalAxes = (0.50296676, 0.49701554, 0.49701554, 0.50296676)
+
+            over "link1" (
+                prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+            )
+            {
+                point3f physics:centerOfMass = (0.0001, 0.0035, 0.15)
+                float3 physics:diagonalInertia = (0.0070402757, 0.027359724, 0.0274)
+                float physics:mass = 3.596
+                quatf physics:principalAxes = (0.7068468, -0.01917497, 0.7068468, 0.01917497)
+
+                over "link2" (
+                    prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+                )
+                {
+                    point3f physics:centerOfMass = (-0.0003, 0.0361, 0.0998)
+                    float3 physics:diagonalInertia = (0.0035995075, 0.023, 0.023900492)
+                    float physics:mass = 2.69
+                    quatf physics:principalAxes = (0.498767, 0.50122994, 0.50122994, 0.498767)
+
+                    over "link3" (
+                        prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+                    )
+                    {
+                        point3f physics:centerOfMass = (-0.0123, -0.0012, 0.1366)
+                        float3 physics:diagonalInertia = (0.0037627243, 0.0136885, 0.014548776)
+                        float physics:mass = 2.354
+                        quatf physics:principalAxes = (0.7526592, -0.06051791, 0.6501687, -0.08439416)
+
+                        over "link4" (
+                            prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+                        )
+                        {
+                            point3f physics:centerOfMass = (-0.0129, 0.0313, 0.1034)
+                            float3 physics:diagonalInertia = (0.0027418523, 0.018053075, 0.018605074)
+                            float physics:mass = 2.354
+                            quatf physics:principalAxes = (0.3649969, 0.64693886, 0.37221158, 0.5565123)
+
+                            over "link5" (
+                                prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+                            )
+                            {
+                                point3f physics:centerOfMass = (0.0003, 0.0014, 0.1363)
+                                float3 physics:diagonalInertia = (0.0036745558, 0.013525444, 0.0142)
+                                float physics:mass = 2.31
+                                quatf physics:principalAxes = (0.7068783, -0.017974284, 0.7068783, 0.017974284)
+
+                                over "link6" (
+                                    prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+                                )
+                                {
+                                    point3f physics:centerOfMass = (0.0202, 0.0596, 0.0724)
+                                    float3 physics:diagonalInertia = (0.0033956696, 0.008281771, 0.010022559)
+                                    float physics:mass = 2.223
+                                    quatf physics:principalAxes = (0.39580262, 0.49437413, 0.28566337, 0.71925724)
+
+                                    over "link7_proximal" (
+                                        prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+                                    )
+                                    {
+                                        point3f physics:centerOfMass = (-0.000015742678, 0.00014347977, 0.035987813)
+                                        float3 physics:diagonalInertia = (0.001378, 0.002776, 0.0024779998)
+                                        float physics:mass = 1.020493
+                                        quatf physics:principalAxes = (0.5, 0.5, 0.5, 0.5)
+                                    }
+
+                                    over "link7_distal" (
+                                        prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+                                    )
+                                    {
+                                        point3f physics:centerOfMass = (0.000042, -0.000016, 0.009521999)
+                                        float3 physics:diagonalInertia = (0.000422, 0.000424, 0.000722)
+                                        float physics:mass = 0.382507
+                                        quatf physics:principalAxes = (1, 0, 0, 0)
+
+                                        over "flange" (
+                                            prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+                                        )
+                                        {
+                                            point3f physics:centerOfMass = (0, 0, 0)
+                                            float3 physics:diagonalInertia = (0, 0, 0)
+                                            float physics:mass = 0.001
+                                            quatf physics:principalAxes = (1, 0, 0, 0)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    def "Physics"
+    {
+        def PhysicsRevoluteJoint "joint1" (
+            prepend apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+            float drive:angular:physics:damping = 80
+            float drive:angular:physics:maxForce = 123
+            float drive:angular:physics:stiffness = 4000
+            float drive:angular:physics:targetPosition = 0
+            uniform token drive:angular:physics:type = "force"
+            uniform token physics:axis = "Z"
+            custom rel physics:body0
+            prepend rel physics:body0 = </Rizon4s/Geometry/base_link>
+            custom rel physics:body1
+            prepend rel physics:body1 = </Rizon4s/Geometry/base_link/link1>
+            point3f physics:localPos0 = (0, 0, 0.155)
+            point3f physics:localPos1 = (0, 0, 0)
+            quatf physics:localRot0 = (6.123234e-17, 0, 0, 1)
+            quatf physics:localRot1 = (1, 0, 0, 0)
+            float physics:lowerLimit = -165.00038
+            float physics:upperLimit = 165.00038
+            float state:angular:physics:position = 0
+            float state:angular:physics:velocity = 0
+        }
+
+        def PhysicsRevoluteJoint "joint2" (
+            prepend apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+            float drive:angular:physics:damping = 80
+            float drive:angular:physics:maxForce = 123
+            float drive:angular:physics:stiffness = 4000
+            float drive:angular:physics:targetPosition = 0
+            uniform token drive:angular:physics:type = "force"
+            uniform token physics:axis = "Y"
+            custom rel physics:body0
+            prepend rel physics:body0 = </Rizon4s/Geometry/base_link/link1>
+            custom rel physics:body1
+            prepend rel physics:body1 = </Rizon4s/Geometry/base_link/link1/link2>
+            point3f physics:localPos0 = (0, 0.03, 0.21)
+            point3f physics:localPos1 = (0, 0, 0)
+            quatf physics:localRot0 = (1, 0, 0, 0)
+            quatf physics:localRot1 = (1, 0, 0, 0)
+            float physics:lowerLimit = -135.00032
+            float physics:upperLimit = 135.00032
+            float state:angular:physics:position = 0
+            float state:angular:physics:velocity = 0
+        }
+
+        def PhysicsRevoluteJoint "joint3" (
+            prepend apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+            float drive:angular:physics:damping = 70
+            float drive:angular:physics:maxForce = 64
+            float drive:angular:physics:stiffness = 5000
+            float drive:angular:physics:targetPosition = 0
+            uniform token drive:angular:physics:type = "force"
+            uniform token physics:axis = "Z"
+            custom rel physics:body0
+            prepend rel physics:body0 = </Rizon4s/Geometry/base_link/link1/link2>
+            custom rel physics:body1
+            prepend rel physics:body1 = </Rizon4s/Geometry/base_link/link1/link2/link3>
+            point3f physics:localPos0 = (0, 0.035, 0.205)
+            point3f physics:localPos1 = (0, 0, 0)
+            quatf physics:localRot0 = (1, 0, 0, 0)
+            quatf physics:localRot1 = (1, 0, 0, 0)
+            float physics:lowerLimit = -174.9985
+            float physics:upperLimit = 174.9985
+            float state:angular:physics:position = 0
+            float state:angular:physics:velocity = 0
+        }
+
+        def PhysicsRevoluteJoint "joint4" (
+            prepend apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+            float drive:angular:physics:damping = 70
+            float drive:angular:physics:maxForce = 64
+            float drive:angular:physics:stiffness = 5000
+            float drive:angular:physics:targetPosition = 0
+            uniform token drive:angular:physics:type = "force"
+            uniform token physics:axis = "Y"
+            custom rel physics:body0
+            prepend rel physics:body0 = </Rizon4s/Geometry/base_link/link1/link2/link3>
+            custom rel physics:body1
+            prepend rel physics:body1 = </Rizon4s/Geometry/base_link/link1/link2/link3/link4>
+            point3f physics:localPos0 = (-0.02, -0.03, 0.19)
+            point3f physics:localPos1 = (0, 0, 0)
+            quatf physics:localRot0 = (6.123234e-17, 0, 0, -1)
+            quatf physics:localRot1 = (1, 0, 0, 0)
+            float physics:lowerLimit = -112.00179
+            float physics:upperLimit = 159.00151
+            float state:angular:physics:position = 0
+            float state:angular:physics:velocity = 0
+        }
+
+        def PhysicsRevoluteJoint "joint5" (
+            prepend apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+            float drive:angular:physics:damping = 15
+            float drive:angular:physics:maxForce = 39
+            float drive:angular:physics:stiffness = 1500
+            float drive:angular:physics:targetPosition = 0
+            uniform token drive:angular:physics:type = "force"
+            uniform token physics:axis = "Z"
+            custom rel physics:body0
+            prepend rel physics:body0 = </Rizon4s/Geometry/base_link/link1/link2/link3/link4>
+            custom rel physics:body1
+            prepend rel physics:body1 = </Rizon4s/Geometry/base_link/link1/link2/link3/link4/link5>
+            point3f physics:localPos0 = (-0.02, 0.025, 0.195)
+            point3f physics:localPos1 = (0, 0, 0)
+            quatf physics:localRot0 = (2.8327693e-16, 0, 0, 1)
+            quatf physics:localRot1 = (1, 0, 0, 0)
+            float physics:lowerLimit = -174.9985
+            float physics:upperLimit = 174.9985
+            float state:angular:physics:position = 0
+            float state:angular:physics:velocity = 0
+        }
+
+        def PhysicsRevoluteJoint "joint6" (
+            prepend apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+            float drive:angular:physics:damping = 15
+            float drive:angular:physics:maxForce = 39
+            float drive:angular:physics:stiffness = 1500
+            float drive:angular:physics:targetPosition = 0
+            uniform token drive:angular:physics:type = "force"
+            uniform token physics:axis = "Y"
+            custom rel physics:body0
+            prepend rel physics:body0 = </Rizon4s/Geometry/base_link/link1/link2/link3/link4/link5>
+            custom rel physics:body1
+            prepend rel physics:body1 = </Rizon4s/Geometry/base_link/link1/link2/link3/link4/link5/link6>
+            point3f physics:localPos0 = (0, 0.03, 0.19)
+            point3f physics:localPos1 = (0, 0, 0)
+            quatf physics:localRot0 = (1, 0, 0, 0)
+            quatf physics:localRot1 = (1, 0, 0, 0)
+            float physics:lowerLimit = -84.99829
+            float physics:upperLimit = 264.99872
+            float state:angular:physics:position = 0
+            float state:angular:physics:velocity = 0
+        }
+
+        def PhysicsRevoluteJoint "joint7" (
+            prepend apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+            float drive:angular:physics:damping = 15
+            float drive:angular:physics:maxForce = 39
+            float drive:angular:physics:stiffness = 1500
+            float drive:angular:physics:targetPosition = 0
+            uniform token drive:angular:physics:type = "force"
+            uniform token physics:axis = "Z"
+            custom rel physics:body0
+            prepend rel physics:body0 = </Rizon4s/Geometry/base_link/link1/link2/link3/link4/link5/link6>
+            custom rel physics:body1 = </Rizon4s/Geometry/base_link/link1/link2/link3/link4/link5/link6/link7_proximal>
+            point3f physics:localPos0 = (-0.015, 0.073, 0.11)
+            point3f physics:localPos1 = (0, 0, 0)
+            quatf physics:localRot0 = (0.70710677, 7.0413644e-17, -0.70710677, 1.3907471e-16)
+            quatf physics:localRot1 = (1, 0, 0, 0)
+            float physics:lowerLimit = -174.9985
+            float physics:upperLimit = 174.9985
+            float state:angular:physics:position = 0
+            float state:angular:physics:velocity = 0
+        }
+
+        def PhysicsFixedJoint "root_joint"
+        {
+            custom rel physics:body0
+            prepend rel physics:body0 = </Rizon4s>
+            custom rel physics:body1
+            prepend rel physics:body1 = </Rizon4s/Geometry/base_link>
+            point3f physics:localPos0 = (0, 0, 0)
+            point3f physics:localPos1 = (0, 0, 0)
+            quatf physics:localRot0 = (1, 0, 0, 0)
+            quatf physics:localRot1 = (1, 0, 0, 0)
+        }
+
+        def PhysicsFixedJoint "link7_ft_sensor"
+        {
+            rel physics:body0 = </Rizon4s/Geometry/base_link/link1/link2/link3/link4/link5/link6/link7_proximal>
+            rel physics:body1 = </Rizon4s/Geometry/base_link/link1/link2/link3/link4/link5/link6/link7_distal>
+            point3f physics:localPos0 = (0, 0, 0.094)
+            point3f physics:localPos1 = (0, 0, 0)
+            quatf physics:localRot0 = (1, 0, 0, 0)
+            quatf physics:localRot1 = (1, 0, 0, 0)
+        }
+
+        def PhysicsFixedJoint "link7_distal_to_flange"
+        {
+            custom rel physics:body0 = </Rizon4s/Geometry/base_link/link1/link2/link3/link4/link5/link6/link7_distal>
+            custom rel physics:body1 = </Rizon4s/Geometry/base_link/link1/link2/link3/link4/link5/link6/link7_distal/flange>
+            point3f physics:localPos0 = (0, -4.1633363e-17, 0.029999997)
+            point3f physics:localPos1 = (0, 0, 0)
+            quatf physics:localRot0 = (-1.0978305e-16, -1.110223e-16, -4.8550708e-17, -1)
+            quatf physics:localRot1 = (1, 0, 0, 0)
+        }
+    }
+}
+
+def PhysicsScene "PhysicsScene" (
+    prepend apiSchemas = ["NewtonSceneAPI"]
+)
+{
+}
+

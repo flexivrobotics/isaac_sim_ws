@@ -57,10 +57,11 @@ from isaacsim.core.utils.extensions import enable_extension
 enable_extension("isaacsim.robot.manipulators.examples")
 
 from isaacsim.core.api import World
-from isaacsim.core.utils.stage import add_reference_to_stage
+from isaacsim.core.utils.stage import add_reference_to_stage, get_current_stage
 from isaacsim.sensors.camera import Camera
 from isaacsim.robot.manipulators.examples.flexiv import FlexivSerial
 from isaacsim.robot.manipulators.grippers.parallel_gripper import ParallelGripper
+from pxr import Usd, UsdPhysics, Sdf, Gf
 
 # Physics and render loop period [sec]
 RENDER_FREQ = 60.0
@@ -72,6 +73,30 @@ class GripperStatus(Enum):
     INIT = 0
     OPENED = 1
     CLOSED = 2
+
+
+# Built-in gripper profiles, keyed by the tool's mount prim name (the `prim_name`
+# in a robot's `tool` config block). A tool USD is referenced onto the arm under
+# `<robot_prim>/<prim_name>`, then a fixed joint mounts it to the arm flange. Each
+# profile describes how to drive that gripper as an Isaac ParallelGripper:
+#   ee            : end-effector prim, RELATIVE to the mount prim
+#   mount_body    : the gripper's base rigid body to fix to the flange, RELATIVE
+#                   to the mount prim
+#   joints        : the two joint_prim_names the ParallelGripper API requires
+#                   (the Grav has a single actuation joint, so the second is a
+#                   non-actuated placeholder driven with zero gains)
+#   opened/closed : joint positions [deg] for the open / closed states
+# Add a new gripper by adding an entry here + shipping its USD under
+# data/flexiv/grippers/; no other code change is needed.
+GRIPPER_PROFILES = {
+    "Grav_gripper": {
+        "ee": "right_finger_tip",
+        "mount_body": "gripper_base",
+        "joints": ["finger_joint", "right_outer_knuckle_joint"],
+        "opened": [45.0, 0.0],
+        "closed": [-8.88, 0.0],
+    },
+}
 
 
 class BridgeRunner(object):
@@ -191,39 +216,16 @@ class BridgeRunner(object):
             )
             add_reference_to_stage(usd_path=usd_path, prim_path=prim_path)
 
-            # Configure gripper if the usd name suggests a gripper exists in the model
+            # Attach a tool (gripper) if the robot config declares one. The tool
+            # USD is referenced onto the arm and fixed to the flange at load time,
+            # so no pre-combined "<robot>_with_Grav" asset is needed.
             gripper = None
             end_effector_prim_name = "flange"
-            if "Grav" in usd_path:
-                # This gripper has only one actuation joint, but the API requires two,
-                # thus providing a non-actuation joint (gains = 0) as a place holder
-                end_effector_prim_name = "Grav_gripper/right_finger_tip"
-                gripper = ParallelGripper(
-                    end_effector_prim_path=prim_path + "/" + end_effector_prim_name,
-                    joint_prim_names=["finger_joint", "right_outer_knuckle_joint"],
-                    joint_opened_positions=np.array([45.0, 0]),
-                    joint_closed_positions=np.array([-8.88, 0]),
-                )
-                self._logger.info(
-                    "The usd name suggests a Grav gripper exists in the model, gripper control will be enabled"
-                )
-            elif "Robotiq" in usd_path:
-                # This gripper has only one actuation joint, but the API requires two,
-                # thus providing a non-actuation joint (gains = 0) as a place holder
-                end_effector_prim_name = (
-                    "Robotiq_2F_85_flattened/Robotiq_2F_85/right_inner_finger"
-                )
-                gripper = ParallelGripper(
-                    end_effector_prim_path=prim_path + "/" + end_effector_prim_name,
-                    joint_prim_names=["finger_joint", "right_inner_finger_joint"],
-                    joint_opened_positions=np.array([0, 0]),
-                    joint_closed_positions=np.array([45, 0]),
-                )
-                self._logger.info(
-                    "The usd name suggests a Robotiq gripper exists in the model, gripper control will be enabled"
-                )
+            tool = r.get("tool")
+            if tool:
+                gripper, end_effector_prim_name = self._attach_tool(prim_path, tool)
             else:
-                self._logger.info("Gripper control is not enabled")
+                self._logger.info("No tool configured; gripper control is not enabled")
 
             # Add robot to stage
             robot = self._world.scene.add(
@@ -270,6 +272,100 @@ class BridgeRunner(object):
         # Put robot to initial pose
         for robot in self._robots:
             robot.instance.teleport_to(self._initial_q)
+
+    def _find_flange_path(self, robot_prim_path: str) -> str:
+        """
+        Resolve the flange prim path under a robot, tolerating both USD layouts.
+
+        In the old flat layout the flange is a direct child (`<robot>/flange`); in
+        the SimReady layout it is nested (`<robot>/Geometry/base_link/.../link7/
+        flange`). Return the direct path if it exists, otherwise search the robot
+        subtree for a prim named "flange".
+
+        Params:
+            robot_prim_path (str): Prim path of the robot articulation root.
+
+        Return:
+            str: Full prim path of the flange.
+        """
+        stage = get_current_stage()
+        direct = robot_prim_path + "/flange"
+        if stage.GetPrimAtPath(direct).IsValid():
+            return direct
+        root = stage.GetPrimAtPath(robot_prim_path)
+        for prim in Usd.PrimRange(root):
+            if prim.GetName() == "flange":
+                return prim.GetPath().pathString
+        raise RuntimeError(f"No 'flange' prim found under [{robot_prim_path}]")
+
+    def _attach_tool(self, robot_prim_path: str, tool: Dict):
+        """
+        Reference a tool (gripper) USD onto the arm and fix it to the flange.
+
+        The tool USD is added under `<robot_prim_path>/<prim_name>` and a fixed
+        joint mounts its base rigid body (from the gripper profile) to the arm
+        flange, so the tool joins the arm's articulation. A ParallelGripper is then
+        constructed from the built-in profile keyed by `prim_name`.
+
+        Params:
+            robot_prim_path (str): Prim path of the robot articulation root.
+            tool (Dict): Tool config block with keys:
+                usd (str): Path to the tool USD (already resolved to absolute).
+                prim_name (str): Mount prim name; also the GRIPPER_PROFILES key.
+
+        Return:
+            (ParallelGripper, str): The gripper instance and the end-effector prim
+            name RELATIVE to the robot prim (e.g. "Grav_gripper/right_finger_tip").
+        """
+        usd_path = tool["usd"]
+        prim_name = tool["prim_name"]
+        profile = GRIPPER_PROFILES.get(prim_name)
+        if profile is None:
+            raise ValueError(
+                f"No gripper profile for tool prim_name [{prim_name}]. "
+                f"Known: {sorted(GRIPPER_PROFILES)}"
+            )
+
+        tool_prim_path = robot_prim_path + "/" + prim_name
+        self._logger.info(
+            f"Attaching tool usd [{usd_path}] at prim path [{tool_prim_path}]"
+        )
+        add_reference_to_stage(usd_path=usd_path, prim_path=tool_prim_path)
+
+        # Fix the gripper base to the flange. Joint frames are coincident (the tool
+        # USD is authored so its base sits at the flange), so both local anchors are
+        # identity -- matching the old baked "flange_to_gripper" fixed joint.
+        stage = get_current_stage()
+        flange_path = self._find_flange_path(robot_prim_path)
+        mount_body_path = tool_prim_path + "/" + profile["mount_body"]
+        mount_joint_path = tool_prim_path + "/flange_to_" + profile["mount_body"]
+        mount = UsdPhysics.FixedJoint.Define(stage, mount_joint_path)
+        mount.CreateBody0Rel().SetTargets([Sdf.Path(flange_path)])
+        mount.CreateBody1Rel().SetTargets([Sdf.Path(mount_body_path)])
+        mount_prim = mount.GetPrim()
+        mount_prim.CreateAttribute("physics:localPos0", Sdf.ValueTypeNames.Point3f).Set(
+            Gf.Vec3f(0, 0, 0))
+        mount_prim.CreateAttribute("physics:localPos1", Sdf.ValueTypeNames.Point3f).Set(
+            Gf.Vec3f(0, 0, 0))
+        mount_prim.CreateAttribute("physics:localRot0", Sdf.ValueTypeNames.Quatf).Set(
+            Gf.Quatf(1, 0, 0, 0))
+        mount_prim.CreateAttribute("physics:localRot1", Sdf.ValueTypeNames.Quatf).Set(
+            Gf.Quatf(1, 0, 0, 0))
+
+        end_effector_prim_name = prim_name + "/" + profile["ee"]
+        # This gripper has only one actuation joint, but the ParallelGripper API
+        # requires two, so the second is a non-actuation placeholder (gains = 0).
+        gripper = ParallelGripper(
+            end_effector_prim_path=robot_prim_path + "/" + end_effector_prim_name,
+            joint_prim_names=list(profile["joints"]),
+            joint_opened_positions=np.array(profile["opened"]),
+            joint_closed_positions=np.array(profile["closed"]),
+        )
+        self._logger.info(
+            f"Tool [{prim_name}] attached; gripper control enabled "
+            f"(ee=[{end_effector_prim_name}])"
+        )
+        return gripper, end_effector_prim_name
 
     def on_physics_step(self, dt) -> None:
         """
@@ -394,6 +490,9 @@ def resolve_usd_paths(config):
     for robot in config.get("robots", []):
         if robot.get("usd"):
             robot["usd"] = resolve(robot["usd"])
+        tool = robot.get("tool")
+        if tool and tool.get("usd"):
+            tool["usd"] = resolve(tool["usd"])
     return config
 
 

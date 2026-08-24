@@ -122,6 +122,12 @@ After the example program is up and running, select the `TargetCube` prim under 
 4. Go back to Elements Studio, then restart the exited simulator by toggle on the *Connect* button.
 5. Wait for the connection to establish. If the connection is successful, you should see in Elements Studio a robot at home pose with no error.
 
+### Optional: match the sim to a specific robot's calibration
+
+To make the simulated arm match a specific physical robot's per-unit kinematic
+calibration, generate a calibrated per-robot USD from RDK and point the config's
+`usd:` at it. See [tools/calibration/README.md](tools/calibration/README.md).
+
 ### Verify everything is working
 
 1. In Elements Studio, use the simulated motion bar to enter free-drive mode.

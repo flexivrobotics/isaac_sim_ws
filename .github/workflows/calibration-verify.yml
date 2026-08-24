@@ -1,0 +1,37 @@
+name: Calibration verification
+
+# Regression test for the RDK-to-USD calibration tools. Runs in a plain Python
+# environment (no Isaac Sim, no robot): it validates the example calibrated
+# kinematics YAML, and -- once a reference calibrated URDF (and a base USD) are
+# provided -- applies the example calibration to a USD and cross-checks it
+# against the URDF. Until those inputs exist, the comparison step is skipped and
+# the job still passes on the YAML validation.
+
+on:
+  push:
+    paths:
+      - "tools/calibration/**"
+      - ".github/workflows/calibration-verify.yml"
+  pull_request:
+    paths:
+      - "tools/calibration/**"
+      - ".github/workflows/calibration-verify.yml"
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tools/calibration/test
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip usd-core numpy pyyaml
+
+      - name: Run calibration verification
+        run: python run_ci_verification.py

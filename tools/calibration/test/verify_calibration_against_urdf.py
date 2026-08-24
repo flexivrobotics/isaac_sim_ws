@@ -5,18 +5,12 @@
 # (run_ci_verification.py); can also be run by hand to debug a suspicious
 # calibration.
 #
-# Purpose:
-#   Independently confirm that the calibration was applied to the USD correctly
-#   -- WITHOUT reusing any of the applier's own code paths. Ground truth comes
-#   from a DIFFERENT RDK entry point (Model.SyncURDF) and is compared against the
-#   calibrated USD:
-#     * calibrate_usd_from_rdk.py: Model.SyncKinematicsYAML() -> YAML -> USD.
-#     * this script: URDF -> forward kinematics -> world poses, compared to the
-#       USD's world poses (via UsdGeom.XformCache).
-#   If the two agree per-link to sub-micron, the applier is correct. A full
-#   URDF->USD conversion (Isaac's URDF importer) would reproduce exactly the
-#   per-link frames computed here, but requires booting Isaac Sim; this FK check
-#   is the same comparison, self-contained.
+# It checks the calibrated USD against a separate source of truth: the robot's
+# URDF (from Model.SyncURDF), a different RDK path than the applier uses
+# (Model.SyncKinematicsYAML). It computes each link's world pose from the URDF by
+# forward kinematics and compares it to the USD's world pose (via
+# UsdGeom.XformCache); agreement per-link to sub-micron means the calibration was
+# applied correctly.
 #
 # Inputs (--usd is the calibrated USD to check; ground truth is one of):
 #   --robot-sn      : pull the URDF live via SyncURDF (needs a robot).
@@ -33,9 +27,9 @@ import xml.etree.ElementTree as ET
 import numpy as np
 from pxr import Usd, UsdGeom
 
-# Same chain as the applier, but declared here independently so this check does
-# not import anything from calibrate_usd_from_rdk.py. Maps the URDF joint name
-# to the USD child-link prim path under <defaultPrim>/Geometry.
+# Maps the URDF joint name to the USD child-link prim path under
+# <defaultPrim>/Geometry. Kept independent of calibrate_usd_from_rdk.py so this
+# check does not share code with the applier it verifies.
 JOINT_TO_LINK = [
     ("joint1", "base_link/link1"),
     ("joint2", "base_link/link1/link2"),
@@ -77,10 +71,9 @@ def sync_urdf_from_robot(robot_sn, out_path, network_whitelist):
     """Pull the robot's actual URDF into out_path via Model.SyncURDF()."""
     import flexivrdk
 
-    # SyncURDF() updates a TEMPLATE urdf in place. Ship/point it at a template
-    # generated from flexiv_description; here we require the caller to have one,
-    # or we seed a minimal template is NOT possible (SyncURDF needs the full
-    # template structure). So we expect out_path to already be a template.
+    # SyncURDF() updates a template URDF in place and needs the full template
+    # structure, so out_path must already be a valid template generated from
+    # flexiv_description.
     if not os.path.isfile(out_path):
         raise FileNotFoundError(
             f"SyncURDF needs an existing template URDF at [{out_path}]. Generate "

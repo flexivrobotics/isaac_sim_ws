@@ -2,54 +2,46 @@
 # Copyright (c) 2026, Flexiv Ltd. All rights reserved.
 #
 # Calibrate a SimReady Flexiv robot USD using the per-robot kinematic
-# calibration pulled from the real robot via Flexiv RDK.
+# calibration pulled from the real robot via Flexiv RDK. The kinematic parameters
+# (per-joint origin: translation + RPY) are pulled with Model.SyncKinematicsYAML()
+# and written into the existing USD's link transforms and joint anchors, leaving
+# every other property of the SimReady asset untouched.
 #
-# Why this approach (SyncKinematicsYAML, not SyncURDF -> convert):
-#   The shipped USD assets are already SimReady-verified (physics, articulation,
-#   materials, validation metadata). Regenerating a USD from a freshly converted
-#   URDF would throw all of that away. Instead we pull ONLY the kinematic
-#   parameters (per-joint origin: translation + RPY) into a small YAML via
-#   Model.SyncKinematicsYAML(), then surgically write those origins into the
-#   existing USD's link transforms and joint anchors. The edit is modular,
-#   scoped, and preserves every other property of the asset.
-#
-# What "applying the calibration" means, concretely:
+# Where the calibration is written:
 #   A Flexiv arm USD stores each joint's origin (the child link frame expressed
-#   in its parent link frame) in TWO consistent places, both of which we update:
+#   in its parent link frame) in two places, both updated together:
 #     1. base.usda   : link<N> Xform  -> xformOp:transform  (a full 4x4 matrix)
 #     2. physics.usda: joint<N>       -> physics:localPos0 + physics:localRot0
 #
-#   IMPORTANT -- two different frames:
+#   The two use different frames:
 #   * The kinematic links in base.usda are authored with
 #       xformOpOrder = ["!resetXformStack!", "xformOp:transform"]
-#     The "!resetXformStack!" discards the inherited parent transform, so each
-#     link's xformOp:transform is its pose in the ROBOT ROOT frame (accumulated
-#     down the chain), NOT relative to its parent. (These prims also carry
-#     leftover xformOp:translate/orient attributes, but xformOpOrder does not
-#     reference them, so USD ignores them -- writing those alone would be a
-#     silent no-op.) We therefore compose the per-joint origins forward
-#     (W_i = W_{i-1} * L_i) and write each link's ROOT-relative matrix.
-#   * The physics joints in physics.usda ARE parent-relative: localPos0/localRot0
-#     is the joint frame on the parent body, which equals the child link's LOCAL
-#     origin L_i. localPos1/localRot1 stay identity (joint frame == child origin)
-#     and are intentionally left untouched.
+#     "!resetXformStack!" discards the inherited parent transform, so each link's
+#     xformOp:transform is its pose in the ROBOT ROOT frame (accumulated down the
+#     chain), NOT relative to its parent. (These prims also carry leftover
+#     xformOp:translate/orient attributes, but xformOpOrder does not reference
+#     them, so USD ignores them -- writing those alone would be a silent no-op.)
+#     The per-joint origins are composed forward (W_i = W_{i-1} * L_i) and each
+#     link's ROOT-relative matrix is written.
+#   * The physics joints in physics.usda are parent-relative: localPos0/localRot0
+#     is the joint frame on the parent body, equal to the child link's LOCAL
+#     origin L_i. localPos1/localRot1 stay identity (joint frame == child origin).
 #
 # Flow:
 #   With --robot-sn : connect via RDK, sync the robot's actual calibration into a
 #                     working-copy YAML, then write it into a per-robot USD copy.
 #   Without --robot-sn : apply the nominal flexiv_description template only (no
-#                     robot); the output is named after the model.
+#                     robot); the output is named "<Model>-nominal".
 #
-# Output: the source asset is never modified. A per-robot copy is written
-# to <src_dir>/calibrated/<robot-sn>/<robot-sn>.usda (named after the model when
-# no serial is given), so different robots never overwrite each other. The copy
-# reuses the shared meshes (geometries.usd) from the source tree rather than
-# duplicating them -- see materialize_per_robot_usd().
+# Output: the source asset is never modified. A per-robot copy is written as a
+# sibling of the source model dir, <flexiv>/<robot-sn>/<robot-sn>.usda, reusing
+# the shared meshes (geometries.usd) from the source tree rather than duplicating
+# them -- see materialize_per_robot_usd().
 #
 # The nominal template comes from flexiv_description (config/<Model>/
 # default_kinematics.yaml), resolved at runtime -- see resolve_working_template().
 # By default it is fetched from GitHub; pass --flexiv-description for a local
-# checkout. It is copied to a WORKING COPY next to the per-robot USD before any
+# checkout. It is copied to a working copy next to the per-robot USD before any
 # sync, so the flexiv_description source is never modified. The model is taken
 # from the robot serial, or from the USD's defaultPrim when no serial is given.
 #
@@ -351,8 +343,8 @@ def _set_joint_anchor(physics_layer, robot_name, joint_name, xyz, quat):
 
 # The SimReady asset is a tree of relatively-referenced layers. The meshes live
 # in geometries.usd (the bulk of the bytes); everything else is small. To produce
-# a per-robot calibrated USD without duplicating meshes, we copy the root + all
-# the small layers into <src>/calibrated/<robot-sn>/ and SHARE geometries.usd by
+# a per-robot calibrated USD without duplicating meshes, the root and all the
+# small layers are copied into the per-robot dir, and geometries.usd is shared by
 # repointing the references in the copied instances.usda back to the original.
 _SMALL_PAYLOADS = ["base.usda", "instances.usda", "materials.usda", "robot.usda"]
 _SMALL_PHYSICS = ["physics.usda", "physx.usda", "mujoco.usda"]

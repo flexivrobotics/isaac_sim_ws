@@ -94,11 +94,10 @@ def run_full_verification():
         return False
 
     # Both inputs present. Apply the example YAML to a per-robot copy of the base
-    # USD, then run the verifier against the reference URDF. We import the applier
-    # as a module and call its functions directly -- the example YAML is a
-    # ready-made template, so we bypass the CLI's flexiv_description template
-    # resolution. Imported lazily so the YAML validation above still runs even if
-    # usd-core is unavailable.
+    # USD, then run the verifier against the reference URDF. The applier is
+    # imported as a module and its functions called directly, since the example
+    # YAML is already a template and needs no flexiv_description resolution.
+    # Imported lazily so the YAML validation above still runs without usd-core.
     import importlib.util
     import subprocess
 

@@ -1,0 +1,94 @@
+#usda 1.0
+(
+    customLayerData = {
+        string creator = "URDF USD Converter v0.1.2"
+    }
+    defaultPrim = "Rizon10"
+    doc = """Generated from Composed Stage of root layer /home/brian/dev/flexiv_workcell_builder/components/system_description/flexiv/usd/Flexiv/Rizon10/Rizon10.usd/Rizon10.usda
+
+
+Generated from Composed Stage of root layer /home/brian/dev/flexiv_workcell_builder/components/system_description/flexiv/usd/Flexiv/Rizon10/payloads/base.usd
+"""
+    kilogramsPerUnit = 1
+    metersPerUnit = 1
+    subLayers = [
+        @./physics.usda@
+    ]
+    upAxis = "Z"
+)
+
+over "Rizon10" (
+    prepend apiSchemas = ["PhysxArticulationAPI"]
+)
+{
+    bool physxArticulation:enabledSelfCollisions = 0
+    int physxArticulation:solverPositionIterationCount = 32
+    int physxArticulation:solverVelocityIterationCount = 16
+
+    over "Physics"
+    {
+        over "joint1" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+            float physxJoint:armature = 2.77
+            float physxJoint:jointFriction = 0
+            float physxJoint:maxJointVelocity = 99.99833
+        }
+
+        over "joint2" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+            float physxJoint:armature = 2.77
+            float physxJoint:jointFriction = 0
+            float physxJoint:maxJointVelocity = 99.99833
+        }
+
+        over "joint3" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+            float physxJoint:armature = 2.77493
+            float physxJoint:jointFriction = 0
+            float physxJoint:maxJointVelocity = 120.000275
+        }
+
+        over "joint4" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+            float physxJoint:armature = 2.77493
+            float physxJoint:jointFriction = 0
+            float physxJoint:maxJointVelocity = 120.000275
+        }
+
+        over "joint5" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+            float physxJoint:armature = 0.5373
+            float physxJoint:jointFriction = 0
+            float physxJoint:maxJointVelocity = 219.9986
+        }
+
+        over "joint6" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+            float physxJoint:armature = 0.5373
+            float physxJoint:jointFriction = 0
+            float physxJoint:maxJointVelocity = 219.9986
+        }
+
+        over "joint7" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+            float physxJoint:armature = 0.5373
+            float physxJoint:jointFriction = 0
+            float physxJoint:maxJointVelocity = 219.9986
+        }
+    }
+}
+

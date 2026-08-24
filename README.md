@@ -103,7 +103,7 @@ create a simulated robot by following
 To verify that the workspace setup is successful, run the example Python application:
 
     cd <isaac_sim_root_dir>
-    ./python.sh standalone_examples/api/isaacsim.robot.manipulators/flexiv/follow_target_with_rmpflow.py extsDeprecated/isaacsim.robot.manipulators.examples/data/flexiv/Rizon4.usd
+    ./python.sh standalone_examples/api/isaacsim.robot.manipulators/flexiv/follow_target_with_rmpflow.py extsDeprecated/isaacsim.robot.manipulators.examples/data/flexiv/Rizon4/Rizon4.usda
 
 WARNING: When running Isaac Sim for the first time, it takes a couple of minutes to warm up the shader cache. You will notice that the CPU is fully loaded and the Isaac Sim window seems frozen. Please wait patiently and do not force quit the program.
 

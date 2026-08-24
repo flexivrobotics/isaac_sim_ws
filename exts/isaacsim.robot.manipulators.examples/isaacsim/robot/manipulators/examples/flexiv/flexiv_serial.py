@@ -10,6 +10,8 @@
 import numpy as np
 import spdlog
 from typing import Optional, List
+from pxr import Usd
+from isaacsim.core.utils.stage import get_current_stage
 from isaacsim.core.api.robots.robot import Robot
 from isaacsim.core.prims import SingleRigidPrim
 from isaacsim.robot.manipulators.grippers.gripper import Gripper
@@ -56,12 +58,26 @@ class FlexivSerial(Robot):
         self._default_kps = None
         self._default_kds = None
         self._end_effector = None
-        self._end_effector_prim_path = prim_path + "/" + end_effector_prim_name
+        self._logger = spdlog.ConsoleLogger("flexiv::" + name)
+        # Resolve the end-effector prim path. Two USD layouts are in use:
+        #   * the older "flat" layout, where the end-effector prim (e.g. "flange")
+        #     is a direct child of the robot root, so prim_path + "/" + name is
+        #     the correct full path; and
+        #   * the newer SimReady layout, where "flange" is nested deep under
+        #     Geometry/base_link/link1/.../link7 (or, after the FT-sensor split,
+        #     under link7_distal), so the direct-child path does not exist.
+        # Prefer the direct path when it already exists (exact old behavior);
+        # otherwise search the robot subtree for a prim whose name matches the
+        # LAST component of end_effector_prim_name and use that full path. This
+        # also handles the gripper cases (whose names are already nested, e.g.
+        # "Grav_gripper/right_finger_tip") by matching their leaf name.
+        self._end_effector_prim_path = self._resolve_end_effector_prim_path(
+            prim_path, end_effector_prim_name
+        )
         self._has_ft_sensor = has_ft_sensor
         # Row index into get_measured_joint_forces() output for the wrist sensor joint. Resolved in
         # initialize() once the articulation metadata is available.
         self._ft_force_row = None
-        self._logger = spdlog.ConsoleLogger("flexiv::" + name)
 
         # Construct base
         super().__init__(
@@ -71,6 +87,73 @@ class FlexivSerial(Robot):
             orientation=ori_in_world,
         )
         return
+
+    def _resolve_end_effector_prim_path(
+        self, prim_path: str, end_effector_prim_name: str
+    ) -> str:
+        """Resolve the end-effector prim path across the two robot USD layouts.
+
+        The direct path ``prim_path + "/" + end_effector_prim_name`` is correct
+        for the flat layout (end-effector a direct child of the robot root). In
+        the SimReady layout the end-effector (e.g. the flange) is nested many
+        levels deep, so the direct path does not exist; in that case we search
+        the robot subtree (restricted to ``prim_path``) for a prim whose name
+        equals the LAST component of ``end_effector_prim_name`` and return its
+        full path.
+
+        Behavior is unchanged whenever the direct path already exists. If the
+        stage is not available yet, or no match is found, we fall back to the
+        direct path so downstream initialization surfaces the original error.
+
+        Params:
+            prim_path (str): robot articulation root prim path.
+            end_effector_prim_name (str): configured end-effector name, possibly
+                itself a nested path (e.g. "Grav_gripper/right_finger_tip").
+
+        Return:
+            str: resolved full prim path of the end effector.
+        """
+        direct_path = prim_path + "/" + end_effector_prim_name
+        stage = get_current_stage()
+        if stage is None:
+            return direct_path
+
+        # Exact old behavior: if the direct path already resolves, use it as-is.
+        if stage.GetPrimAtPath(direct_path).IsValid():
+            return direct_path
+
+        # Otherwise search the robot subtree for the end-effector leaf name.
+        leaf_name = end_effector_prim_name.rsplit("/", 1)[-1]
+        root_prim = stage.GetPrimAtPath(prim_path)
+        if not root_prim.IsValid():
+            return direct_path
+
+        matches = [
+            p.GetPath().pathString
+            for p in Usd.PrimRange(root_prim)
+            if p.GetName() == leaf_name
+        ]
+        if not matches:
+            self._logger.warn(
+                f"End-effector prim [{leaf_name}] not found under [{prim_path}]; "
+                f"falling back to [{direct_path}]"
+            )
+            return direct_path
+
+        # PrimRange is a depth-first pre-order walk, so matches[0] is the first
+        # (shallowest, left-most) hit under prim_path. Prefer it and log if the
+        # search was ambiguous.
+        resolved = matches[0]
+        if len(matches) > 1:
+            self._logger.warn(
+                f"Multiple prims named [{leaf_name}] under [{prim_path}]: "
+                f"{matches}; using [{resolved}]"
+            )
+        else:
+            self._logger.info(
+                f"Resolved nested end-effector [{leaf_name}] to [{resolved}]"
+            )
+        return resolved
 
     def switch_control_mode(self, mode: str) -> None:
         """

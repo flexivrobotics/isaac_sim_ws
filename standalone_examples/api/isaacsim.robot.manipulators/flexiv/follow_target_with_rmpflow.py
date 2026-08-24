@@ -24,10 +24,22 @@ from isaacsim.robot.manipulators.examples.flexiv.controllers.rmpflow_controller 
     RMPFlowController,
 )
 from isaacsim.robot.manipulators.examples.flexiv.tasks import FollowTarget
-from isaacsim.storage.native import get_assets_root_path
 
-# Use Rizon4 usd stored in Isaac Sim assets
-usd_path = get_assets_root_path() + "/Isaac/Robots/Flexiv/Rizon4/flexiv_rizon4.usd"
+# Robot USD to load. Accept an optional path as the first CLI argument (matching
+# the README's usage), and default to the SimReady Rizon4 asset shipped with this
+# extension under extsDeprecated/. Relative paths are resolved against the Isaac
+# Sim installation root (ISAAC_PATH, set by python.sh) so the default works from
+# any working directory.
+import os
+import sys
+
+_DEFAULT_USD = (
+    "extsDeprecated/isaacsim.robot.manipulators.examples/"
+    "data/flexiv/Rizon4/Rizon4.usda"
+)
+usd_path = sys.argv[1] if len(sys.argv) > 1 else _DEFAULT_USD
+if not os.path.isabs(usd_path):
+    usd_path = os.path.join(os.environ.get("ISAAC_PATH", ""), usd_path)
 
 my_world = World(stage_units_in_meters=1.0)
 my_task = FollowTarget(name="flexiv_follow_target", usd_path=usd_path)

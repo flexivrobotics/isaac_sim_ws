@@ -10,7 +10,7 @@ from typing import List
 
 import isaacsim.robot.manipulators.controllers as manipulators_controllers
 from isaacsim.core.prims import SingleArticulation
-from isaacsim.robot.manipulators.examples.franka.controllers.pick_place_controller import PickPlaceController
+from isaacsim.robot.manipulators.examples.flexiv.controllers.pick_place_controller import PickPlaceController
 from isaacsim.robot.manipulators.grippers.parallel_gripper import ParallelGripper
 
 

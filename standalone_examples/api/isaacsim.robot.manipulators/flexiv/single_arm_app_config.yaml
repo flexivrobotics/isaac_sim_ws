@@ -6,7 +6,7 @@
 # The `usd` and `env_usd` paths may be absolute, or relative to the Isaac Sim installation root.
 robots:
   - serial_number: "Rizon4-00001" # Serial number of robot 1
-    usd: "extsDeprecated/isaacsim.robot.manipulators.examples/data/flexiv/Rizon4.usd" # Robot 1 USD
+    usd: "extsDeprecated/isaacsim.robot.manipulators.examples/data/flexiv/Rizon4/Rizon4.usda" # Robot 1 USD
     position:                     # Position in world frame to put robot 1
       x: 0.0
       y: 0.0
@@ -16,6 +16,15 @@ robots:
       x: 0.0
       y: 0.0
       z: 0.0
+    # Optional end-effector tool. When present, the tool USD is referenced onto
+    # the arm and fixed to the flange at load time, and gripper control is enabled.
+    #   usd:       path to the tool USD (absolute, or relative to the Isaac Sim root)
+    #   prim_name: mount prim name; must match a built-in gripper profile in
+    #              flexiv_isaac_bridge_app.py (GRIPPER_PROFILES). Currently: Grav_gripper.
+    # Remove or comment out this block for a bare arm (no gripper).
+    tool:
+      usd: "extsDeprecated/isaacsim.robot.manipulators.examples/data/flexiv/grippers/Grav_gripper.usd"
+      prim_name: "Grav_gripper"
 
   # More robots ...
 

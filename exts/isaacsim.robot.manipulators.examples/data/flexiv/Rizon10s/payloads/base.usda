@@ -1,0 +1,394 @@
+#usda 1.0
+(
+    customLayerData = {
+        string creator = "URDF USD Converter v0.1.2"
+    }
+    defaultPrim = "Rizon10s"
+    doc = """Generated from Composed Stage of root layer /home/brian/dev/flexiv_workcell_builder/components/system_description/flexiv/usd/Flexiv/Rizon10s/Rizon10s.usd/Rizon10s.usda
+
+
+Generated from Composed Stage of root layer /home/brian/dev/flexiv_workcell_builder/components/system_description/flexiv/usd/Flexiv/Rizon10s/payloads/base.usd
+"""
+    kilogramsPerUnit = 1
+    metersPerUnit = 1
+    subLayers = [
+        @./robot.usda@
+    ]
+    upAxis = "Z"
+)
+
+def Xform "Rizon10s" (
+    prepend apiSchemas = ["GeomModelAPI"]
+    assetInfo = {
+        string name = "A02HS-P3"
+    }
+    displayName = "A02HS-P3"
+    kind = "component"
+)
+{
+    float3[] extentsHint = [(-0.1055, -0.20425999, 0), (0.139, 0.10299957, 1.456), (3.4028235e38, 3.4028235e38, 3.4028235e38), (-3.4028235e38, -3.4028235e38, -3.4028235e38), (3.4028235e38, 3.4028235e38, 3.4028235e38), (-3.4028235e38, -3.4028235e38, -3.4028235e38), (-0.10655835, -0.20623392, 0.0000068498653), (0.13904901, 0.1049748, 1.455528)]
+
+    def Scope "Materials"
+    {
+    }
+
+    def Scope "Geometry"
+    {
+        def Xform "base_link"
+        {
+            def Xform "shell" (
+                instanceable = true
+                prepend references = @./instances.usda@</Instances/shell>
+            )
+            {
+                quatd xformOp:orient = (1, 0, 0, 0)
+                double3 xformOp:scale = (1, 1, 1)
+                double3 xformOp:translate = (0, 0, 0)
+                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+            }
+
+            def Xform "link1"
+            {
+                quatf xformOp:orient = (6.123234e-17, 0, 0, 1)
+                float3 xformOp:scale = (1, 1, 1)
+                matrix4d xformOp:transform = ( (-1, 1.2246467991473532e-16, 0, 0), (-1.2246467991473532e-16, -1, 0, 0), (0, 0, 1, 0), (0, 0, 0.21, 1) )
+                double3 xformOp:translate = (0, 0, 0.21)
+                uniform token[] xformOpOrder = ["!resetXformStack!", "xformOp:transform"]
+
+                def Xform "shell" (
+                    instanceable = true
+                    prepend references = @./instances.usda@</Instances/shell_1>
+                )
+                {
+                    quatd xformOp:orient = (1, 0, 0, 0)
+                    double3 xformOp:scale = (1, 1, 1)
+                    double3 xformOp:translate = (0, 0, 0)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                }
+
+                def Xform "ring" (
+                    instanceable = true
+                    prepend references = @./instances.usda@</Instances/ring>
+                )
+                {
+                    quatd xformOp:orient = (1, 0, 0, 0)
+                    double3 xformOp:scale = (0.07900000364, 0.07900000364, 0.002000000095)
+                    double3 xformOp:translate = (0, 0, -0.0025)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                }
+
+                def Xform "link2"
+                {
+                    quatf xformOp:orient = (1, 0, 0, 0)
+                    float3 xformOp:scale = (1, 1, 1)
+                    matrix4d xformOp:transform = ( (-1, 1.2246467991473532e-16, 0, 0), (-1.2246467991473532e-16, -1, 0, 0), (0, 0, 1, 0), (-8.266365894244634e-18, -0.0675, 0.44999999999999996, 1) )
+                    double3 xformOp:translate = (0, 0.0675, 0.24)
+                    uniform token[] xformOpOrder = ["!resetXformStack!", "xformOp:transform"]
+
+                    def Xform "shell" (
+                        instanceable = true
+                        prepend references = @./instances.usda@</Instances/shell_2>
+                    )
+                    {
+                        quatd xformOp:orient = (1, 0, 0, 0)
+                        double3 xformOp:scale = (1, 1, 1)
+                        double3 xformOp:translate = (0, 0, 0)
+                        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                    }
+
+                    def Xform "ring" (
+                        instanceable = true
+                        prepend references = @./instances.usda@</Instances/ring>
+                    )
+                    {
+                        quatd xformOp:orient = (0.7071067691, 0.7071067691, 0, 0)
+                        double3 xformOp:scale = (0.07900000364, 0.07900000364, 0.002000000095)
+                        double3 xformOp:translate = (0, -0.0025, 0)
+                        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                    }
+
+                    def Xform "link3"
+                    {
+                        quatf xformOp:orient = (1, 0, 0, 0)
+                        float3 xformOp:scale = (1, 1, 1)
+                        matrix4d xformOp:transform = ( (-1, 1.2246467991473532e-16, 0, 0), (-1.2246467991473532e-16, -1, 0, 0), (0, 0, 1, 0), (-1.5920408388915593e-17, -0.13, 0.6775, 1) )
+                        double3 xformOp:translate = (0, 0.0625, 0.2275)
+                        uniform token[] xformOpOrder = ["!resetXformStack!", "xformOp:transform"]
+
+                        def Xform "shell" (
+                            instanceable = true
+                            prepend references = @./instances.usda@</Instances/shell_3>
+                        )
+                        {
+                            quatd xformOp:orient = (1, 0, 0, 0)
+                            double3 xformOp:scale = (1, 1, 1)
+                            double3 xformOp:translate = (0, 0, 0)
+                            uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                        }
+
+                        def Xform "ring" (
+                            instanceable = true
+                            prepend references = @./instances.usda@</Instances/ring>
+                        )
+                        {
+                            quatd xformOp:orient = (1, 0, 0, 0)
+                            double3 xformOp:scale = (0.06199999899, 0.06199999899, 0.002000000095)
+                            double3 xformOp:translate = (0, 0, -0.0025)
+                            uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                        }
+
+                        def Xform "link4"
+                        {
+                            quatf xformOp:orient = (6.123234e-17, 0, 0, 1)
+                            float3 xformOp:scale = (1, 1, 1)
+                            matrix4d xformOp:transform = ( (1, -2.4492935982947064e-16, 0, 0), (2.4492935982947064e-16, 1, 0, 0), (0, 0, 1, 0), (-8.266365894244636e-18, -0.0675, 0.9, 1) )
+                            double3 xformOp:translate = (0, -0.0625, 0.2225)
+                            uniform token[] xformOpOrder = ["!resetXformStack!", "xformOp:transform"]
+
+                            def Xform "shell" (
+                                instanceable = true
+                                prepend references = @./instances.usda@</Instances/shell_4>
+                            )
+                            {
+                                quatd xformOp:orient = (1, 0, 0, 0)
+                                double3 xformOp:scale = (1, 1, 1)
+                                double3 xformOp:translate = (0, 0, 0)
+                                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                            }
+
+                            def Xform "ring" (
+                                instanceable = true
+                                prepend references = @./instances.usda@</Instances/ring>
+                            )
+                            {
+                                quatd xformOp:orient = (0.7071067691, 0.7071067691, 0, 0)
+                                double3 xformOp:scale = (0.06199999899, 0.06199999899, 0.002000000095)
+                                double3 xformOp:translate = (0, -0.0025, 0)
+                                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                            }
+
+                            def Xform "link5"
+                            {
+                                quatf xformOp:orient = (6.123234e-17, 0, 0, 1)
+                                float3 xformOp:scale = (1, 1, 1)
+                                matrix4d xformOp:transform = ( (-1, 3.6739403974420594e-16, 0, 0), (-3.6739403974420594e-16, -1, 0, 0), (0, 0, 1, 0), (5.817072295949926e-18, -0.010000000000000002, 1.105, 1) )
+                                double3 xformOp:translate = (0, 0.0575, 0.205)
+                                uniform token[] xformOpOrder = ["!resetXformStack!", "xformOp:transform"]
+
+                                def Xform "shell" (
+                                    instanceable = true
+                                    prepend references = @./instances.usda@</Instances/shell_5>
+                                )
+                                {
+                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                    double3 xformOp:scale = (1, 1, 1)
+                                    double3 xformOp:translate = (0, 0, 0)
+                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                }
+
+                                def Xform "ring" (
+                                    instanceable = true
+                                    prepend references = @./instances.usda@</Instances/ring>
+                                )
+                                {
+                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                    double3 xformOp:scale = (0.05099999905, 0.05099999905, 0.002000000095)
+                                    double3 xformOp:translate = (0, 0, -0.0025)
+                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                }
+
+                                def Xform "link6"
+                                {
+                                    quatf xformOp:orient = (1, 0, 0, 0)
+                                    float3 xformOp:scale = (1, 1, 1)
+                                    matrix4d xformOp:transform = ( (-1, 3.6739403974420594e-16, 0, 0), (-3.6739403974420594e-16, -1, 0, 0), (0, 0, 1, 0), (-5.204748896376252e-18, -0.04, 1.295, 1) )
+                                    double3 xformOp:translate = (0, 0.03, 0.19)
+                                    uniform token[] xformOpOrder = ["!resetXformStack!", "xformOp:transform"]
+
+                                    def Xform "shell" (
+                                        instanceable = true
+                                        prepend references = @./instances.usda@</Instances/shell_6>
+                                    )
+                                    {
+                                        quatd xformOp:orient = (1, 0, 0, 0)
+                                        double3 xformOp:scale = (1, 1, 1)
+                                        double3 xformOp:translate = (0, 0, 0)
+                                        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                    }
+
+                                    def Xform "ring" (
+                                        instanceable = true
+                                        prepend references = @./instances.usda@</Instances/ring>
+                                    )
+                                    {
+                                        quatd xformOp:orient = (0.7071067691, 0.7071067691, 0, 0)
+                                        double3 xformOp:scale = (0.05099999905, 0.05099999905, 0.002000000095)
+                                        double3 xformOp:translate = (0, -0.0025, 0)
+                                        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                    }
+
+                                    def Xform "convex_mesh" (
+                                        instanceable = true
+                                        prepend references = @./instances.usda@</Instances/convex_mesh_1>
+                                    )
+                                    {
+                                        quatd xformOp:orient = (1, 0, 0, 0)
+                                        double3 xformOp:scale = (1, 1, 1)
+                                        double3 xformOp:translate = (0, 0, 0)
+                                        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                    }
+
+                                    def Xform "link7_proximal"
+                                    {
+                                        quatf xformOp:orient = (-0.70710677, 0, 0.70710677, 0)
+                                        float3 xformOp:scale = (1, 1, 1)
+                                        matrix4d xformOp:transform = ( (3.42285420007471e-8, -1.2575362320208702e-23, 0.9999999999999993, 0), (-3.6739403974420594e-16, -1, 0, 0), (0.9999999999999993, -3.673940397442057e-16, -3.42285420007471e-8, 0), (0.014999999999999968, -0.11299999999999999, 1.405, 1) )
+                                        double3 xformOp:translate = (-0.015, 0.073, 0.11)
+                                        uniform token[] xformOpOrder = ["!resetXformStack!", "xformOp:transform"]
+                                    }
+
+                                    def Xform "link7_distal"
+                                    {
+                                        matrix4d xformOp:transform = ( (3.42285420007471e-8, -1.2575362320208702e-23, 0.9999999999999993, 0), (-3.6739403974420594e-16, -1, 0, 0), (0.9999999999999993, -3.673940397442057e-16, -3.42285420007471e-8, 0), (0.1089999999999999, -0.11300000000000002, 1.404999996782517, 1) )
+                                        uniform token[] xformOpOrder = ["!resetXformStack!", "xformOp:transform"]
+
+                                        def Xform "shell" (
+                                            instanceable = true
+                                            prepend references = @./instances.usda@</Instances/shell_7>
+                                        )
+                                        {
+                                            quatd xformOp:orient = (1, 0, 0, 0)
+                                            double3 xformOp:scale = (1, 1, 1)
+                                            double3 xformOp:translate = (0, 0, -0.094)
+                                            uniform token[] xformOpOrder = ["xformOp:translate"]
+                                        }
+
+                                        def Xform "ring" (
+                                            instanceable = true
+                                            prepend references = @./instances.usda@</Instances/ring>
+                                        )
+                                        {
+                                            quatd xformOp:orient = (1, 0, 0, 0)
+                                            double3 xformOp:scale = (0.05099999905, 0.05099999905, 0.002000000095)
+                                            double3 xformOp:translate = (0, 0, -0.094)
+                                            uniform token[] xformOpOrder = ["xformOp:translate"]
+                                        }
+
+                                        def Xform "convex_mesh" (
+                                            instanceable = true
+                                            prepend references = @./instances.usda@</Instances/convex_mesh>
+                                        )
+                                        {
+                                            quatd xformOp:orient = (1, 0, 0, 0)
+                                            double3 xformOp:scale = (1, 1, 1)
+                                            double3 xformOp:translate = (0, 0, -0.094)
+                                            uniform token[] xformOpOrder = ["xformOp:translate"]
+                                        }
+
+                                        def Xform "flange"
+                                        {
+                                            quatf xformOp:orient = (6.123234e-17, 0, 0, 1)
+                                            float3 xformOp:scale = (1, 1, 1)
+                                            matrix4d xformOp:transform = ( (-3.42285420007471e-8, -1.22464667339373e-16, -0.9999999999999993, 0), (3.673940355524185e-16, 1, -1.2246467991473525e-16, 0), (0.9999999999999993, -3.673940397442057e-16, -3.42285420007471e-8, 0), (0.13899999999999987, -0.11300000000000003, 1.404999995755661, 1) )
+                                            double3 xformOp:translate = (0, 0, 0.124)
+                                            uniform token[] xformOpOrder = ["!resetXformStack!", "xformOp:transform"]
+                                        }
+                                    }
+                                }
+
+                                def Xform "convex_mesh" (
+                                    instanceable = true
+                                    prepend references = @./instances.usda@</Instances/convex_mesh_2>
+                                )
+                                {
+                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                    double3 xformOp:scale = (1, 1, 1)
+                                    double3 xformOp:translate = (0, 0, 0)
+                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                }
+                            }
+
+                            def Xform "convex_mesh" (
+                                instanceable = true
+                                prepend references = @./instances.usda@</Instances/convex_mesh_3>
+                            )
+                            {
+                                quatd xformOp:orient = (1, 0, 0, 0)
+                                double3 xformOp:scale = (1, 1, 1)
+                                double3 xformOp:translate = (0, 0, 0)
+                                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                            }
+                        }
+
+                        def Xform "convex_mesh" (
+                            instanceable = true
+                            prepend references = @./instances.usda@</Instances/convex_mesh_4>
+                        )
+                        {
+                            quatd xformOp:orient = (1, 0, 0, 0)
+                            double3 xformOp:scale = (1, 1, 1)
+                            double3 xformOp:translate = (0, 0, 0)
+                            uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                        }
+                    }
+
+                    def Xform "convex_mesh" (
+                        instanceable = true
+                        prepend references = @./instances.usda@</Instances/convex_mesh_5>
+                    )
+                    {
+                        quatd xformOp:orient = (1, 0, 0, 0)
+                        double3 xformOp:scale = (1, 1, 1)
+                        double3 xformOp:translate = (0, 0, 0)
+                        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                    }
+                }
+
+                def Xform "convex_mesh" (
+                    instanceable = true
+                    prepend references = @./instances.usda@</Instances/convex_mesh_6>
+                )
+                {
+                    quatd xformOp:orient = (1, 0, 0, 0)
+                    double3 xformOp:scale = (1, 1, 1)
+                    double3 xformOp:translate = (0, 0, 0)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                }
+            }
+
+            def Scope "workspace"
+            {
+                def Scope "origin"
+                {
+                }
+
+                def Scope "geometry"
+                {
+                    def Scope "sphere"
+                    {
+                    }
+                }
+            }
+
+            def Xform "convex_mesh" (
+                instanceable = true
+                prepend references = @./instances.usda@</Instances/convex_mesh_7>
+            )
+            {
+                quatd xformOp:orient = (1, 0, 0, 0)
+                double3 xformOp:scale = (1, 1, 1)
+                double3 xformOp:translate = (0, 0, 0)
+                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+            }
+        }
+    }
+
+    def Scope "Physics"
+    {
+    }
+
+    def Scope "VisualMaterials"
+    {
+    }
+}
+

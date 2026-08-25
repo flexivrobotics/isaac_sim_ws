@@ -2,19 +2,20 @@ name: Calibration verification
 
 # Regression test for the RDK-to-USD calibration tools. Runs in a plain Python
 # environment (no Isaac Sim, no robot): it validates the example calibrated
-# kinematics YAML, and -- once a reference calibrated URDF (and a base USD) are
-# provided -- applies the example calibration to a USD and cross-checks it
-# against the URDF. Until those inputs exist, the comparison step is skipped and
-# the job still passes on the YAML validation.
+# kinematics YAML, applies the example calibration to the in-repo Rizon4s asset,
+# and cross-checks the result against the reference calibrated URDF by forward
+# kinematics.
 
 on:
   push:
     paths:
       - "tools/calibration/**"
+      - "exts/isaacsim.robot.manipulators.examples/data/flexiv/Rizon4s/**"
       - ".github/workflows/calibration-verify.yml"
   pull_request:
     paths:
       - "tools/calibration/**"
+      - "exts/isaacsim.robot.manipulators.examples/data/flexiv/Rizon4s/**"
       - ".github/workflows/calibration-verify.yml"
 
 jobs:

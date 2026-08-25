@@ -27,19 +27,45 @@ import xml.etree.ElementTree as ET
 import numpy as np
 from pxr import Usd, UsdGeom
 
-# Maps the URDF joint name to the USD child-link prim path under
+# Maps the (collapsed) URDF joint name to the USD child-link prim path under
 # <defaultPrim>/Geometry. Kept independent of calibrate_usd_from_rdk.py so this
 # check does not share code with the applier it verifies.
-JOINT_TO_LINK = [
-    ("joint1", "base_link/link1"),
-    ("joint2", "base_link/link1/link2"),
-    ("joint3", "base_link/link1/link2/link3"),
-    ("joint4", "base_link/link1/link2/link3/link4"),
-    ("joint5", "base_link/link1/link2/link3/link4/link5"),
-    ("joint6", "base_link/link1/link2/link3/link4/link5/link6"),
-    ("joint7", "base_link/link1/link2/link3/link4/link5/link6/link7"),
-    ("link7_to_flange", "base_link/link1/link2/link3/link4/link5/link6/link7/flange"),
-]
+#
+# The URDF is always the collapsed chain (a single link7_to_flange). The USD link
+# it maps to differs by model: on Rizon4s the FT sensor splits link7 into
+# link7_proximal/link7_distal, so joint7 lands on link7_proximal and the flange
+# on link7_distal/flange. The comparison checks that the mapped links' world
+# poses agree, so the split is transparent as long as the paths are right.
+_CHAIN = "base_link/link1/link2/link3/link4/link5/link6"
+JOINT_TO_LINK_BY_MODEL = {
+    "Rizon4": [
+        ("joint1", "base_link/link1"),
+        ("joint2", "base_link/link1/link2"),
+        ("joint3", "base_link/link1/link2/link3"),
+        ("joint4", "base_link/link1/link2/link3/link4"),
+        ("joint5", "base_link/link1/link2/link3/link4/link5"),
+        ("joint6", _CHAIN),
+        ("joint7", f"{_CHAIN}/link7"),
+        ("link7_to_flange", f"{_CHAIN}/link7/flange"),
+    ],
+    "Rizon4s": [
+        ("joint1", "base_link/link1"),
+        ("joint2", "base_link/link1/link2"),
+        ("joint3", "base_link/link1/link2/link3"),
+        ("joint4", "base_link/link1/link2/link3/link4"),
+        ("joint5", "base_link/link1/link2/link3/link4/link5"),
+        ("joint6", _CHAIN),
+        ("joint7", f"{_CHAIN}/link7_proximal"),
+        ("link7_to_flange", f"{_CHAIN}/link7_distal/flange"),
+    ],
+}
+
+
+def joint_to_link_for(model):
+    """Return the URDF-joint -> USD-link mapping for a model name."""
+    if model in JOINT_TO_LINK_BY_MODEL:
+        return JOINT_TO_LINK_BY_MODEL[model]
+    return JOINT_TO_LINK_BY_MODEL["Rizon4s" if model.endswith("s") else "Rizon4"]
 
 # Pass/fail threshold on the max abs element-wise difference of a link's 4x4
 # world matrix. 1e-5 m / rad comfortably clears fp32 quantization in the USD
@@ -106,15 +132,15 @@ def parse_urdf_joint_origins(urdf_path):
     return origins
 
 
-def urdf_world_poses(origins):
+def urdf_world_poses(origins, mapping):
     """Forward-kinematics world pose of each link, at the zero configuration.
 
-    We compose the joint <origin> transforms down the chain in JOINT_TO_LINK
-    order. Zero configuration is correct here because the USD stores its links at
-    the zero pose too (the joint variable is applied at runtime, not baked)."""
+    Composes the joint <origin> transforms down the chain in `mapping` order.
+    Zero configuration is correct here because the USD stores its links at the
+    zero pose too (the joint variable is applied at runtime, not baked)."""
     world = np.eye(4)
     poses = {}
-    for joint_name, link_rel in JOINT_TO_LINK:
+    for joint_name, link_rel in mapping:
         if joint_name not in origins:
             raise KeyError(f"URDF is missing joint [{joint_name}]")
         xyz, rpy = origins[joint_name]
@@ -123,7 +149,7 @@ def urdf_world_poses(origins):
     return poses
 
 
-def usd_world_poses(usd_path, robot_name="Rizon4"):
+def usd_world_poses(usd_path, mapping, robot_name="Rizon4"):
     """World pose (4x4, column-vector convention) of each link in the USD."""
     stage = Usd.Stage.Open(usd_path)
     if stage is None:
@@ -133,7 +159,7 @@ def usd_world_poses(usd_path, robot_name="Rizon4"):
         robot_name = default.GetName()
     xc = UsdGeom.XformCache()
     poses = {}
-    for _joint_name, link_rel in JOINT_TO_LINK:
+    for _joint_name, link_rel in mapping:
         prim = stage.GetPrimAtPath(f"/{robot_name}/Geometry/{link_rel}")
         if not prim.IsValid():
             raise KeyError(f"USD missing link prim for [{link_rel}]")
@@ -145,12 +171,12 @@ def usd_world_poses(usd_path, robot_name="Rizon4"):
     return poses
 
 
-def compare(urdf_poses, usd_poses):
+def compare(urdf_poses, usd_poses, mapping):
     """Print a per-link comparison and return the overall max abs difference."""
     print(f"\n{'link':10s} {'max|Δpos| [m]':>16s} {'max|Δmatrix|':>16s}  result")
     print("-" * 56)
     overall = 0.0
-    for _joint_name, link_rel in JOINT_TO_LINK:
+    for _joint_name, link_rel in mapping:
         name = link_rel.split("/")[-1]
         A = urdf_poses[link_rel]
         B = usd_poses[link_rel]
@@ -213,13 +239,19 @@ def main():
         shutil.copyfile(urdf_path, args.dump_urdf)
         print(f"[dump] Copied synced URDF to [{args.dump_urdf}]")
 
+    # Pick the joint->link mapping from the USD's model (its defaultPrim name),
+    # so the FK comparison uses the right tail geometry (e.g. Rizon4s split link7).
+    stage = Usd.Stage.Open(args.usd)
+    model = stage.GetDefaultPrim().GetName() if stage else "Rizon4"
+    mapping = joint_to_link_for(model)
+
     print(f"[verify] URDF : {urdf_path}")
-    print(f"[verify] USD  : {args.usd}")
+    print(f"[verify] USD  : {args.usd}  (model {model})")
 
     origins = parse_urdf_joint_origins(urdf_path)
-    urdf_poses = urdf_world_poses(origins)
-    usd_poses = usd_world_poses(args.usd)
-    overall = compare(urdf_poses, usd_poses)
+    urdf_poses = urdf_world_poses(origins, mapping)
+    usd_poses = usd_world_poses(args.usd, mapping)
+    overall = compare(urdf_poses, usd_poses, mapping)
 
     if overall < TOL:
         print(f"\nPASS: calibrated USD matches the robot URDF (max Δ {overall:.2e} "

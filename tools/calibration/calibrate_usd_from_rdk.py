@@ -74,23 +74,68 @@ FLEXIV_DESCRIPTION_DEFAULT_REF = "humble"  # the repo's default branch
 # truth tying the three representations (YAML, base.usda links, physics.usda
 # joints) together.
 #
+# Each entry is (yaml_name, link_rel_path, joint_name, fixed_pre):
 #   yaml_name        key in the `kinematics` YAML node and the URDF joint name
 #   link_rel_path    child link Xform path under <defaultPrim>/Geometry
 #   joint_name       joint prim name under <defaultPrim>/Physics
-JOINTS = [
-    ("joint1", "base_link/link1", "joint1"),
-    ("joint2", "base_link/link1/link2", "joint2"),
-    ("joint3", "base_link/link1/link2/link3", "joint3"),
-    ("joint4", "base_link/link1/link2/link3/link4", "joint4"),
-    ("joint5", "base_link/link1/link2/link3/link4/link5", "joint5"),
-    ("joint6", "base_link/link1/link2/link3/link4/link5/link6", "joint6"),
-    ("joint7", "base_link/link1/link2/link3/link4/link5/link6/link7", "joint7"),
-    (
-        "link7_to_flange",
-        "base_link/link1/link2/link3/link4/link5/link6/link7/flange",
-        "link7_to_flange",
-    ),
-]
+#   fixed_pre        optional constant (x, y, z) offset inserted BEFORE this
+#                    entry in the world composition, for a rigid USD segment the
+#                    calibration YAML does not model (None if there is none)
+#
+# Different robot models have different tail geometry. The Rizon4s ("s" variant)
+# carries a wrist force-torque sensor that splits link7 into link7_proximal and
+# link7_distal in the USD, with a fixed sensor segment between them. RDK reports
+# the collapsed chain (a single link7_to_flange), so on Rizon4s we map that onto
+# the distal->flange joint and carry the fixed proximal->distal sensor offset
+# (0.094 m along z) as fixed_pre, keeping the sensor thickness rigid.
+_RIZON4_CHAIN = "base_link/link1/link2/link3/link4/link5/link6"
+JOINTS_BY_MODEL = {
+    "Rizon4": [
+        ("joint1", "base_link/link1", "joint1", None),
+        ("joint2", "base_link/link1/link2", "joint2", None),
+        ("joint3", "base_link/link1/link2/link3", "joint3", None),
+        ("joint4", "base_link/link1/link2/link3/link4", "joint4", None),
+        ("joint5", "base_link/link1/link2/link3/link4/link5", "joint5", None),
+        ("joint6", _RIZON4_CHAIN, "joint6", None),
+        ("joint7", f"{_RIZON4_CHAIN}/link7", "joint7", None),
+        ("link7_to_flange", f"{_RIZON4_CHAIN}/link7/flange", "link7_to_flange", None),
+    ],
+    # Rizon4s: joint7's child is link7_proximal; the flange sits past a fixed
+    # sensor segment (link7_ft_sensor, 0.094 m) on link7_distal. The calibrated
+    # link7_to_flange offset is applied to the distal->flange joint, with the
+    # sensor segment carried as a fixed pre-offset so the net flange pose is
+    # correct while the sensor thickness stays rigid.
+    "Rizon4s": [
+        ("joint1", "base_link/link1", "joint1", None),
+        ("joint2", "base_link/link1/link2", "joint2", None),
+        ("joint3", "base_link/link1/link2/link3", "joint3", None),
+        ("joint4", "base_link/link1/link2/link3/link4", "joint4", None),
+        ("joint5", "base_link/link1/link2/link3/link4/link5", "joint5", None),
+        ("joint6", _RIZON4_CHAIN, "joint6", None),
+        ("joint7", f"{_RIZON4_CHAIN}/link7_proximal", "joint7", None),
+        (
+            "link7_to_flange",
+            f"{_RIZON4_CHAIN}/link7_distal/flange",
+            "link7_distal_to_flange",
+            (0.0, 0.0, 0.094),
+        ),
+    ],
+}
+
+
+def joints_for_model(model):
+    """Return the joint mapping table for a model name (e.g. 'Rizon4s').
+
+    Falls back to the base Rizon4 layout for any 7-DoF Rizon whose tail matches
+    (Rizon4, Rizon4M, Rizon10, ...). 's' variants have their own split-link7
+    entry; add new tail geometries here as needed.
+    """
+    if model in JOINTS_BY_MODEL:
+        return JOINTS_BY_MODEL[model]
+    # Heuristic: "s" suffix -> FT-sensor split layout; otherwise base layout.
+    if model.endswith("s"):
+        return JOINTS_BY_MODEL["Rizon4s"]
+    return JOINTS_BY_MODEL["Rizon4"]
 
 
 def rpy_to_quatf(roll, pitch, yaw):
@@ -476,32 +521,69 @@ def apply_calibration_to_usd(usd_path, template_path):
 
     # Compose forward down the chain. base_link is fixed to the robot root at the
     # origin (root_joint), so the running world transform starts at identity and
-    # W_i = W_{i-1} * L_i, where L_i is joint i's local origin. Each JOINTS entry
-    # is in chain order, so we can accumulate as we iterate.
+    # W_i = W_{i-1} * L_i, where L_i is joint i's local origin. Each entry is in
+    # chain order, so we can accumulate as we iterate.
+    # The USD defaultPrim name is the model (e.g. "Rizon4s"), which selects the
+    # joint mapping (base layout vs. the FT-sensor split-link7 layout).
+    joints = joints_for_model(robot_name)
     world = Gf.Matrix4d(1.0)
     updated = 0
-    for yaml_name, link_rel_path, joint_name in JOINTS:
+    for yaml_name, link_rel_path, joint_name, fixed_pre in joints:
         j = kine.get(yaml_name)
         if j is None:
             print(f"[apply]  - {yaml_name}: not in template, skipping")
             continue
+
         xyz = (float(j["x"]), float(j["y"]), float(j["z"]))
         quat = rpy_to_quatf(float(j["roll"]), float(j["pitch"]), float(j["yaw"]))
-        local = joint_local_matrix(xyz, quat)
+        local = joint_local_matrix(xyz, quat)  # child pose relative to parent
 
-        # Accumulate this joint's local origin onto the running world transform,
-        # then write the resulting ROOT-relative matrix to the link.
-        world = local * world
-        _set_link_world_xform(base_layer, robot_name, link_rel_path, world)
-        _refresh_link_srt(base_layer, robot_name, link_rel_path, xyz, quat)
+        if fixed_pre is None:
+            # Normal joint: accumulate its local origin onto the running world
+            # transform and write the resulting ROOT-relative matrix.
+            world = local * world
+            _set_link_world_xform(base_layer, robot_name, link_rel_path, world)
+            _refresh_link_srt(base_layer, robot_name, link_rel_path, xyz, quat)
+            _set_joint_anchor(physics_layer, robot_name, joint_name, xyz, quat)
+            wt = world.ExtractTranslation()
+            print(
+                f"[apply]  + {yaml_name}: local xyz=({xyz[0]:.6g}, {xyz[1]:.6g}, "
+                f"{xyz[2]:.6g}) -> world xyz=({wt[0]:.6g}, {wt[1]:.6g}, {wt[2]:.6g})"
+            )
+            updated += 1
+            continue
 
-        # The physics joint anchor stays PARENT-relative (the local origin).
-        _set_joint_anchor(physics_layer, robot_name, joint_name, xyz, quat)
+        # This entry's YAML value is the COLLAPSED offset (e.g. Rizon4s reports a
+        # single link7_to_flange), but the USD splits it across a fixed segment
+        # (fixed_pre, the FT sensor) and this joint. The flange's world pose comes
+        # from the collapsed offset composed onto `world`; the intermediate link
+        # (parent of this entry's link) sits at the fixed segment; and this
+        # joint's PARENT-relative local is the remainder = fixed_pre^-1 * local.
+        world_flange = local * world
+        pre = joint_local_matrix(fixed_pre, Gf.Quatf(1.0))
+        world_inter = pre * world
+        inter_rel = link_rel_path.rsplit("/", 1)[0]  # e.g. .../link7_distal
+        _set_link_world_xform(base_layer, robot_name, inter_rel, world_inter)
+        _set_link_world_xform(base_layer, robot_name, link_rel_path, world_flange)
 
+        # Remainder local (parent = intermediate link): fixed_pre^-1 * local.
+        remainder = pre.GetInverse() * local
+        rt = remainder.ExtractTranslation()
+        rq = remainder.ExtractRotationQuat()
+        rquat = Gf.Quatf(rq.GetReal(), Gf.Vec3f(*[float(x) for x in rq.GetImaginary()]))
+        _refresh_link_srt(
+            base_layer, robot_name, link_rel_path,
+            (rt[0], rt[1], rt[2]), rquat,
+        )
+        _set_joint_anchor(
+            physics_layer, robot_name, joint_name, (rt[0], rt[1], rt[2]), rquat
+        )
+        world = world_flange
         wt = world.ExtractTranslation()
         print(
-            f"[apply]  + {yaml_name}: local xyz=({xyz[0]:.6g}, {xyz[1]:.6g}, "
-            f"{xyz[2]:.6g}) -> world xyz=({wt[0]:.6g}, {wt[1]:.6g}, {wt[2]:.6g})"
+            f"[apply]  + {yaml_name}: collapsed local xyz=({xyz[0]:.6g}, "
+            f"{xyz[1]:.6g}, {xyz[2]:.6g}); fixed_pre={fixed_pre} -> flange world "
+            f"xyz=({wt[0]:.6g}, {wt[1]:.6g}, {wt[2]:.6g})"
         )
         updated += 1
 

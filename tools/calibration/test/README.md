@@ -6,8 +6,8 @@ Isaac Sim, no robot.
 
 ## Files
 
-Both example files come from the same real Rizon4 (serial A02LS-P2), pulled via
-two RDK paths, so they carry the same calibration:
+Both example files come from the same real robot (a Rizon4s, serial A02LS-P2),
+pulled via two RDK paths, so they carry the same calibration:
 
 - `Rizon4_calibrated_kinematics.example.yaml` — from `Model.SyncKinematicsYAML`.
 - `Rizon4_calibrated.example.urdf` — from `Model.SyncURDF`; the reference the
@@ -18,13 +18,12 @@ two RDK paths, so they carry the same calibration:
 
 ## What CI checks
 
-1. **Always:** validates the example YAML (structure, joints, numeric fields).
-2. **When a base USD is available:** applies the example calibration to it and
-   cross-checks the result against the example URDF.
+1. Validates the example YAML (structure, joints, numeric fields).
+2. Applies the example calibration to the in-repo Rizon4s asset
+   (`exts/.../data/flexiv/Rizon4s`) and cross-checks the result against the
+   example URDF, failing on a mm-scale mismatch.
 
-Step 2 needs a base Rizon4 USD to apply onto, via the `CALIBRATION_TEST_BASE_USD`
-env var (the repo does not ship USD assets, so it is skipped in CI until one is
-provided). When it runs, the job fails on a mm-scale mismatch.
+Override the base asset with the `CALIBRATION_TEST_BASE_USD` env var if needed.
 
 ## Run locally
 

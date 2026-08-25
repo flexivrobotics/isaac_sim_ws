@@ -5,12 +5,12 @@
 # (no Isaac Sim, no robot) with pip-installed usd-core / numpy / pyyaml.
 #
 # What it does:
-#   1. Always: validate the example calibrated kinematics YAML parses and has the
-#      expected joint set. This is a real check that guards the example data.
-#   2. If a base Rizon4 USD is available: apply the example YAML to it, then run
+#   1. Validate the example calibrated kinematics YAML parses and has the
+#      expected joint set.
+#   2. Apply the example YAML to the in-repo Rizon4s asset, then run
 #      verify_calibration_against_urdf.py to confirm the calibrated USD matches
-#      the reference URDF. This step is SKIPPED (exit 0 with a clear message)
-#      until a base USD is provided -- see BASE_USD_ENV below.
+#      the reference URDF. Skipped (with a clear message) only if the reference
+#      URDF or base USD is missing -- see REFERENCE_URDF / DEFAULT_BASE_USD.
 #
 # Exit codes: 0 = pass (or skipped), non-zero = failure.
 
@@ -25,14 +25,23 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 # (Model.SyncKinematicsYAML). Structure/joint names are asserted below.
 EXAMPLE_YAML = os.path.join(HERE, "Rizon4_calibrated_kinematics.example.yaml")
 
-# Drop a real calibrated URDF for the SAME robot here to activate the full
-# cross-check. Until this file exists, the comparison step is skipped.
+# The reference calibrated URDF for the example robot (RDK Model.SyncURDF).
 REFERENCE_URDF = os.path.join(HERE, "Rizon4_calibrated.example.urdf")
 
-# A base Rizon4 USD to apply the calibration onto. The repo does not ship USD
-# assets (they come from the Isaac Sim install), so the comparison step also
-# needs a base USD checked in here (or a path via BASE_USD_ENV) to run in CI.
+# Base USD to apply the calibration onto. The example robot (serial A02LS-P2) is
+# a Rizon4s, so the calibration is applied onto the in-repo Rizon4s asset (which
+# is tracked, so it is available in CI). Override with BASE_USD_ENV if needed.
 BASE_USD_ENV = "CALIBRATION_TEST_BASE_USD"
+_REPO_ROOT = os.path.abspath(os.path.join(HERE, "..", "..", ".."))
+DEFAULT_BASE_USD = os.path.join(
+    _REPO_ROOT,
+    "exts",
+    "isaacsim.robot.manipulators.examples",
+    "data",
+    "flexiv",
+    "Rizon4s",
+    "Rizon4s.usda",
+)
 
 EXPECTED_JOINTS = [
     "joint1",
@@ -76,29 +85,26 @@ def run_full_verification():
     Raises (non-zero exit) if it ran and FAILED.
     """
     if not os.path.isfile(REFERENCE_URDF):
+        print(f"[ci] SKIP full verification: no reference URDF at [{REFERENCE_URDF}].")
+        return False
+
+    base_usd = os.environ.get(BASE_USD_ENV) or DEFAULT_BASE_USD
+    if not os.path.isfile(base_usd):
         print(
-            f"[ci] SKIP full verification: no reference URDF at "
-            f"[{REFERENCE_URDF}]. Add a real calibrated URDF for this robot to "
-            f"activate the cross-check."
+            f"[ci] SKIP full verification: base USD not found at [{base_usd}] "
+            f"(override with ${BASE_USD_ENV})."
         )
         return False
 
-    base_usd = os.environ.get(BASE_USD_ENV)
-    if not base_usd or not os.path.isfile(base_usd):
-        print(
-            f"[ci] SKIP full verification: no base USD (set ${BASE_USD_ENV} to a "
-            f"Rizon4 USD to apply the calibration onto). The repo does not ship "
-            f"USD assets, so CI needs one provided to run this step."
-        )
-        return False
-
-    # Both inputs present. Apply the example YAML to a per-robot copy of the base
-    # USD, then run the verifier against the reference URDF. The applier is
-    # imported as a module and its functions called directly, since the example
-    # YAML is already a template and needs no flexiv_description resolution.
-    # Imported lazily so the YAML validation above still runs without usd-core.
+    # Apply the example YAML to a per-robot copy of the base USD, then verify
+    # against the reference URDF. The applier is imported as a module and its
+    # functions called directly, since the example YAML is already a template and
+    # needs no flexiv_description resolution. Imported lazily so the YAML
+    # validation above still runs without usd-core.
     import importlib.util
+    import shutil
     import subprocess
+    import tempfile
 
     calib_dir = os.path.dirname(HERE)  # .../calibration
     spec = importlib.util.spec_from_file_location(
@@ -108,8 +114,16 @@ def run_full_verification():
     cal = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(cal)
 
-    print("[ci] Applying example calibration to a per-robot USD copy ...")
-    out_usd = cal.materialize_per_robot_usd(base_usd, "Rizon4-CI-test")
+    # Stage the base asset in a temp dir so materialize_per_robot_usd writes its
+    # sibling copy there, never into the repo's asset tree.
+    workdir = tempfile.mkdtemp(prefix="calib_ci_")
+    src_model_dir = os.path.dirname(os.path.abspath(base_usd))
+    tmp_model_dir = os.path.join(workdir, os.path.basename(src_model_dir))
+    shutil.copytree(src_model_dir, tmp_model_dir)
+    tmp_base_usd = os.path.join(tmp_model_dir, os.path.basename(base_usd))
+
+    print(f"[ci] Applying example calibration to a copy of [{base_usd}] ...")
+    out_usd = cal.materialize_per_robot_usd(tmp_base_usd, "calibration-ci-test")
     cal.apply_calibration_to_usd(out_usd, EXAMPLE_YAML)
 
     print("[ci] Verifying calibrated USD against reference URDF ...")

@@ -1,52 +1,33 @@
 #!/usr/bin/env python3
 # Copyright (c) 2026, Flexiv Ltd. All rights reserved.
 #
-# Calibrate a SimReady Flexiv robot USD using the per-robot kinematic
-# calibration pulled from the real robot via Flexiv RDK. The kinematic parameters
-# (per-joint origin: translation + RPY) are pulled with Model.SyncKinematicsYAML()
-# and written into the existing USD's link transforms and joint anchors, leaving
-# every other property of the SimReady asset untouched.
+# Apply a physical robot's kinematic calibration (pulled via Flexiv RDK) to its
+# SimReady USD, so the simulated arm matches the real one. Steps:
 #
-# Where the calibration is written:
-#   A Flexiv arm USD stores each joint's origin (the child link frame expressed
-#   in its parent link frame) in two places, both updated together:
-#     1. base.usda   : link<N> Xform  -> xformOp:transform  (a full 4x4 matrix)
-#     2. physics.usda: joint<N>       -> physics:localPos0 + physics:localRot0
+#   1. The user provides a robot serial number and the source USD.
+#   2. Create a per-robot copy of the source USD (a sibling dir named after the
+#      serial). The shared meshes (geometries.usd, ~90% of the asset) are reused
+#      via a relative reference rather than duplicated, so each copy is ~100 KB.
+#      The source asset is never modified.
+#   3. Obtain the nominal kinematics template from flexiv_description (fetched
+#      from GitHub, or read from a local --flexiv-description checkout) and stage
+#      a working copy next to the per-robot USD.
+#   4. Connect to the robot via Flexiv RDK and overwrite the working template
+#      with the robot's actual kinematics (Model.SyncKinematicsYAML()).
+#   5. Write the calibrated values into the copy's link transforms (base.usda)
+#      and joint anchors (physics.usda), producing the calibrated USD at
+#      <flexiv>/<robot-sn>/<robot-sn>.usda.
 #
-#   The two use different frames:
-#   * The kinematic links in base.usda are authored with
-#       xformOpOrder = ["!resetXformStack!", "xformOp:transform"]
-#     "!resetXformStack!" discards the inherited parent transform, so each link's
-#     xformOp:transform is its pose in the ROBOT ROOT frame (accumulated down the
-#     chain), NOT relative to its parent. (These prims also carry leftover
-#     xformOp:translate/orient attributes, but xformOpOrder does not reference
-#     them, so USD ignores them -- writing those alone would be a silent no-op.)
-#     The per-joint origins are composed forward (W_i = W_{i-1} * L_i) and each
-#     link's ROOT-relative matrix is written.
-#   * The physics joints in physics.usda are parent-relative: localPos0/localRot0
-#     is the joint frame on the parent body, equal to the child link's LOCAL
-#     origin L_i. localPos1/localRot1 stay identity (joint frame == child origin).
+# If no serial is given, steps 1/4 are skipped: the nominal template is applied
+# as-is and the output is named "<Model>-nominal". The model is taken from the
+# serial, or from the USD's defaultPrim.
 #
-# Flow:
-#   With --robot-sn : connect via RDK, sync the robot's actual calibration into a
-#                     working-copy YAML, then write it into a per-robot USD copy.
-#   Without --robot-sn : apply the nominal flexiv_description template only (no
-#                     robot); the output is named "<Model>-nominal".
+# (How base.usda and physics.usda store the calibration -- the root-relative
+# xformOp:transform vs. parent-relative joint anchors -- is documented at
+# apply_calibration_to_usd() and its helpers, where it matters.)
 #
-# Output: the source asset is never modified. A per-robot copy is written as a
-# sibling of the source model dir, <flexiv>/<robot-sn>/<robot-sn>.usda, reusing
-# the shared meshes (geometries.usd) from the source tree rather than duplicating
-# them -- see materialize_per_robot_usd().
-#
-# The nominal template comes from flexiv_description (config/<Model>/
-# default_kinematics.yaml), resolved at runtime -- see resolve_working_template().
-# By default it is fetched from GitHub; pass --flexiv-description for a local
-# checkout. It is copied to a working copy next to the per-robot USD before any
-# sync, so the flexiv_description source is never modified. The model is taken
-# from the robot serial, or from the USD's defaultPrim when no serial is given.
-#
-# Interpreter: run with Isaac Sim's bundled Python so both `flexivrdk` and `pxr`
-# (usd-core) are importable, e.g.
+# Run with Isaac Sim's bundled Python so both flexivrdk and pxr (usd-core) are
+# importable, e.g.
 #   ~/isaacsim/kit/python/bin/python3 calibrate_usd_from_rdk.py \
 #       --robot-sn "Rizon4-000001" \
 #       --usd ~/isaacsim/extsDeprecated/.../data/flexiv/Rizon4/Rizon4.usda
@@ -68,26 +49,18 @@ from pxr import Gf, Sdf, Usd
 FLEXIV_DESCRIPTION_REPO = "flexivrobotics/flexiv_description"
 FLEXIV_DESCRIPTION_DEFAULT_REF = "humble"  # the repo's default branch
 
-# Joints, in kinematic-chain order, mapping the YAML/URDF joint name to the USD
-# child-link prim path (relative to the robot default prim's Geometry scope) and
-# the USD joint prim name (under the Physics scope). This is the single source of
-# truth tying the three representations (YAML, base.usda links, physics.usda
-# joints) together.
+# Per-model joint mapping, in kinematic-chain order. Each entry is
+# (yaml_name, link_rel_path, joint_name, fixed_pre):
+#   yaml_name      key in the `kinematics` YAML / URDF joint name
+#   link_rel_path  child link Xform path under <defaultPrim>/Geometry
+#   joint_name     joint prim name under <defaultPrim>/Physics
+#   fixed_pre      optional constant (x, y, z) offset composed before this entry,
+#                  for a rigid USD segment the YAML does not model (else None)
 #
-# Each entry is (yaml_name, link_rel_path, joint_name, fixed_pre):
-#   yaml_name        key in the `kinematics` YAML node and the URDF joint name
-#   link_rel_path    child link Xform path under <defaultPrim>/Geometry
-#   joint_name       joint prim name under <defaultPrim>/Physics
-#   fixed_pre        optional constant (x, y, z) offset inserted BEFORE this
-#                    entry in the world composition, for a rigid USD segment the
-#                    calibration YAML does not model (None if there is none)
-#
-# Different robot models have different tail geometry. The Rizon4s ("s" variant)
-# carries a wrist force-torque sensor that splits link7 into link7_proximal and
-# link7_distal in the USD, with a fixed sensor segment between them. RDK reports
-# the collapsed chain (a single link7_to_flange), so on Rizon4s we map that onto
-# the distal->flange joint and carry the fixed proximal->distal sensor offset
-# (0.094 m along z) as fixed_pre, keeping the sensor thickness rigid.
+# Rizon4s ("s" variant) carries a wrist FT sensor that splits link7 into
+# link7_proximal/link7_distal, with a fixed sensor segment between them. RDK
+# reports the collapsed chain (single link7_to_flange), so it maps onto the
+# distal->flange joint with the 0.094 m sensor segment as fixed_pre.
 _RIZON4_CHAIN = "base_link/link1/link2/link3/link4/link5/link6"
 JOINTS_BY_MODEL = {
     "Rizon4": [
@@ -100,11 +73,6 @@ JOINTS_BY_MODEL = {
         ("joint7", f"{_RIZON4_CHAIN}/link7", "joint7", None),
         ("link7_to_flange", f"{_RIZON4_CHAIN}/link7/flange", "link7_to_flange", None),
     ],
-    # Rizon4s: joint7's child is link7_proximal; the flange sits past a fixed
-    # sensor segment (link7_ft_sensor, 0.094 m) on link7_distal. The calibrated
-    # link7_to_flange offset is applied to the distal->flange joint, with the
-    # sensor segment carried as a fixed pre-offset so the net flange pose is
-    # correct while the sensor thickness stays rigid.
     "Rizon4s": [
         ("joint1", "base_link/link1", "joint1", None),
         ("joint2", "base_link/link1/link2", "joint2", None),
@@ -553,12 +521,11 @@ def apply_calibration_to_usd(usd_path, template_path):
             updated += 1
             continue
 
-        # This entry's YAML value is the COLLAPSED offset (e.g. Rizon4s reports a
-        # single link7_to_flange), but the USD splits it across a fixed segment
-        # (fixed_pre, the FT sensor) and this joint. The flange's world pose comes
-        # from the collapsed offset composed onto `world`; the intermediate link
-        # (parent of this entry's link) sits at the fixed segment; and this
-        # joint's PARENT-relative local is the remainder = fixed_pre^-1 * local.
+        # The YAML value is the COLLAPSED offset (e.g. Rizon4s reports one
+        # link7_to_flange), but the USD splits it across the fixed segment
+        # (fixed_pre) and this joint. Place the flange at the collapsed offset and
+        # the intermediate link at the fixed segment; this joint's parent-relative
+        # local is then the remainder = fixed_pre^-1 * local.
         world_flange = local * world
         pre = joint_local_matrix(fixed_pre, Gf.Quatf(1.0))
         world_inter = pre * world
@@ -566,7 +533,6 @@ def apply_calibration_to_usd(usd_path, template_path):
         _set_link_world_xform(base_layer, robot_name, inter_rel, world_inter)
         _set_link_world_xform(base_layer, robot_name, link_rel_path, world_flange)
 
-        # Remainder local (parent = intermediate link): fixed_pre^-1 * local.
         remainder = pre.GetInverse() * local
         rt = remainder.ExtractTranslation()
         rq = remainder.ExtractRotationQuat()

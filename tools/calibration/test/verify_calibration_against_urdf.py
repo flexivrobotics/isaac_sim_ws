@@ -93,7 +93,7 @@ def joint_origin_matrix(xyz, rpy):
     return M
 
 
-def sync_urdf_from_robot(robot_sn, out_path, network_whitelist):
+def sync_urdf_from_robot(robot_sn, out_path):
     """Pull the robot's actual URDF into out_path via Model.SyncURDF()."""
     import flexivrdk
 
@@ -106,7 +106,7 @@ def sync_urdf_from_robot(robot_sn, out_path, network_whitelist):
             f"one from flexiv_description first (see the RDK docs)."
         )
     print(f"[sync] Connecting to robot [{robot_sn}] ...")
-    robot = flexivrdk.Robot(robot_sn, network_whitelist)
+    robot = flexivrdk.Robot(robot_sn)
     model = flexivrdk.Model(robot)
     print(f"[sync] Syncing URDF into [{out_path}] ...")
     model.SyncURDF(out_path)
@@ -212,12 +212,6 @@ def main():
         "--robot-sn). Generate from flexiv_description.",
     )
     p.add_argument(
-        "--network-interface",
-        action="append",
-        default=[],
-        help="Whitelist a network interface for the robot connection.",
-    )
-    p.add_argument(
         "--dump-urdf",
         help="Also copy the synced URDF here for manual inspection / running "
         "through the Isaac URDF importer.",
@@ -227,9 +221,7 @@ def main():
     if args.robot_sn:
         if not args.urdf_template:
             p.error("--urdf-template is required with --robot-sn")
-        urdf_path = sync_urdf_from_robot(
-            args.robot_sn, args.urdf_template, args.network_interface
-        )
+        urdf_path = sync_urdf_from_robot(args.robot_sn, args.urdf_template)
     else:
         urdf_path = args.from_urdf
 

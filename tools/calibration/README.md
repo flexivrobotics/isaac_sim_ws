@@ -3,18 +3,35 @@
 Apply a real robot's per-unit kinematic calibration to its SimReady USD so the
 simulated arm matches the physical one.
 
+## Requirements
+
+Install the tool's dependencies into the Python you will run it with — Isaac
+Sim's bundled interpreter is a convenient choice:
+
+```
+~/isaacsim/kit/python/bin/python3 -m pip install flexivrdk usd-core pyyaml
+```
+
+- `flexivrdk` — connects to the robot (`numpy` comes with it). Pin the version to
+  match the robot's software package, e.g. `flexivrdk==1.9.3` for package 3.11.2.
+  Tested with 1.9.x and 2.x (2.1, 2.2).
+- `usd-core` — provides `pxr` for editing the USD offline (no Isaac Sim runtime
+  needed).
+- `pyyaml` — reads the kinematics template.
+
 ## Usage (`calibrate_usd_from_rdk.py`)
 
-With the robot connected, run with Isaac Sim's bundled Python (so `flexivrdk`
-and `pxr` resolve):
+With the robot connected, pass just its serial number — the source USD is the
+bundled asset for that model in the Isaac Sim install:
 
 ```
-~/isaacsim/kit/python/bin/python3 calibrate_usd_from_rdk.py \
-    --robot-sn "Rizon4-000001" \
-    --usd ~/isaacsim/extsDeprecated/isaacsim.robot.manipulators.examples/data/flexiv/Rizon4/Rizon4.usda
+~/isaacsim/kit/python/bin/python3 calibrate_usd_from_rdk.py --robot-sn "Rizon4-000001"
 ```
 
-For all options, run `calibrate_usd_from_rdk.py --help`.
+Pass `--usd <path>` to calibrate a specific USD instead of the bundled one. For
+all options, run `calibrate_usd_from_rdk.py --help`. The nominal kinematics
+template is fetched from flexiv_description on GitHub, so the machine needs
+internet access.
 
 ### Output
 

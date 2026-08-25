@@ -4,27 +4,26 @@
 # Apply a physical robot's kinematic calibration (pulled via Flexiv RDK) to its
 # SimReady USD, so the simulated arm matches the real one. Steps:
 #
-#   1. The user provides a robot serial number and the source USD.
+#   1. The user provides a robot serial number. The source USD is the bundled
+#      asset for that model in the Isaac Sim install, or an explicit --usd.
 #   2. Create a per-robot copy of the source USD (a sibling dir named after the
 #      serial). The shared meshes (geometries.usd, ~90% of the asset) are reused
 #      via a relative reference rather than duplicated, so each copy is ~100 KB.
 #      The source asset is never modified.
-#   3. Obtain the nominal kinematics template from flexiv_description (fetched
-#      from GitHub, or read from a local --flexiv-description checkout) and stage
-#      a working copy next to the per-robot USD.
+#   3. Fetch the nominal kinematics template from flexiv_description (GitHub) and
+#      stage a working copy next to the per-robot USD.
 #   4. Connect to the robot via Flexiv RDK and overwrite the working template
 #      with the robot's actual kinematics (Model.SyncKinematicsYAML()).
 #   5. Write the calibrated values into the copy's link transforms (base.usda)
 #      and joint anchors (physics.usda), producing the calibrated USD at
 #      <flexiv>/<robot-sn>/<robot-sn>.usda.
 #
-# If no serial is given, steps 1/4 are skipped: the nominal template is applied
-# as-is and the output is named "<Model>-nominal". The model is taken from the
-# serial, or from the USD's defaultPrim.
-#
 # (How base.usda and physics.usda store the calibration -- the root-relative
 # xformOp:transform vs. parent-relative joint anchors -- is documented at
 # apply_calibration_to_usd() and its helpers, where it matters.)
+#
+# Works with flexivrdk 1.9.x and 2.x (2.1, 2.2): the Robot / Model /
+# SyncKinematicsYAML APIs the script uses are the same across these versions.
 #
 # Run with Isaac Sim's bundled Python so both flexivrdk and pxr (usd-core) are
 # importable, e.g.
@@ -42,12 +41,12 @@ import urllib.request
 import yaml
 from pxr import Gf, Sdf, Usd
 
-# Canonical nominal templates live in flexiv_description on GitHub, one per model
-# at config/<Model>/default_kinematics.yaml. RDK's own docstring points here. We
-# never keep a hand-maintained copy (it silently drifts); instead we resolve the
-# template from a local checkout or fetch the single file from GitHub.
+# The nominal kinematics template is fetched from flexiv_description on GitHub,
+# one per model at config/<Model>/default_kinematics.yaml. The Rizon templates are
+# identical across the repo's branches (for the fields this tool uses), so the
+# branch is pinned rather than exposed as an option.
 FLEXIV_DESCRIPTION_REPO = "flexivrobotics/flexiv_description"
-FLEXIV_DESCRIPTION_DEFAULT_REF = "humble"  # the repo's default branch
+FLEXIV_DESCRIPTION_BRANCH = "humble"
 
 # Per-model joint mapping, in kinematic-chain order. Each entry is
 # (yaml_name, link_rel_path, joint_name, fixed_pre):
@@ -94,16 +93,23 @@ JOINTS_BY_MODEL = {
 def joints_for_model(model):
     """Return the joint mapping table for a model name (e.g. 'Rizon4s').
 
-    Falls back to the base Rizon4 layout for any 7-DoF Rizon whose tail matches
-    (Rizon4, Rizon4M, Rizon10, ...). 's' variants have their own split-link7
-    entry; add new tail geometries here as needed.
+    Only the 7-DoF Rizon series is supported. A Rizon variant reuses the base
+    layout, or the split-link7 layout for an 's' (FT-sensor) variant. Any
+    non-Rizon model (Enlight, MICO, ...) raises -- its USD has a different prim
+    chain that these tables do not describe.
     """
     if model in JOINTS_BY_MODEL:
         return JOINTS_BY_MODEL[model]
-    # Heuristic: "s" suffix -> FT-sensor split layout; otherwise base layout.
-    if model.endswith("s"):
-        return JOINTS_BY_MODEL["Rizon4s"]
-    return JOINTS_BY_MODEL["Rizon4"]
+    if not model.startswith("Rizon"):
+        raise ValueError(
+            f"Model [{model}] is not supported. This tool handles the 7-DoF "
+            f"Rizon series only (Rizon4, Rizon4s, Rizon10, ...); Enlight/MICO and "
+            f"other models have a different USD structure. Supported explicitly: "
+            f"{sorted(JOINTS_BY_MODEL)}."
+        )
+    # Rizon variant not explicitly listed: reuse the split-link7 layout for an
+    # 's' (FT-sensor) model, otherwise the base Rizon layout.
+    return JOINTS_BY_MODEL["Rizon4s" if model.endswith("s") else "Rizon4"]
 
 
 def rpy_to_quatf(roll, pitch, yaw):
@@ -148,41 +154,46 @@ def model_from_serial(robot_sn):
     return robot_sn.split("-")[0].strip().replace(" ", "")
 
 
-def model_from_usd(usd_path):
-    """Derive the model from the USD's defaultPrim (e.g. "Rizon4").
+# Bundled Flexiv assets live under the Isaac Sim install, at this path relative to
+# the Isaac root -- the same location the bridge app's config points at.
+_FLEXIV_DATA_REL = os.path.join(
+    "extsDeprecated",
+    "isaacsim.robot.manipulators.examples",
+    "data",
+    "flexiv",
+)
 
-    Flexiv arm USDs name their default prim after the model, which is also the
-    flexiv_description config dir name. Used as the model source when no
-    --robot-sn is given (offline / dry-run), so --model is not needed.
+
+def _isaac_root():
+    """Best-effort Isaac Sim install root: $ISAAC_PATH, else inferred from the
+    running interpreter (.../isaacsim/kit/python/bin/python3 -> .../isaacsim)."""
+    env = os.environ.get("ISAAC_PATH")
+    if env:
+        return env
+    # sys.executable is <root>/kit/python/bin/python3 under Isaac's bundled Python.
+    return os.path.abspath(os.path.join(os.path.dirname(sys.executable), *[".."] * 3))
+
+
+def usd_for_model(model):
+    """Locate the bundled source USD for a model in the Isaac Sim install.
+
+    Returns <isaac_root>/extsDeprecated/.../data/flexiv/<model>/<model>.usda.
+    Used when --usd is omitted, so the common case is just --robot-sn.
     """
-    layer = Sdf.Layer.FindOrOpen(usd_path)
-    if layer is None:
-        raise FileNotFoundError(f"Could not open USD [{usd_path}]")
-    if not layer.defaultPrim:
-        raise ValueError(
-            f"USD [{usd_path}] has no defaultPrim to derive the model from; "
-            f"pass --robot-sn."
-        )
-    return layer.defaultPrim
-
-
-def _nominal_from_local_checkout(fd_path, model):
-    """Read config/<model>/default_kinematics.yaml from a flexiv_description dir."""
-    src = os.path.join(fd_path, "config", model, "default_kinematics.yaml")
-    if not os.path.isfile(src):
+    path = os.path.join(_isaac_root(), _FLEXIV_DATA_REL, model, f"{model}.usda")
+    if not os.path.isfile(path):
         raise FileNotFoundError(
-            f"No template at [{src}] -- is [{fd_path}] a flexiv_description "
-            f"checkout, and is [{model}] a valid model dir under config/?"
+            f"No bundled USD for model [{model}] at [{path}]. Pass --usd "
+            f"explicitly, or set $ISAAC_PATH to the Isaac Sim install root."
         )
-    with open(src) as f:
-        return f.read(), src
+    return path
 
 
-def _nominal_from_github(model, ref):
+def _nominal_from_github(model):
     """Fetch config/<model>/default_kinematics.yaml from flexiv_description raw."""
     url = (
-        f"https://raw.githubusercontent.com/{FLEXIV_DESCRIPTION_REPO}/{ref}/"
-        f"config/{model}/default_kinematics.yaml"
+        f"https://raw.githubusercontent.com/{FLEXIV_DESCRIPTION_REPO}/"
+        f"{FLEXIV_DESCRIPTION_BRANCH}/config/{model}/default_kinematics.yaml"
     )
     print(f"[template] Fetching nominal template from {url}")
     try:
@@ -190,29 +201,20 @@ def _nominal_from_github(model, ref):
             return resp.read().decode("utf-8"), url
     except Exception as e:  # noqa: BLE001 -- surface a clear, actionable message
         raise RuntimeError(
-            f"Failed to fetch template for model [{model}] at ref [{ref}] from "
-            f"GitHub ({e}). Check the model name / --fd-ref, or pass a local "
-            f"--flexiv-description checkout, or an explicit --template."
+            f"Failed to fetch the nominal template for model [{model}] from "
+            f"GitHub ({e}). Check network access and that [{model}] is a valid "
+            f"model under config/ in flexiv_description."
         ) from None
 
 
-def resolve_working_template(usd_path, model, flexiv_description, fd_ref):
-    """Resolve the nominal template and stage it as a per-robot WORKING COPY.
+def resolve_working_template(usd_path, model):
+    """Fetch the nominal template and stage it as a per-robot WORKING COPY.
 
-    The template always comes from flexiv_description:
-      * --flexiv-description : read config/<model>/default_kinematics.yaml from a
-                               local checkout (offline).
-      * GitHub (default)     : fetch that same file from the repo at --fd-ref.
-
-    Either way the nominal content is copied to a working file next to the USD
-    (<usd_dir>/<model>_synced_kinematics.yaml) so SyncKinematicsYAML writes into
-    that copy and NEVER mutates the flexiv_description source. Returns the working
-    path.
+    The template is fetched from flexiv_description on GitHub and copied to a
+    working file next to the USD (<usd_dir>/<model>_synced_kinematics.yaml), so
+    SyncKinematicsYAML writes into that copy. Returns the working path.
     """
-    if flexiv_description:
-        content, origin = _nominal_from_local_checkout(flexiv_description, model)
-    else:
-        content, origin = _nominal_from_github(model, fd_ref)
+    content, origin = _nominal_from_github(model)
 
     usd_dir = os.path.dirname(os.path.abspath(usd_path)) if usd_path else os.getcwd()
     working = os.path.join(usd_dir, f"{model}_synced_kinematics.yaml")
@@ -232,7 +234,7 @@ def resolve_working_template(usd_path, model, flexiv_description, fd_ref):
 # ------------------------------- sync phase --------------------------------- #
 
 
-def sync_yaml_from_robot(robot_sn, template_path, network_whitelist):
+def sync_yaml_from_robot(robot_sn, template_path):
     """Pull the robot's actual kinematics into the template YAML in place.
 
     Returns the number of joints synced (from Model.SyncKinematicsYAML).
@@ -240,7 +242,7 @@ def sync_yaml_from_robot(robot_sn, template_path, network_whitelist):
     import flexivrdk  # imported lazily so `apply` mode never needs the robot lib
 
     print(f"[sync] Connecting to robot [{robot_sn}] ...")
-    robot = flexivrdk.Robot(robot_sn, network_whitelist)
+    robot = flexivrdk.Robot(robot_sn)
     # A model handle is all we need; it lazily talks to the robot for the sync.
     model = flexivrdk.Model(robot)
 
@@ -568,75 +570,38 @@ def main():
         "Pulls the connected robot's calibration and writes it into the USD."
     )
     p.add_argument(
-        "--usd",
-        required=True,
-        help="Path to the root robot USD to calibrate, e.g. "
-        ".../Rizon4/Rizon4.usda.",
-    )
-    p.add_argument(
         "--robot-sn",
-        help="Robot serial number, e.g. 'Rizon4-000001'. When given, the robot's "
-        "actual calibration is synced in before applying, and the per-robot "
-        "output is named after it. Omit to apply the nominal flexiv_description "
-        "template only, named after the model (no robot sync).",
+        required=True,
+        help="Robot serial number, e.g. 'Rizon4-000001'. Its calibration is "
+        "synced in and written to a per-robot USD named after it.",
     )
     p.add_argument(
-        "--flexiv-description",
-        help="Path to a local flexiv_description checkout; the nominal template "
-        "is read from config/<Model>/default_kinematics.yaml (never modified). "
-        "Omit to fetch that file from GitHub instead.",
-    )
-    p.add_argument(
-        "--flexiv-description-branch",
-        default=FLEXIV_DESCRIPTION_DEFAULT_REF,
-        help=f"flexiv_description branch/tag to fetch the template from when no "
-        f"local --flexiv-description is given (default: "
-        f"{FLEXIV_DESCRIPTION_DEFAULT_REF}).",
-    )
-    p.add_argument(
-        "--network-interface",
-        action="append",
-        default=[],
-        help="Whitelist a network interface for the robot connection "
-        "(repeatable). Passed to flexivrdk.Robot.",
+        "--usd",
+        help="Path to the root robot USD to calibrate. Optional: when omitted, "
+        "the bundled USD for the robot's model is used from the Isaac Sim install "
+        "($ISAAC_PATH).",
     )
     args = p.parse_args()
 
-    # The template's model comes from the robot serial when connecting, otherwise
-    # from the USD's defaultPrim (Flexiv arm USDs name it after the model). The
-    # per-robot output dir is a sibling named after the serial when present. With
-    # no serial we suffix "-nominal" so the output can't collide with the source
-    # model dir (whose name IS the model) and reads as "not robot-calibrated".
-    if args.robot_sn:
-        model = model_from_serial(args.robot_sn)
-        out_name = args.robot_sn
-    else:
-        model = model_from_usd(args.usd)
-        out_name = f"{model}-nominal"
-        print(
-            f"[template] No --robot-sn; deriving model [{model}] from the USD "
-            f"and applying the nominal template only (no robot sync)."
-        )
+    model = model_from_serial(args.robot_sn)
+
+    # Fail fast on an unsupported model, before copying the USD or fetching a
+    # template. joints_for_model() raises for anything but the Rizon series.
+    joints_for_model(model)
+
+    # Source USD: use --usd if given, else the bundled asset for this model.
+    source_usd = args.usd or usd_for_model(model)
+    if not args.usd:
+        print(f"[usd] No --usd; using bundled asset [{source_usd}]")
 
     # Materialize a per-robot copy of the USD (reusing the shared meshes) so the
     # source asset is never modified and robots don't collide.
-    per_robot_usd = materialize_per_robot_usd(args.usd, out_name)
+    per_robot_usd = materialize_per_robot_usd(source_usd, args.robot_sn)
 
-    # Stage a working copy of the nominal template next to the per-robot USD, so a
-    # robot sync (if any) never mutates the flexiv_description source.
-    working_template = resolve_working_template(
-        usd_path=per_robot_usd,
-        model=model,
-        flexiv_description=args.flexiv_description,
-        fd_ref=args.flexiv_description_branch,
-    )
-
-    # With a robot, refresh the working copy with the actual calibration first.
-    if args.robot_sn:
-        sync_yaml_from_robot(
-            args.robot_sn, working_template, args.network_interface
-        )
-
+    # Stage a working copy of the nominal template next to the per-robot USD, then
+    # overwrite it with the robot's actual calibration and write it into the USD.
+    working_template = resolve_working_template(per_robot_usd, model)
+    sync_yaml_from_robot(args.robot_sn, working_template)
     apply_calibration_to_usd(per_robot_usd, working_template)
 
     print("[done]")

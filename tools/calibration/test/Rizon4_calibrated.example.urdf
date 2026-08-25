@@ -1,0 +1,351 @@
+<?xml version="1.0" ?>
+<robot name="generated_robot_A02LS-P2">
+    <link name="world">
+        <inertial>
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <mass value="0"/>
+            <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0"/>
+        </inertial>
+    </link>
+    <joint name="arm_mount_joint" type="fixed">
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <parent link="world"/>
+        <child link="arm_adapter_base_link"/>
+    </joint>
+    <!--arm_adapter_-->
+    <link name="arm_adapter_base_link">
+        <inertial>
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <mass value="0"/>
+            <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0"/>
+        </inertial>
+    </link>
+    <joint name="arm_adapter_joint" type="fixed">
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <parent link="arm_adapter_base_link"/>
+        <child link="base_link"/>
+    </joint>
+    <!--./specs/components/system_description/flexiv/urdf/A02LS-P2.urdf-->
+    <joint name="joint1" type="revolute">
+        <parent link="base_link"/>
+        <child link="link1"/>
+        <origin rpy="0 -0 3.141592653589793" xyz="0 0 0.155"/>
+        <axis xyz="0 0 1"/>
+        <limit effort="123" lower="-2.8798" upper="2.8798" velocity="2.0944"/>
+        <safety_controller k_position="100.0" k_velocity="40.0" soft_lower_limit="-2.7925" soft_upper_limit="2.7925"/>
+        <flexiv>
+            <mdh_to_rca_coordinate_transform>
+                <offset>0</offset>
+                <direction>1</direction>
+            </mdh_to_rca_coordinate_transform>
+        </flexiv>
+    </joint>
+    <joint name="joint2" type="revolute">
+        <parent link="link1"/>
+        <child link="link2"/>
+        <origin rpy="-3.138990391727565 -3.141543395441699 3.141592525406904" xyz="0.000850974317159 0.030543584115857 0.210079482583396"/>
+        <axis xyz="0 1 0"/>
+        <limit effort="123" lower="-2.3562" upper="2.3562" velocity="2.0944"/>
+        <safety_controller k_position="100.0" k_velocity="40.0" soft_lower_limit="-2.2689" soft_upper_limit="2.2689"/>
+        <flexiv>
+            <mdh_to_rca_coordinate_transform>
+                <offset>0</offset>
+                <direction>1</direction>
+            </mdh_to_rca_coordinate_transform>
+        </flexiv>
+    </joint>
+    <joint name="joint3" type="revolute">
+        <parent link="link2"/>
+        <child link="link3"/>
+        <origin rpy="-0.0010406881360844 8.875983693284944e-06 0.008528746478861957" xyz="-0.0009695235894690001 0.035213784686365 0.205418728741774"/>
+        <axis xyz="0 0 1"/>
+        <limit effort="64" lower="-3.0543" upper="3.0543" velocity="2.4435"/>
+        <safety_controller k_position="100.0" k_velocity="40.0" soft_lower_limit="-2.9671" soft_upper_limit="2.9671"/>
+        <flexiv>
+            <mdh_to_rca_coordinate_transform>
+                <offset>0</offset>
+                <direction>1</direction>
+            </mdh_to_rca_coordinate_transform>
+        </flexiv>
+    </joint>
+    <joint name="joint4" type="revolute">
+        <parent link="link3"/>
+        <child link="link4"/>
+        <origin rpy="-0.0002459142387698899 0.00801446059962904 3.141590682740875" xyz="-0.019034909752679 -0.029831349555787 0.189992664281833"/>
+        <axis xyz="0 1 0"/>
+        <limit effort="64" lower="-1.9548" upper="2.7751" velocity="2.4435"/>
+        <safety_controller k_position="100.0" k_velocity="40.0" soft_lower_limit="-1.8675" soft_upper_limit="2.6878"/>
+        <flexiv>
+            <mdh_to_rca_coordinate_transform>
+                <offset>0</offset>
+                <direction>1</direction>
+            </mdh_to_rca_coordinate_transform>
+        </flexiv>
+    </joint>
+    <joint name="joint5" type="revolute">
+        <parent link="link4"/>
+        <child link="link5"/>
+        <origin rpy="3.140934149945616 3.141590424614207 0.003384896606806187" xyz="-0.019134483328809 0.024871277704988 0.195475818739813"/>
+        <axis xyz="0 0 1"/>
+        <limit effort="39" lower="-3.0543" upper="3.0543" velocity="4.8869"/>
+        <safety_controller k_position="100.0" k_velocity="40.0" soft_lower_limit="-2.9671" soft_upper_limit="2.9671"/>
+        <flexiv>
+            <mdh_to_rca_coordinate_transform>
+                <offset>0</offset>
+                <direction>1</direction>
+            </mdh_to_rca_coordinate_transform>
+        </flexiv>
+    </joint>
+    <joint name="joint6" type="revolute">
+        <parent link="link5"/>
+        <child link="link6"/>
+        <origin rpy="0.002968979788427653 0.001668216580236568 4.952913564347866e-06" xyz="-0.000106684477073 0.030556358788645 0.190090721351977"/>
+        <axis xyz="0 1 0"/>
+        <limit effort="39" lower="-1.4835" upper="4.6251" velocity="4.8869"/>
+        <safety_controller k_position="100.0" k_velocity="40.0" soft_lower_limit="-1.3963" soft_upper_limit="4.5379"/>
+        <flexiv>
+            <mdh_to_rca_coordinate_transform>
+                <offset>-1.5707963267948966</offset>
+                <direction>1</direction>
+            </mdh_to_rca_coordinate_transform>
+        </flexiv>
+    </joint>
+    <joint name="joint7" type="revolute">
+        <parent link="link6"/>
+        <child link="link7"/>
+        <origin rpy="-1.570796326737685 -1.570801103288247 1.56959206684751" xyz="-0.05499865826343 0.070066232710202 0.109083179674417"/>
+        <axis xyz="0 0 1"/>
+        <limit effort="39" lower="-3.0543" upper="3.0543" velocity="4.8869"/>
+        <safety_controller k_position="100.0" k_velocity="40.0" soft_lower_limit="-2.9671" soft_upper_limit="2.9671"/>
+        <flexiv>
+            <mdh_to_rca_coordinate_transform>
+                <offset>0</offset>
+                <direction>1</direction>
+            </mdh_to_rca_coordinate_transform>
+        </flexiv>
+    </joint>
+    <joint name="link7_to_flange" type="fixed">
+        <parent link="link7"/>
+        <child link="flange"/>
+        <origin rpy="0.0 0.0 3.141592653589793" xyz="0.0 0.0 0.124"/>
+    </joint>
+    <link name="base_link">
+        <inertial>
+            <mass value="3.653"/>
+            <origin rpy="0 0 0" xyz="0.0002 -0.0006 0.0874"/>
+            <inertia ixx="0.0194" ixy="0.0" ixz="0.0" iyy="0.0196" iyz="0.0001" izz="0.0088"/>
+        </inertial>
+        <visual name="shell">
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="package://flexiv/meshes/A02LS-P/visual/link0.obj"/>
+            </geometry>
+        </visual>
+        <collision name="convex_mesh">
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="package://flexiv/meshes/A02LS-P/collision/link0.stl"/>
+            </geometry>
+        </collision>
+        <workspace>
+            <origin rpy="0 0 0" xyz="0 0 0.365"/>
+            <geometry>
+                <sphere radius="0.890"/>
+            </geometry>
+        </workspace>
+    </link>
+    <link name="link1">
+        <inertial>
+            <mass value="3.673"/>
+            <origin rpy="0 0 0" xyz="0.0001 0.006 0.1489"/>
+            <inertia ixx="0.0276" ixy="0.0" ixz="0.0" iyy="0.0272" iyz="0.0017" izz="0.0077"/>
+        </inertial>
+        <visual name="shell">
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="package://flexiv/meshes/A02LS-P/visual/link1.obj"/>
+            </geometry>
+        </visual>
+        <visual name="ring">
+            <origin rpy="0 0 0" xyz="0 0 -0.0025"/>
+            <geometry>
+                <mesh filename="package://flexiv/meshes/A02LS-P/visual/ring.obj" scale="0.062 0.062 0.002"/>
+            </geometry>
+        </visual>
+        <collision name="convex_mesh">
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="package://flexiv/meshes/A02LS-P/collision/link1.stl"/>
+            </geometry>
+        </collision>
+    </link>
+    <link name="link2">
+        <inertial>
+            <mass value="2.734"/>
+            <origin rpy="0 0 0" xyz="0.0002 0.0362 0.0979"/>
+            <inertia ixx="0.0234" ixy="0.0" ixz="0.0" iyy="0.0243" iyz="-0.0003" izz="0.0036"/>
+        </inertial>
+        <visual name="shell">
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="package://flexiv/meshes/A02LS-P/visual/link2.obj"/>
+            </geometry>
+        </visual>
+        <visual name="ring">
+            <origin rpy="1.5707963 0 0" xyz="0 -0.0025 0"/>
+            <geometry>
+                <mesh filename="package://flexiv/meshes/A02LS-P/visual/ring.obj" scale="0.062 0.062 0.002"/>
+            </geometry>
+        </visual>
+        <collision name="convex_mesh">
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="package://flexiv/meshes/A02LS-P/collision/link2.stl"/>
+            </geometry>
+        </collision>
+    </link>
+    <link name="link3">
+        <inertial>
+            <mass value="2.397"/>
+            <origin rpy="0 0 0" xyz="-0.0117 -0.0028 0.1334"/>
+            <inertia ixx="0.0141" ixy="0.0001" ixz="-0.0014" iyy="0.0137" iyz="-0.0007" izz="0.0038"/>
+        </inertial>
+        <visual name="shell">
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="package://flexiv/meshes/A02LS-P/visual/link3.obj"/>
+            </geometry>
+        </visual>
+        <visual name="ring">
+            <origin rpy="0 0 0" xyz="0 0 -0.0025"/>
+            <geometry>
+                <mesh filename="package://flexiv/meshes/A02LS-P/visual/ring.obj" scale="0.051 0.051 0.002"/>
+            </geometry>
+        </visual>
+        <collision name="convex_mesh">
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="package://flexiv/meshes/A02LS-P/collision/link3.stl"/>
+            </geometry>
+        </collision>
+    </link>
+    <link name="link4">
+        <inertial>
+            <mass value="2.397"/>
+            <origin rpy="0 0 0" xyz="-0.0126 0.0312 0.1013"/>
+            <inertia ixx="0.0184" ixy="0.0001" ixz="-0.0016" iyy="0.0188" iyz="-0.0012" izz="0.003"/>
+        </inertial>
+        <visual name="shell">
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="package://flexiv/meshes/A02LS-P/visual/link4.obj"/>
+            </geometry>
+        </visual>
+        <visual name="ring">
+            <origin rpy="1.5707963 0 0" xyz="0 -0.0025 0"/>
+            <geometry>
+                <mesh filename="package://flexiv/meshes/A02LS-P/visual/ring.obj" scale="0.051 0.051 0.002"/>
+            </geometry>
+        </visual>
+        <collision name="convex_mesh">
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="package://flexiv/meshes/A02LS-P/collision/link4.stl"/>
+            </geometry>
+        </collision>
+    </link>
+    <link name="link5">
+        <inertial>
+            <mass value="2.363"/>
+            <origin rpy="0 0 0" xyz="-0.0002 0.0032 0.1328"/>
+            <inertia ixx="0.014" ixy="0.0" ixz="0.0" iyy="0.0134" iyz="0.0007" izz="0.0036"/>
+        </inertial>
+        <visual name="shell">
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="package://flexiv/meshes/A02LS-P/visual/link5.obj"/>
+            </geometry>
+        </visual>
+        <visual name="ring">
+            <origin rpy="0 0 0" xyz="0 0 -0.0025"/>
+            <geometry>
+                <mesh filename="package://flexiv/meshes/A02LS-P/visual/ring.obj" scale="0.051 0.051 0.002"/>
+            </geometry>
+        </visual>
+        <collision name="convex_mesh">
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="package://flexiv/meshes/A02LS-P/collision/link5.stl"/>
+            </geometry>
+        </collision>
+    </link>
+    <link name="link6">
+        <inertial>
+            <mass value="2.135"/>
+            <origin rpy="0 0 0" xyz="-0.0092 0.0567 0.0694"/>
+            <inertia ixx="0.0083" ixy="-0.0003" ixz="-0.0008" iyy="0.0086" iyz="0.0018" izz="0.0036"/>
+        </inertial>
+        <visual name="shell">
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="package://flexiv/meshes/A02LS-P/visual/link6.obj"/>
+            </geometry>
+        </visual>
+        <visual name="ring">
+            <origin rpy="1.5707963 0 0" xyz="0 -0.0025 0"/>
+            <geometry>
+                <mesh filename="package://flexiv/meshes/A02LS-P/visual/ring.obj" scale="0.051 0.051 0.002"/>
+            </geometry>
+        </visual>
+        <collision name="convex_mesh">
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="package://flexiv/meshes/A02LS-P/collision/link6.stl"/>
+            </geometry>
+        </collision>
+    </link>
+    <link name="link7">
+        <inertial>
+            <mass value="1.403"/>
+            <origin rpy="0 0 0" xyz="0.0 0.0001 0.0544"/>
+            <inertia ixx="0.0032" ixy="0.0" ixz="0.0" iyy="0.0032" iyz="0.0" izz="0.0018"/>
+        </inertial>
+        <visual name="shell">
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="package://flexiv/meshes/A02LS-P/visual/link7.obj"/>
+            </geometry>
+        </visual>
+        <visual name="ring">
+            <origin rpy="0 0 0" xyz="0 0 -0.0025"/>
+            <geometry>
+                <mesh filename="package://flexiv/meshes/A02LS-P/visual/ring.obj" scale="0.051 0.051 0.002"/>
+            </geometry>
+        </visual>
+        <collision name="convex_mesh">
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="package://flexiv/meshes/A02LS-P/collision/link7.stl"/>
+            </geometry>
+        </collision>
+    </link>
+    <link name="flange">
+        <inertial>
+            <mass value="0"/>
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0"/>
+        </inertial>
+    </link>
+    <material name="rizon_blue">
+        <color rgba="0. 0. 1. 0.5"/>
+    </material>
+    <material name="rizon_light_grey">
+        <color rgba="0.9 0.9 0.9 1"/>
+    </material>
+    <material name="rizon_dark_grey">
+        <color rgba="0.2 0.2 0.2 1"/>
+    </material>
+    <material name="rizon_white">
+        <color rgba="1 1 1 1"/>
+    </material>
+</robot>

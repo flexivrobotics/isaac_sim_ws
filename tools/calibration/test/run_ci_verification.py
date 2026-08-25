@@ -7,11 +7,10 @@
 # What it does:
 #   1. Always: validate the example calibrated kinematics YAML parses and has the
 #      expected joint set. This is a real check that guards the example data.
-#   2. If a calibrated reference URDF is present in this folder: apply the example
-#      YAML to a base Rizon4 USD, then run verify_calibration_against_urdf.py to
-#      confirm the calibrated USD matches the URDF. This step is SKIPPED (exit 0
-#      with a clear message) until both the reference URDF and a base USD are
-#      provided -- see REFERENCE_URDF / BASE_USD below.
+#   2. If a base Rizon4 USD is available: apply the example YAML to it, then run
+#      verify_calibration_against_urdf.py to confirm the calibrated USD matches
+#      the reference URDF. This step is SKIPPED (exit 0 with a clear message)
+#      until a base USD is provided -- see BASE_USD_ENV below.
 #
 # Exit codes: 0 = pass (or skipped), non-zero = failure.
 
@@ -28,7 +27,7 @@ EXAMPLE_YAML = os.path.join(HERE, "Rizon4_calibrated_kinematics.example.yaml")
 
 # Drop a real calibrated URDF for the SAME robot here to activate the full
 # cross-check. Until this file exists, the comparison step is skipped.
-REFERENCE_URDF = os.path.join(HERE, "Rizon4_calibrated.urdf")
+REFERENCE_URDF = os.path.join(HERE, "Rizon4_calibrated.example.urdf")
 
 # A base Rizon4 USD to apply the calibration onto. The repo does not ship USD
 # assets (they come from the Isaac Sim install), so the comparison step also
@@ -132,8 +131,8 @@ def main():
     ran = run_full_verification()
     if not ran:
         print(
-            "[ci] Verification step skipped (inputs not yet provided); example "
-            "data validated. This is expected until the reference URDF is added."
+            "[ci] Verification step skipped (a required input was missing); "
+            "example data validated."
         )
     print("[ci] Done.")
     return 0

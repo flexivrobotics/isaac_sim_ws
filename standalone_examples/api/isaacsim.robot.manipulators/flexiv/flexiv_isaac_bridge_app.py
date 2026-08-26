@@ -8,7 +8,7 @@
 #
 
 # App version
-APP_VERSION = "1.3"
+APP_VERSION = "1.4.0"
 
 # Compatible flexivsimplugin version
 COMPATIBLE_SIM_PLUGIN_VER = "1.3.0"

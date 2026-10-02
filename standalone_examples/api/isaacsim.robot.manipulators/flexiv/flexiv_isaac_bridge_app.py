@@ -11,12 +11,12 @@
 APP_VERSION = "1.4.0"
 
 # Compatible flexivsimplugin version
-COMPATIBLE_SIM_PLUGIN_VER = "1.3.0"
+COMPATIBLE_SIM_PLUGIN_VER = "2.2.0.2"
 
 import os
 import sys
 import yaml
-import spdlog
+import logging
 import numpy as np
 from typing import List, Dict
 from enum import Enum
@@ -40,6 +40,11 @@ if flexivsimplugin.__version__ != COMPATIBLE_SIM_PLUGIN_VER:
     )
 
 
+# Send this app's log messages to the console. Done here, before Isaac Sim
+# starts, so it also covers the loggers used by the Flexiv extension modules.
+logging.basicConfig(level=logging.INFO, format="[%(name)s] [%(levelname)s] %(message)s")
+
+
 # Load config file
 argparser = ArgumentParser()
 argparser.add_argument("--config", required=True, help="Path to YAML config file")
@@ -60,12 +65,19 @@ from isaacsim.core.api import World
 from isaacsim.core.utils.stage import add_reference_to_stage, get_current_stage
 from isaacsim.sensors.camera import Camera
 from isaacsim.robot.manipulators.examples.flexiv import FlexivSerial
+from isaacsim.robot.manipulators.examples.flexiv.flexiv_serial import (
+    controller_joint_order,
+    usd_home_joint_positions,
+)
 from isaacsim.robot.manipulators.grippers.parallel_gripper import ParallelGripper
 from pxr import Usd, UsdPhysics, Sdf, Gf
 
 # Physics and render loop period [sec]
 RENDER_FREQ = 60.0
 PHYSICS_FREQ = 2000.0
+
+# Number of digital output ports in a sim command (sim_plugin::kIOPorts, not exposed in Python)
+SIM_PLUGIN_IO_PORTS = 16
 
 
 # Gripper status
@@ -107,8 +119,17 @@ class BridgeRunner(object):
         physics_dt (float): Physics loop period of the scene [sec].
         render_dt (float): Render loop period of the scene [sec].
         config (Dict): Configurations parsed from the config file.
-        initial_q (List[float], optional): Initial joint positions [rad].
+        (Each robot's initial joint positions [rad] come from its `initial_q` config, else the
+        home pose authored in its USD.)
     """
+
+    # Data struct for a gripper driven by two digital outputs of the robot
+    @dataclass
+    class GripperData:
+        instance: ParallelGripper
+        dout_open: int
+        dout_close: int
+        status: GripperStatus = GripperStatus.INIT
 
     # Data struct for a single robot
     @dataclass
@@ -117,29 +138,24 @@ class BridgeRunner(object):
         instance: FlexivSerial
         sim_plugin: flexivsimplugin.UserNode
         last_connected: bool
-        gripper_status: GripperStatus
-
-    # Robot degrees of freedom
-    ROBOT_DOF = 7
+        grippers: List["BridgeRunner.GripperData"]
+        initial_q: List[float]
+        size_error_logged: bool = False
 
     def __init__(
         self,
         physics_dt,
         render_dt,
         config: Dict,
-        initial_q: List[float] = [0.0] * ROBOT_DOF,
     ) -> None:
         # Initialize logger
-        self._logger = spdlog.ConsoleLogger("Flexiv-Isaac Bridge App")
+        self._logger = logging.getLogger("Flexiv-Isaac Bridge App")
 
         # fmt: off
         self._logger.info("——————————————————————————————————————————————————————————")
         self._logger.info(f"———            Flexiv-Isaac Bridge App v{APP_VERSION}            ———")
         self._logger.info("——————————————————————————————————————————————————————————")
         # fmt: on
-
-        # Save initial q
-        self._initial_q = initial_q
 
         # Create world
         self._world = World(
@@ -186,6 +202,12 @@ class BridgeRunner(object):
                 f"Added camera [/World/{cam_name}] located at {pos_in_world} {ori_in_world} in world"
             )
 
+        # Stop the timeline while robots and tools are added. While it plays, PhysX parses every
+        # stage change on its own, so a tool referenced before its mount joint exists is parsed
+        # outside the robot articulation and never joins it (a second gripper then has no DoFs).
+        # Stopped, PhysX parses each robot with its tools in one go at the next reset.
+        self._world.stop()
+
         # Create data struct for all robots and add them to stage
         self._robots = []
         for r in config.get("robots", []):
@@ -206,8 +228,12 @@ class BridgeRunner(object):
                     f"Robot [{serial_num}] is an 's' variant; wrist force-torque sensor enabled"
                 )
 
-            # Replace dash with underscore in serial number to avoid prim path error
-            serial_num = serial_num.replace("-", "_")
+            # Sanitize the serial number for use in a prim path, which allows
+            # neither spaces nor dashes. Studio displays serial numbers with a
+            # space in the model name ("Rizon 4-123456"), so stripping spaces is
+            # required, not cosmetic. This is also exactly how the plugin derives
+            # its own topic suffix, so both sides stay in agreement.
+            serial_num = serial_num.replace(" ", "").replace("-", "_")
 
             # Add this robot to stage
             prim_path = "/World/Flexiv/" + serial_num
@@ -216,15 +242,35 @@ class BridgeRunner(object):
             )
             add_reference_to_stage(usd_path=usd_path, prim_path=prim_path)
 
-            # Attach a tool (gripper) if the robot config declares one. The tool
-            # USD is referenced onto the arm and fixed to the flange at load time,
-            # so no pre-combined "<robot>_with_Grav" asset is needed.
-            gripper = None
-            end_effector_prim_name = "flange"
-            tool = r.get("tool")
-            if tool:
-                gripper, end_effector_prim_name = self._attach_tool(prim_path, tool)
-            else:
+            # Robot joints in controller order, before any tool adds its own joints. The sim
+            # messages carry joint values without names, so this order must match the controller's.
+            joint_names = r.get("joint_order") or controller_joint_order(prim_path)
+
+            # Attach tools (grippers) if the robot config declares any: a single `tool`, or a
+            # `tools` list, e.g. one per arm of a dual-arm robot. Each tool USD is referenced onto
+            # the robot and fixed to a flange at load time, so no pre-combined "<robot>_with_Grav"
+            # asset is needed.
+            tools = r.get("tools") or ([r["tool"]] if r.get("tool") else [])
+            grippers = []
+            end_effector_prim_name = r.get("end_effector", "flange")
+            for i, tool in enumerate(tools):
+                gripper, ee = self._attach_tool(prim_path, tool)
+                grippers.append(
+                    self.GripperData(
+                        instance=gripper,
+                        dout_open=int(tool.get("dout_open", 2 * i)),
+                        dout_close=int(tool.get("dout_close", 2 * i + 1)),
+                    )
+                )
+                ports = (grippers[-1].dout_open, grippers[-1].dout_close)
+                if not all(0 <= port < SIM_PLUGIN_IO_PORTS for port in ports):
+                    raise ValueError(
+                        f"Robot [{serial_num}] tool {i} digital outputs {ports} out of range "
+                        f"[0, {SIM_PLUGIN_IO_PORTS})"
+                    )
+                if i == 0:
+                    end_effector_prim_name = ee
+            if not tools:
                 self._logger.info("No tool configured; gripper control is not enabled")
 
             # Add robot to stage
@@ -233,15 +279,38 @@ class BridgeRunner(object):
                     prim_path=prim_path,
                     name=serial_num,
                     end_effector_prim_name=end_effector_prim_name,
-                    arm_dof=BridgeRunner.ROBOT_DOF,
                     pos_in_world=pos_in_world,
                     ori_in_world=ori_in_world,
-                    gripper=gripper,
+                    grippers=[g.instance for g in grippers],
                     has_ft_sensor=has_ft_sensor,
+                    joint_names=joint_names,
                 )
             )
+
+            # Initial joint positions [rad] in controller order. Without `initial_q`, start at the
+            # home pose authored in the USD, the same SRDF home pose the controller starts from.
+            initial_q = r.get("initial_q")
+            if initial_q is None:
+                home_q = usd_home_joint_positions(prim_path, robot.joint_names)
+                missing = [n for n, q in zip(robot.joint_names, home_q) if q is None]
+                if missing:
+                    self._logger.warning(
+                        f"Robot [{serial_num}] USD has no home position for joints {missing}; "
+                        f"starting them at 0. Set `initial_q` to match the controller's home pose."
+                    )
+                initial_q = [0.0 if q is None else q for q in home_q]
+            initial_q = [float(q) for q in initial_q]
+            if len(initial_q) != robot.arm_dof:
+                raise ValueError(
+                    f"Robot [{serial_num}] initial_q has {len(initial_q)} values, but the robot "
+                    f"has {robot.arm_dof} joints: {robot.joint_names}"
+                )
             self._logger.info(
                 f"Added robot [/World/Flexiv/{serial_num}] located at {pos_in_world} {ori_in_world} in world"
+            )
+            self._logger.info(
+                f"Robot [{serial_num}] initial joint positions [rad]: "
+                f"{np.round(initial_q, 4).tolist()}"
             )
 
             # Append single robot data struct
@@ -251,14 +320,12 @@ class BridgeRunner(object):
                     instance=robot,
                     sim_plugin=flexivsimplugin.UserNode(serial_num),
                     last_connected=False,
-                    gripper_status=GripperStatus.INIT,
+                    grippers=grippers,
+                    initial_q=initial_q,
                 )
             )
 
-        # Add physics callback
-        self._world.add_physics_callback("robot_step", callback_fn=self.on_physics_step)
-
-        # Reset world once
+        # Reset world once, which also initializes the robots
         self._world.reset()
 
         # Initialize cameras
@@ -269,34 +336,50 @@ class BridgeRunner(object):
         self._reset_needed = False
         self._servo_cycle = 0
 
+        # Add physics callback, once the robots it drives are initialized
+        self._world.add_physics_callback("robot_step", callback_fn=self.on_physics_step)
+
         # Put robot to initial pose
         for robot in self._robots:
-            robot.instance.teleport_to(self._initial_q)
+            robot.instance.teleport_to(robot.initial_q)
 
-    def _find_flange_path(self, robot_prim_path: str) -> str:
+    def _find_flange_path(self, robot_prim_path: str, flange: str = "flange") -> str:
         """
-        Resolve the flange prim path under a robot, tolerating both USD layouts.
+        Resolve a flange prim path under a robot, tolerating the USD layouts in use.
 
         In the old flat layout the flange is a direct child (`<robot>/flange`); in
         the SimReady layout it is nested (`<robot>/Geometry/base_link/.../link7/
-        flange`). Return the direct path if it exists, otherwise search the robot
-        subtree for a prim named "flange".
+        flange`); a dual-arm asset has one per arm, prefixed with the arm
+        (`system1_left_arm_flange`, `system1_right_arm_flange`). Return the direct
+        path if it exists, else the prim named [flange] in the robot subtree, else
+        the only prim whose name ends with "_<flange>".
 
         Params:
             robot_prim_path (str): Prim path of the robot articulation root.
+            flange (str): Flange prim name, e.g. "system1_right_arm_flange".
 
         Return:
             str: Full prim path of the flange.
         """
         stage = get_current_stage()
-        direct = robot_prim_path + "/flange"
+        direct = robot_prim_path + "/" + flange
         if stage.GetPrimAtPath(direct).IsValid():
             return direct
         root = stage.GetPrimAtPath(robot_prim_path)
-        for prim in Usd.PrimRange(root):
-            if prim.GetName() == "flange":
+        prims = list(Usd.PrimRange(root))
+        for prim in prims:
+            if prim.GetName() == flange:
                 return prim.GetPath().pathString
-        raise RuntimeError(f"No 'flange' prim found under [{robot_prim_path}]")
+        suffixed = [p.GetPath().pathString for p in prims if p.GetName().endswith("_" + flange)]
+        if len(suffixed) == 1:
+            return suffixed[0]
+        if len(suffixed) > 1:
+            names = [path.rsplit("/", 1)[-1] for path in suffixed]
+            raise RuntimeError(
+                f"Robot [{robot_prim_path}] has several flanges {names}; set `flange` in the "
+                f"tool config to pick one"
+            )
+        raise RuntimeError(f"No [{flange}] prim found under [{robot_prim_path}]")
 
     def _attach_tool(self, robot_prim_path: str, tool: Dict):
         """
@@ -311,7 +394,12 @@ class BridgeRunner(object):
             robot_prim_path (str): Prim path of the robot articulation root.
             tool (Dict): Tool config block with keys:
                 usd (str): Path to the tool USD (already resolved to absolute).
-                prim_name (str): Mount prim name; also the GRIPPER_PROFILES key.
+                prim_name (str): GRIPPER_PROFILES key; also the mount prim name
+                    unless mount_name is given.
+                mount_name (str, optional): Mount prim name, which must be unique
+                    per robot, e.g. to attach one gripper per arm.
+                flange (str, optional): Flange prim to mount on. Defaults to
+                    "flange"; required on a dual-arm robot.
 
         Return:
             (ParallelGripper, str): The gripper instance and the end-effector prim
@@ -326,7 +414,8 @@ class BridgeRunner(object):
                 f"Known: {sorted(GRIPPER_PROFILES)}"
             )
 
-        tool_prim_path = robot_prim_path + "/" + prim_name
+        mount_name = tool.get("mount_name", prim_name)
+        tool_prim_path = robot_prim_path + "/" + mount_name
         self._logger.info(
             f"Attaching tool usd [{usd_path}] at prim path [{tool_prim_path}]"
         )
@@ -335,8 +424,12 @@ class BridgeRunner(object):
         # Fix the gripper base to the flange. Joint frames are coincident (the tool
         # USD is authored so its base sits at the flange), so both local anchors are
         # identity -- matching the old baked "flange_to_gripper" fixed joint.
+        # The flange may be a rigid body (older assets) or a site, a plain frame
+        # with no physics (SimReady assets). A joint body may be any xformable: for
+        # a site, USD physics attaches the joint to the site's rigid-body parent
+        # (link7 or link7_distal), with the anchor at the site's pose on it.
         stage = get_current_stage()
-        flange_path = self._find_flange_path(robot_prim_path)
+        flange_path = self._find_flange_path(robot_prim_path, tool.get("flange", "flange"))
         mount_body_path = tool_prim_path + "/" + profile["mount_body"]
         mount_joint_path = tool_prim_path + "/flange_to_" + profile["mount_body"]
         mount = UsdPhysics.FixedJoint.Define(stage, mount_joint_path)
@@ -352,7 +445,7 @@ class BridgeRunner(object):
         mount_prim.CreateAttribute("physics:localRot1", Sdf.ValueTypeNames.Quatf).Set(
             Gf.Quatf(1, 0, 0, 0))
 
-        end_effector_prim_name = prim_name + "/" + profile["ee"]
+        end_effector_prim_name = mount_name + "/" + profile["ee"]
         # This gripper has only one actuation joint, but the ParallelGripper API
         # requires two, so the second is a non-actuation placeholder (gains = 0).
         gripper = ParallelGripper(
@@ -362,8 +455,8 @@ class BridgeRunner(object):
             joint_closed_positions=np.array(profile["closed"]),
         )
         self._logger.info(
-            f"Tool [{prim_name}] attached; gripper control enabled "
-            f"(ee=[{end_effector_prim_name}])"
+            f"Tool [{prim_name}] attached to [{flange_path}] as [{mount_name}]; gripper "
+            f"control enabled (ee=[{end_effector_prim_name}])"
         )
         return gripper, end_effector_prim_name
 
@@ -404,32 +497,43 @@ class BridgeRunner(object):
                 # Wait for new commands to arrive before proceeding current cycle
                 timeout_ms = 100
                 if robot.sim_plugin.WaitForRobotCommands(timeout_ms):
-                    # Apply joint torques
-                    robot.instance.apply_torques(
-                        robot.sim_plugin.robot_commands().target_drives
-                    )
+                    # Apply joint torques. The command carries one value per robot joint, in
+                    # controller order; a size mismatch means the controller's robot model does
+                    # not match this USD, so apply nothing rather than drive the wrong joints.
+                    target_drives = robot.sim_plugin.robot_commands().target_drives
+                    if len(target_drives) == robot.instance.arm_dof:
+                        robot.instance.apply_torques(target_drives)
+                    elif not robot.size_error_logged:
+                        self._logger.error(
+                            f"Robot [{robot.name}] received {len(target_drives)} joint commands, "
+                            f"but its USD has {robot.instance.arm_dof} joints "
+                            f"{robot.instance.joint_names}; check that the robot model in Elements "
+                            f"Studio matches the configured USD. Commands are ignored."
+                        )
+                        robot.size_error_logged = True
                 else:
-                    self._logger.warn(f"Missed 1 message from [{robot.name}]")
+                    self._logger.warning(f"Missed 1 message from [{robot.name}]")
 
-                # Gripper control based on digital output signal
+                # Gripper control based on digital output signals. Each gripper has its own pair
+                # of ports, DOUT[0] / DOUT[1] for the first gripper by default: open / close.
                 dout_list = list(
                     robot.sim_plugin.robot_commands().digital_outputs
                 )  # Convert map to list
-                if dout_list:
-                    # DOUT[0] high = open gripper
-                    if dout_list[0]:
+                for i, gripper in enumerate(robot.grippers):
+                    if not dout_list:
+                        break
+                    if dout_list[gripper.dout_open]:
                         # Ignore if already opened
-                        if robot.gripper_status != GripperStatus.OPENED:
-                            self._logger.info("Opening gripper")
-                            robot.instance.gripper.open()
-                            robot.gripper_status = GripperStatus.OPENED
-                    # DOUT[1] high = close gripper
-                    if dout_list[1]:
+                        if gripper.status != GripperStatus.OPENED:
+                            self._logger.info(f"Opening gripper {i}")
+                            gripper.instance.open()
+                            gripper.status = GripperStatus.OPENED
+                    if dout_list[gripper.dout_close]:
                         # Ignore if already closed
-                        if robot.gripper_status != GripperStatus.CLOSED:
-                            self._logger.info("Closing gripper")
-                            robot.instance.gripper.close()
-                            robot.gripper_status = GripperStatus.CLOSED
+                        if gripper.status != GripperStatus.CLOSED:
+                            self._logger.info(f"Closing gripper {i}")
+                            gripper.instance.close()
+                            gripper.status = GripperStatus.CLOSED
 
                 # Set last connected status
                 robot.last_connected = True
@@ -440,7 +544,8 @@ class BridgeRunner(object):
                     self._logger.error(f"Disconnected from robot [{robot.name}]")
                     robot.instance.switch_control_mode("position")
                     robot.instance.teleport_to(robot.instance.q)
-                    robot.gripper_status = GripperStatus.INIT
+                    for gripper in robot.grippers:
+                        gripper.status = GripperStatus.INIT
 
                 # Set last connected status
                 robot.last_connected = False
@@ -466,7 +571,7 @@ class BridgeRunner(object):
                     # Put robot to initial pose
                     for robot in self._robots:
                         robot.instance.switch_control_mode("position")
-                        robot.instance.teleport_to(self._initial_q)
+                        robot.instance.teleport_to(robot.initial_q)
 
 
 def resolve_usd_paths(config):
@@ -490,9 +595,9 @@ def resolve_usd_paths(config):
     for robot in config.get("robots", []):
         if robot.get("usd"):
             robot["usd"] = resolve(robot["usd"])
-        tool = robot.get("tool")
-        if tool and tool.get("usd"):
-            tool["usd"] = resolve(tool["usd"])
+        for tool in robot.get("tools") or ([robot["tool"]] if robot.get("tool") else []):
+            if tool.get("usd"):
+                tool["usd"] = resolve(tool["usd"])
     return config
 
 
@@ -502,7 +607,6 @@ def main():
         physics_dt=1.0 / PHYSICS_FREQ,
         render_dt=1.0 / RENDER_FREQ,
         config=resolve_usd_paths(yaml.safe_load(open(args.config))),
-        initial_q=[0.0, -0.698132, 0.0, 1.5708, 0.0, 0.698132, 0.0],
     )
     runner.run()
     simulation_app.close()

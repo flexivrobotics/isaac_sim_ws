@@ -1,0 +1,65 @@
+# Dual-arm robot configuration: one MICO Plus (two 7-DoF arms on a 2-joint waist) in an empty
+# environment.
+#
+# NOTE:
+# A dual-arm robot is ONE robot with one serial number: its controller drives both arms and the
+# waist, so it is one [serial_number] block, not two. Set `serial_number` to match the simulated
+# robot you created in Flexiv Elements Studio, and pick the USD of the same model:
+#   mico_core  (14 joints: left arm, right arm)
+#   mico_plus  (16 joints: waist joint 1-2, left arm, right arm)
+#   mico_ultra (16 joints: waist joint 1-2, left arm, right arm)
+# The `usd` and `env_usd` paths may be absolute, or relative to the Isaac Sim installation root.
+robots:
+  - serial_number: "MICO Plus-000001" # Serial number of robot 1
+    usd: "extsDeprecated/isaacsim.robot.manipulators.examples/data/flexiv/mico_plus/mico_plus.usda" # Robot 1 USD
+    position:                     # Position in world frame to put robot 1
+      x: 0.0
+      y: 0.0
+      z: 0.0
+    orientation:                  # Orientation (quaternion) in world frame to put robot 1
+      w: 1.0
+      x: 0.0
+      y: 0.0
+      z: 0.0
+    # Optional initial joint positions [rad], one per joint in controller order (waist joints first,
+    # then the left arm, then the right arm). Defaults to the home pose authored in the USD, which is
+    # the home pose the controller starts from.
+    # initial_q: [0.0, 0.0,
+    #             0.0, -0.698, 0.0, 1.571, 0.0, -0.873, 0.0,
+    #             0.0, 0.698, 0.0, -1.571, 0.0, 0.873, 0.0]
+    # Optional joint order override. By default it is derived from the USD the same way the
+    # controller derives it from the URDF; set it only if the two disagree.
+    # joint_order: [system1_body_joint1, system1_body_joint2,
+    #               system1_left_arm_joint1, ..., system1_right_arm_joint7]
+    # Optional end-effector tools, one per arm. Each tool USD is referenced onto the robot and
+    # fixed to the given flange at load time, and gripper control is enabled.
+    #   usd:        path to the tool USD (absolute, or relative to the Isaac Sim root)
+    #   prim_name:  built-in gripper profile in flexiv_isaac_bridge_app.py (GRIPPER_PROFILES).
+    #               Currently: Grav_gripper.
+    #   mount_name: mount prim name, unique per robot. Defaults to prim_name.
+    #   flange:     flange prim to mount on: system1_left_arm_flange or system1_right_arm_flange.
+    #   dout_open / dout_close: digital outputs that open / close this gripper. Default to
+    #               0 / 1 for the first tool, 2 / 3 for the second, and so on.
+    # Remove or comment out this block for bare arms (no grippers).
+    tools:
+      - usd: "extsDeprecated/isaacsim.robot.manipulators.examples/data/flexiv/grippers/Grav_gripper.usd"
+        prim_name: "Grav_gripper"
+        mount_name: "left_gripper"
+        flange: "system1_left_arm_flange"
+        dout_open: 0
+        dout_close: 1
+      - usd: "extsDeprecated/isaacsim.robot.manipulators.examples/data/flexiv/grippers/Grav_gripper.usd"
+        prim_name: "Grav_gripper"
+        mount_name: "right_gripper"
+        flange: "system1_right_arm_flange"
+        dout_open: 2
+        dout_close: 3
+
+  # More robots ...
+
+# Empty environment (ground plane only), so a robot at the origin sits correctly on the floor.
+env_usd: "extsDeprecated/isaacsim.robot.manipulators.examples/data/flexiv/empty_env.usd"
+
+# Enable GPU dynamics. Use this argument if any object in the scene requires GPU for dynamics computation.
+# For example, deformable body material and SDF mesh collider.
+gpu_dynamics: false

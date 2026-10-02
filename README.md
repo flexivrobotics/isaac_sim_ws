@@ -39,8 +39,15 @@ This workspace is an example integration of **NVIDIA Isaac Sim** with **Flexiv E
 | ---------------- | ----------------------- | ---------------------- | --------------------- |
 | Ubuntu 22.04     | x86_64                  | Python                 | 6.x                   |
 
-> This branch targets **NVIDIA Isaac Sim 6.x**. For Isaac Sim 5.x, use the
-> `isaac-sim-5` branch.
+Each release of this workspace works with one release line of Flexiv Sim Plugin (the `flexivsimplugin` Python package) and of Flexiv Elements Studio:
+
+| **Workspace release** | **Isaac Sim version** | **flexivsimplugin** | **Elements Studio** |
+| --------------------- | --------------------- | ------------------- | ------------------- |
+| v2.2.x                | 6.x                   | 2.2.x               | v3E.2               |
+| v1.4.0                | 6.x                   | 1.3.0               | v3.11.2             |
+| v1.3                  | 5.x                   | 1.2.0               | v3.10               |
+
+The `v2.x` branch holds the latest release line. For an earlier one, check out its release tag, e.g. `git checkout v1.4.0`.
 
 
 ## Demos

@@ -8,7 +8,7 @@
 #
 
 # App version
-APP_VERSION = "1.4.0"
+APP_VERSION = "2.2.0"
 
 # Compatible flexivsimplugin release line: any patch release in it works, e.g.
 # 2.2.0 or 2.2.1, so plugin fixes need no new release of this app

@@ -24,9 +24,10 @@ Arguments:
                    when omitted it is auto-detected (see below).
 
 Options:
-  -v, --plugin-version VER  flexivsimplugin version to install. Defaults to the
-                            COMPATIBLE_SIM_PLUGIN_VER pinned in the bridge app,
-                            so the two cannot drift apart.
+  -v, --plugin-version VER  Install exactly this flexivsimplugin version. By
+                            default, the newest patch release in the
+                            COMPATIBLE_SIM_PLUGIN_VER line the bridge app pins,
+                            e.g. 2.2.x, is installed.
   -t, --test-pypi           Install flexivsimplugin from the PyPI test server
                             instead of the real one. Use for a release candidate
                             that has not been published yet.
@@ -94,30 +95,34 @@ if $SKIP_DEPS; then
     exit 0
 fi
 
-# Take the plugin version from the bridge app unless one was given, so there is a
-# single source of truth for which plugin this workspace expects.
+# Take the plugin release line from the bridge app unless a version was given, so
+# there is a single source of truth for which plugin this workspace expects.
+# Installing the newest patch release in that line picks up plugin fixes.
 bridge_app=$SCRIPT_PATH/standalone_examples/api/isaacsim.robot.manipulators/flexiv/flexiv_isaac_bridge_app.py
-if [ -z "$PLUGIN_VER" ]; then
-    PLUGIN_VER=$(sed -n 's/^COMPATIBLE_SIM_PLUGIN_VER *= *"\(.*\)"/\1/p' $bridge_app)
-    if [ -z "$PLUGIN_VER" ]; then
+if [ -n "$PLUGIN_VER" ]; then
+    PLUGIN_SPEC="flexivsimplugin==$PLUGIN_VER"
+else
+    PLUGIN_LINE=$(sed -n 's/^COMPATIBLE_SIM_PLUGIN_VER *= *"\(.*\)"/\1/p' $bridge_app)
+    if [ -z "$PLUGIN_LINE" ]; then
         echo "Error: could not read COMPATIBLE_SIM_PLUGIN_VER from $bridge_app." >&2
         echo "Pass the version explicitly with --plugin-version." >&2
         exit 1
     fi
-    echo "Using flexivsimplugin==$PLUGIN_VER (pinned by the bridge app)"
+    PLUGIN_SPEC="flexivsimplugin==$PLUGIN_LINE.*"
+    echo "Using the newest flexivsimplugin $PLUGIN_LINE.x (the line the bridge app supports)"
 fi
 
 # Install into Isaac Sim's bundled interpreter, not a separate venv -- python.sh
 # is what actually runs the examples.
-echo "Installing flexivsimplugin==$PLUGIN_VER ..."
+echo "Installing $PLUGIN_SPEC ..."
 if $USE_TEST_PYPI; then
     # Only the plugin is a test build, so real PyPI stays available for its deps.
     $ISAAC_ROOT/python.sh -m pip install --upgrade \
         --index-url https://test.pypi.org/simple/ \
         --extra-index-url https://pypi.org/simple/ \
-        "flexivsimplugin==$PLUGIN_VER"
+        "$PLUGIN_SPEC"
 else
-    $ISAAC_ROOT/python.sh -m pip install --upgrade "flexivsimplugin==$PLUGIN_VER"
+    $ISAAC_ROOT/python.sh -m pip install --upgrade "$PLUGIN_SPEC"
 fi
 
 # Confirm the interpreter can actually import what was just installed, so a

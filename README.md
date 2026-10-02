@@ -79,7 +79,7 @@ The workspace setup installs Flexiv's extensions and apps into Isaac Sim and the
 2. Note down Isaac Sim's installation directory, e.g. `~/isaacsim`.
 3. From this repo, set up the workspace:
 
-       bash setup_ws.sh ~/isaacsim --test-pypi --plugin-version "2.2.0.2"
+       bash setup_ws.sh ~/isaacsim
 
 ### Option B: Isaac Sim container
 
@@ -93,7 +93,7 @@ The workspace setup installs Flexiv's extensions and apps into Isaac Sim and the
 
 3. Inside the container, set up the workspace:
 
-       bash /workspace/setup_ws.sh --test-pypi --plugin-version "2.2.0.2"
+       bash /workspace/setup_ws.sh
 
    Isaac Sim is auto-detected at `/isaac-sim`.
 
@@ -101,14 +101,7 @@ The workspace setup installs Flexiv's extensions and apps into Isaac Sim and the
 
 > The container runs on the host network, because the plugin discovers Elements Studio over Zenoh multicast, which does not cross Docker's default bridge network. On the default network the Bridge App starts normally but never connects.
 
-<!--
-PRE-RELEASE ONLY - remove before publishing.
-The setup commands above pin --test-pypi --plugin-version "2.2.0.2" because the
-2.x line is not on real PyPI yet. When 2.2.0 is published:
-  * drop both flags from Option A and Option B
-  * set COMPATIBLE_SIM_PLUGIN_VER = "2.2.0" in flexiv_isaac_bridge_app.py
-  * restore a short note on overriding the version with --plugin-version
--->
+The setup installs the newest 2.2.x release of `flexivsimplugin`, the release line this workspace supports, so re-running it picks up plugin bug fixes. To install a specific version instead, pass it with `--plugin-version`, e.g. `--plugin-version 2.2.0`.
 
 ## Verify setup
 

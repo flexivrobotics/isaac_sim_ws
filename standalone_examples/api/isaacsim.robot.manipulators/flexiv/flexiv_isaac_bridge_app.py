@@ -10,8 +10,9 @@
 # App version
 APP_VERSION = "1.4.0"
 
-# Compatible flexivsimplugin version
-COMPATIBLE_SIM_PLUGIN_VER = "2.2.0.2"
+# Compatible flexivsimplugin release line: any patch release in it works, e.g.
+# 2.2.0 or 2.2.1, so plugin fixes need no new release of this app
+COMPATIBLE_SIM_PLUGIN_VER = "2.2"
 
 import os
 import sys
@@ -27,13 +28,12 @@ from isaacsim import SimulationApp
 # Middleware plugin for connecting to Flexiv Elements Studio
 import flexivsimplugin
 
-# Check version. This app is developed against flexivsimplugin
-# COMPATIBLE_SIM_PLUGIN_VER; a mismatch is warned about rather than fatal so the
-# app can run against in-development plugin builds. Tighten to a hard failure
-# once the plugin version is stable.
-if flexivsimplugin.__version__ != COMPATIBLE_SIM_PLUGIN_VER:
+# Check version. A plugin outside the COMPATIBLE_SIM_PLUGIN_VER line is warned
+# about rather than fatal so the app can run against in-development plugin
+# builds. Tighten to a hard failure once the plugin version is stable.
+if flexivsimplugin.__version__.split(".")[:2] != COMPATIBLE_SIM_PLUGIN_VER.split("."):
     print(
-        f"WARNING: this app targets flexivsimplugin=={COMPATIBLE_SIM_PLUGIN_VER}, "
+        f"WARNING: this app targets flexivsimplugin {COMPATIBLE_SIM_PLUGIN_VER}.x, "
         f"but found {flexivsimplugin.__version__}. Continuing anyway; behavior may "
         f"differ if the plugin API has changed.",
         file=sys.stderr,
@@ -156,6 +156,7 @@ class BridgeRunner(object):
         self._logger.info(f"———            Flexiv-Isaac Bridge App v{APP_VERSION}            ———")
         self._logger.info("——————————————————————————————————————————————————————————")
         # fmt: on
+        self._logger.info(f"Using flexivsimplugin v{flexivsimplugin.__version__}")
 
         # Create world
         self._world = World(

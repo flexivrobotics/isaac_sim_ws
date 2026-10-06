@@ -21,10 +21,15 @@ robots:
     #   usd:       path to the tool USD (absolute, or relative to the Isaac Sim root)
     #   prim_name: mount prim name; must match a built-in gripper profile in
     #              flexiv_isaac_bridge_app.py (GRIPPER_PROFILES). Currently: Grav_gripper.
-    # Remove or comment out this block for a bare arm (no gripper).
-    tool:
-      usd: "extsDeprecated/isaacsim.robot.manipulators.examples/data/flexiv/grippers/Grav_gripper.usd"
-      prim_name: "Grav_gripper"
+    # Uncomment to add a Grav gripper. Make sure the tool clears the floor at the
+    # home pose: an Enlight L's flange points down about 0.12 m above its base, so a
+    # tool reaches the ground, and Elements Studio faults on the contact force
+    # (Robot_Error_EstPayloadExceedMaxLimitMsg). Raise the robot, e.g. z: 0.3, or
+    # mount it on a table in your environment. Also configure the same tool in
+    # Elements Studio, so its controller models the mass.
+    # tool:
+    #   usd: "extsDeprecated/isaacsim.robot.manipulators.examples/data/flexiv/grippers/Grav_gripper.usd"
+    #   prim_name: "Grav_gripper"
 
   # More robots ...
 

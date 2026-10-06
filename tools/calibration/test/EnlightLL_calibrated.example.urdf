@@ -1,0 +1,584 @@
+<?xml version="1.0" ?>
+<!-- URDF of the same simulated Enlight LL as EnlightLL_calibrated_kinematics.example.yaml,
+     as its controller (Elements Studio) generated it, with the arm adapters applied. -->
+<robot name="generated_robot_LL01-D1">
+    <link name="world">
+        <inertial>
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <mass value="0"/>
+            <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0"/>
+        </inertial>
+    </link>
+    <joint name="generated_robot_LL01-D1.arm_mount.joint" type="fixed">
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <parent link="world"/>
+        <child link="generated_robot_LL01-D1.ext_axis_mount.base_link"/>
+    </joint>
+    <link name="generated_robot_LL01-D1.ext_axis_mount.base_link">
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <mass value="0"/>
+            <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0"/>
+        </inertial>
+    </link>
+    <joint name="generated_robot_LL01-D1.ext_axis_mount.left_arm_adapter" type="fixed">
+        <origin xyz="0 0.2 0" rpy="0 -0 0"/>
+        <parent link="generated_robot_LL01-D1.ext_axis_mount.base_link"/>
+        <child link="generated_robot_LL01-D1.arm1.base_link"/>
+        <axis xyz="0 0 0"/>
+    </joint>
+    <joint name="generated_robot_LL01-D1.ext_axis_mount.right_arm_adapter" type="fixed">
+        <origin xyz="0 -0.2 0" rpy="0 -0 0"/>
+        <parent link="generated_robot_LL01-D1.ext_axis_mount.base_link"/>
+        <child link="generated_robot_LL01-D1.arm2.base_link"/>
+        <axis xyz="0 0 0"/>
+    </joint>
+    <material name="rizon_blue">
+        <color rgba="0. 0. 1. 0.5"/>
+    </material>
+    <material name="rizon_light_grey">
+        <color rgba="0.9 0.9 0.9 1"/>
+    </material>
+    <material name="rizon_dark_grey">
+        <color rgba="0.2 0.2 0.2 1"/>
+    </material>
+    <material name="rizon_white">
+        <color rgba="1 1 1 1"/>
+    </material>
+    <joint name="generated_robot_LL01-D1.arm1.joint1" type="revolute">
+        <parent link="generated_robot_LL01-D1.arm1.base_link"/>
+        <child link="generated_robot_LL01-D1.arm1.link1"/>
+        <origin rpy="0 -0 0" xyz="0 0 0.146"/>
+        <axis xyz="0 0 1"/>
+        <limit effort="100" lower="-6.3705" upper="6.3705" velocity="2.4958" acceleration="9.9832" jerk="79.8656"/>
+        <safety_controller k_position="100.0" k_velocity="40.0" soft_lower_limit="-6.2832" soft_upper_limit="6.2832"/>
+        <flexiv>
+            <mdh_to_rca_coordinate_transform>
+                <offset>0</offset>
+                <direction>1</direction>
+            </mdh_to_rca_coordinate_transform>
+        </flexiv>
+    </joint>
+    <joint name="generated_robot_LL01-D1.arm1.joint2" type="revolute">
+        <parent link="generated_robot_LL01-D1.arm1.link1"/>
+        <child link="generated_robot_LL01-D1.arm1.link2"/>
+        <origin rpy="1.570796326794896 -0 0" xyz="0 -0.037 0.114"/>
+        <axis xyz="0 0 1"/>
+        <limit effort="100" lower="-2.1817" upper="2.1817" velocity="2.4958" acceleration="9.9832" jerk="79.8656"/>
+        <safety_controller k_position="100.0" k_velocity="40.0" soft_lower_limit="-2.0944" soft_upper_limit="2.0944"/>
+        <flexiv>
+            <mdh_to_rca_coordinate_transform>
+                <offset>0</offset>
+                <direction>1</direction>
+            </mdh_to_rca_coordinate_transform>
+        </flexiv>
+    </joint>
+    <joint name="generated_robot_LL01-D1.arm1.joint3" type="revolute">
+        <parent link="generated_robot_LL01-D1.arm1.link2"/>
+        <child link="generated_robot_LL01-D1.arm1.link3"/>
+        <origin rpy="-1.570796326794896 -0 0" xyz="0 0.181 -0.037"/>
+        <axis xyz="0 0 1"/>
+        <limit effort="100" lower="-6.3705" upper="6.3705" velocity="2.4958" acceleration="9.9832" jerk="79.8656"/>
+        <safety_controller k_position="100.0" k_velocity="40.0" soft_lower_limit="-6.2832" soft_upper_limit="6.2832"/>
+        <flexiv>
+            <mdh_to_rca_coordinate_transform>
+                <offset>0</offset>
+                <direction>1</direction>
+            </mdh_to_rca_coordinate_transform>
+        </flexiv>
+    </joint>
+    <joint name="generated_robot_LL01-D1.arm1.joint4" type="revolute">
+        <parent link="generated_robot_LL01-D1.arm1.link3"/>
+        <child link="generated_robot_LL01-D1.arm1.link4"/>
+        <origin rpy="-1.570796326794896 -0 0" xyz="0 0.037 0.109"/>
+        <axis xyz="0 0 1"/>
+        <limit effort="100" lower="-2.1817" upper="2.1817" velocity="2.4958" acceleration="9.9832" jerk="79.8656"/>
+        <safety_controller k_position="100.0" k_velocity="40.0" soft_lower_limit="-2.0944" soft_upper_limit="2.0944"/>
+        <flexiv>
+            <mdh_to_rca_coordinate_transform>
+                <offset>0</offset>
+                <direction>1</direction>
+            </mdh_to_rca_coordinate_transform>
+        </flexiv>
+    </joint>
+    <joint name="generated_robot_LL01-D1.arm1.joint5" type="revolute">
+        <parent link="generated_robot_LL01-D1.arm1.link4"/>
+        <child link="generated_robot_LL01-D1.arm1.link5"/>
+        <origin rpy="1.570796326794896 -0 0" xyz="0 -0.156 -0.037"/>
+        <axis xyz="0 0 1"/>
+        <limit effort="21" lower="-6.3705" upper="6.3705" velocity="5.4105" acceleration="21.642" jerk="173.136"/>
+        <safety_controller k_position="100.0" k_velocity="40.0" soft_lower_limit="-6.2832" soft_upper_limit="6.2832"/>
+        <flexiv>
+            <mdh_to_rca_coordinate_transform>
+                <offset>0</offset>
+                <direction>1</direction>
+            </mdh_to_rca_coordinate_transform>
+        </flexiv>
+    </joint>
+    <joint name="generated_robot_LL01-D1.arm1.joint6" type="revolute">
+        <parent link="generated_robot_LL01-D1.arm1.link5"/>
+        <child link="generated_robot_LL01-D1.arm1.link6"/>
+        <origin rpy="1.570796326794896 -0 0" xyz="0 -0.0261 0.124"/>
+        <axis xyz="0 0 1"/>
+        <limit effort="21" lower="-2.1817" upper="2.1817" velocity="5.4105" acceleration="21.642" jerk="173.136"/>
+        <safety_controller k_position="100.0" k_velocity="40.0" soft_lower_limit="-2.0944" soft_upper_limit="2.0944"/>
+        <flexiv>
+            <mdh_to_rca_coordinate_transform>
+                <offset>0</offset>
+                <direction>1</direction>
+            </mdh_to_rca_coordinate_transform>
+        </flexiv>
+    </joint>
+    <joint name="generated_robot_LL01-D1.arm1.joint7" type="revolute">
+        <parent link="generated_robot_LL01-D1.arm1.link6"/>
+        <child link="generated_robot_LL01-D1.arm1.link7"/>
+        <origin rpy="-1.570796326794896 -0 0" xyz="0 0.134 -0.0261"/>
+        <axis xyz="0 0 1"/>
+        <limit effort="21" lower="-6.3705" upper="6.3705" velocity="5.4105" acceleration="21.642" jerk="173.136"/>
+        <safety_controller k_position="100.0" k_velocity="40.0" soft_lower_limit="-6.2832" soft_upper_limit="6.2832"/>
+        <flexiv>
+            <mdh_to_rca_coordinate_transform>
+                <offset>0</offset>
+                <direction>1</direction>
+            </mdh_to_rca_coordinate_transform>
+        </flexiv>
+    </joint>
+    <joint name="generated_robot_LL01-D1.arm1.link7_to_flange" type="fixed">
+        <parent link="generated_robot_LL01-D1.arm1.link7"/>
+        <child link="generated_robot_LL01-D1.arm1.flange"/>
+        <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.048"/>
+    </joint>
+    <link name="generated_robot_LL01-D1.arm1.base_link">
+        <inertial>
+            <mass value="2.456"/>
+            <origin rpy="0 0 0" xyz="-0.0001 0.0019 0.0721"/>
+            <inertia ixx="0.0072" ixy="0.0" ixz="0.0" iyy="0.0068" iyz="-0.0002" izz="0.0048"/>
+        </inertial>
+        <visual name="shell">
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="package://flexiv/meshes/AX01L-P1/visual/link0.obj"/>
+            </geometry>
+        </visual>
+        <collision name="convex_mesh">
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="package://flexiv/meshes/AX01L-P1/collision/link0.stl"/>
+            </geometry>
+        </collision>
+        <workspace>
+            <origin rpy="0 0 0" xyz="0 0 0.250"/>
+            <geometry>
+                <sphere radius="0.600"/>
+            </geometry>
+        </workspace>
+    </link>
+    <link name="generated_robot_LL01-D1.arm1.link1">
+        <inertial>
+            <mass value="2.484"/>
+            <origin rpy="0 0 0" xyz="0.0001 0.0105 0.0766"/>
+            <inertia ixx="0.0096" ixy="0.0" ixz="0.0" iyy="0.0094" iyz="0.0007" izz="0.0031"/>
+        </inertial>
+        <visual name="shell">
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="package://flexiv/meshes/AX01L-P1/visual/link1.obj"/>
+            </geometry>
+        </visual>
+        <collision name="convex_mesh">
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="package://flexiv/meshes/AX01L-P1/collision/link1.stl"/>
+            </geometry>
+        </collision>
+    </link>
+    <link name="generated_robot_LL01-D1.arm1.link2">
+        <inertial>
+            <mass value="2.698"/>
+            <origin rpy="0 0 0" xyz="0.0001 0.0861 -0.0262"/>
+            <inertia ixx="0.0133" ixy="0.0" ixz="0.0" iyy="0.0038" iyz="-0.0022" izz="0.0129"/>
+        </inertial>
+        <visual name="shell">
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="package://flexiv/meshes/AX01L-P1/visual/link2.obj"/>
+            </geometry>
+        </visual>
+        <collision name="convex_mesh">
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="package://flexiv/meshes/AX01L-P1/collision/link2.stl"/>
+            </geometry>
+        </collision>
+    </link>
+    <link name="generated_robot_LL01-D1.arm1.link3">
+        <inertial>
+            <mass value="2.475"/>
+            <origin rpy="0 0 0" xyz="0.0001 -0.0105 0.073"/>
+            <inertia ixx="0.009" ixy="0.0" ixz="0.0" iyy="0.0088" iyz="-0.0007" izz="0.0031"/>
+        </inertial>
+        <visual name="shell">
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="package://flexiv/meshes/AX01L-P1/visual/link3.obj"/>
+            </geometry>
+        </visual>
+        <collision name="convex_mesh">
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="package://flexiv/meshes/AX01L-P1/collision/link3.stl"/>
+            </geometry>
+        </collision>
+    </link>
+    <link name="generated_robot_LL01-D1.arm1.link4">
+        <inertial>
+            <mass value="1.96"/>
+            <origin rpy="0 0 0" xyz="0.0002 -0.0643 -0.019"/>
+            <inertia ixx="0.0087" ixy="0.0" ixz="0.0" iyy="0.0026" iyz="0.0019" izz="0.0083"/>
+        </inertial>
+        <visual name="shell">
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="package://flexiv/meshes/AX01L-P1/visual/link4.obj"/>
+            </geometry>
+        </visual>
+        <collision name="convex_mesh">
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="package://flexiv/meshes/AX01L-P1/collision/link4.stl"/>
+            </geometry>
+        </collision>
+    </link>
+    <link name="generated_robot_LL01-D1.arm1.link5">
+        <inertial>
+            <mass value="1.458"/>
+            <origin rpy="0 0 0" xyz="0.0002 0.01 0.0841"/>
+            <inertia ixx="0.0053" ixy="0.0" ixz="0.0" iyy="0.0053" iyz="0.0003" izz="0.0014"/>
+        </inertial>
+        <visual name="shell">
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="package://flexiv/meshes/AX01L-P1/visual/link5.obj"/>
+            </geometry>
+        </visual>
+        <collision name="convex_mesh">
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="package://flexiv/meshes/AX01L-P1/collision/link5.stl"/>
+            </geometry>
+        </collision>
+    </link>
+    <link name="generated_robot_LL01-D1.arm1.link6">
+        <inertial>
+            <mass value="1.384"/>
+            <origin rpy="0 0 0" xyz="0.0003 0.0691 -0.0169"/>
+            <inertia ixx="0.0041" ixy="0.0" ixz="0.0" iyy="0.0016" iyz="-0.0008" izz="0.0039"/>
+        </inertial>
+        <visual name="shell">
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="package://flexiv/meshes/AX01L-P1/visual/link6.obj"/>
+            </geometry>
+        </visual>
+        <collision name="convex_mesh">
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="package://flexiv/meshes/AX01L-P1/collision/link6.stl"/>
+            </geometry>
+        </collision>
+    </link>
+    <link name="generated_robot_LL01-D1.arm1.link7">
+        <inertial>
+            <mass value="0.445"/>
+            <origin rpy="0 0 0" xyz="0.0006 0.0 0.0105"/>
+            <inertia ixx="0.0037" ixy="0.0" ixz="0.0" iyy="0.0037" iyz="0.0" izz="0.0004"/>
+        </inertial>
+        <visual name="shell">
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="package://flexiv/meshes/AX01L-P1/visual/link7.obj"/>
+            </geometry>
+        </visual>
+        <collision name="convex_mesh">
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="package://flexiv/meshes/AX01L-P1/collision/link7.stl"/>
+            </geometry>
+        </collision>
+    </link>
+    <link name="generated_robot_LL01-D1.arm1.flange">
+        <inertial>
+            <mass value="0"/>
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0"/>
+        </inertial>
+    </link>
+    <joint name="generated_robot_LL01-D1.arm2.joint1" type="revolute">
+        <parent link="generated_robot_LL01-D1.arm2.base_link"/>
+        <child link="generated_robot_LL01-D1.arm2.link1"/>
+        <origin rpy="0 -0 0" xyz="0 0 0.146"/>
+        <axis xyz="0 0 1"/>
+        <limit effort="100" lower="-6.3705" upper="6.3705" velocity="2.4958" acceleration="9.9832" jerk="79.8656"/>
+        <safety_controller k_position="100.0" k_velocity="40.0" soft_lower_limit="-6.2832" soft_upper_limit="6.2832"/>
+        <flexiv>
+            <mdh_to_rca_coordinate_transform>
+                <offset>0</offset>
+                <direction>1</direction>
+            </mdh_to_rca_coordinate_transform>
+        </flexiv>
+    </joint>
+    <joint name="generated_robot_LL01-D1.arm2.joint2" type="revolute">
+        <parent link="generated_robot_LL01-D1.arm2.link1"/>
+        <child link="generated_robot_LL01-D1.arm2.link2"/>
+        <origin rpy="1.570796326794896 -0 0" xyz="0 -0.037 0.114"/>
+        <axis xyz="0 0 1"/>
+        <limit effort="100" lower="-2.1817" upper="2.1817" velocity="2.4958" acceleration="9.9832" jerk="79.8656"/>
+        <safety_controller k_position="100.0" k_velocity="40.0" soft_lower_limit="-2.0944" soft_upper_limit="2.0944"/>
+        <flexiv>
+            <mdh_to_rca_coordinate_transform>
+                <offset>0</offset>
+                <direction>1</direction>
+            </mdh_to_rca_coordinate_transform>
+        </flexiv>
+    </joint>
+    <joint name="generated_robot_LL01-D1.arm2.joint3" type="revolute">
+        <parent link="generated_robot_LL01-D1.arm2.link2"/>
+        <child link="generated_robot_LL01-D1.arm2.link3"/>
+        <origin rpy="-1.570796326794896 -0 0" xyz="0 0.181 -0.037"/>
+        <axis xyz="0 0 1"/>
+        <limit effort="100" lower="-6.3705" upper="6.3705" velocity="2.4958" acceleration="9.9832" jerk="79.8656"/>
+        <safety_controller k_position="100.0" k_velocity="40.0" soft_lower_limit="-6.2832" soft_upper_limit="6.2832"/>
+        <flexiv>
+            <mdh_to_rca_coordinate_transform>
+                <offset>0</offset>
+                <direction>1</direction>
+            </mdh_to_rca_coordinate_transform>
+        </flexiv>
+    </joint>
+    <joint name="generated_robot_LL01-D1.arm2.joint4" type="revolute">
+        <parent link="generated_robot_LL01-D1.arm2.link3"/>
+        <child link="generated_robot_LL01-D1.arm2.link4"/>
+        <origin rpy="-1.570796326794896 -0 0" xyz="0 0.037 0.109"/>
+        <axis xyz="0 0 1"/>
+        <limit effort="100" lower="-2.1817" upper="2.1817" velocity="2.4958" acceleration="9.9832" jerk="79.8656"/>
+        <safety_controller k_position="100.0" k_velocity="40.0" soft_lower_limit="-2.0944" soft_upper_limit="2.0944"/>
+        <flexiv>
+            <mdh_to_rca_coordinate_transform>
+                <offset>0</offset>
+                <direction>1</direction>
+            </mdh_to_rca_coordinate_transform>
+        </flexiv>
+    </joint>
+    <joint name="generated_robot_LL01-D1.arm2.joint5" type="revolute">
+        <parent link="generated_robot_LL01-D1.arm2.link4"/>
+        <child link="generated_robot_LL01-D1.arm2.link5"/>
+        <origin rpy="1.570796326794896 -0 0" xyz="0 -0.156 -0.037"/>
+        <axis xyz="0 0 1"/>
+        <limit effort="21" lower="-6.3705" upper="6.3705" velocity="5.4105" acceleration="21.642" jerk="173.136"/>
+        <safety_controller k_position="100.0" k_velocity="40.0" soft_lower_limit="-6.2832" soft_upper_limit="6.2832"/>
+        <flexiv>
+            <mdh_to_rca_coordinate_transform>
+                <offset>0</offset>
+                <direction>1</direction>
+            </mdh_to_rca_coordinate_transform>
+        </flexiv>
+    </joint>
+    <joint name="generated_robot_LL01-D1.arm2.joint6" type="revolute">
+        <parent link="generated_robot_LL01-D1.arm2.link5"/>
+        <child link="generated_robot_LL01-D1.arm2.link6"/>
+        <origin rpy="1.570796326794896 -0 0" xyz="0 -0.0261 0.124"/>
+        <axis xyz="0 0 1"/>
+        <limit effort="21" lower="-2.1817" upper="2.1817" velocity="5.4105" acceleration="21.642" jerk="173.136"/>
+        <safety_controller k_position="100.0" k_velocity="40.0" soft_lower_limit="-2.0944" soft_upper_limit="2.0944"/>
+        <flexiv>
+            <mdh_to_rca_coordinate_transform>
+                <offset>0</offset>
+                <direction>1</direction>
+            </mdh_to_rca_coordinate_transform>
+        </flexiv>
+    </joint>
+    <joint name="generated_robot_LL01-D1.arm2.joint7" type="revolute">
+        <parent link="generated_robot_LL01-D1.arm2.link6"/>
+        <child link="generated_robot_LL01-D1.arm2.link7"/>
+        <origin rpy="-1.570796326794896 -0 0" xyz="0 0.134 -0.0261"/>
+        <axis xyz="0 0 1"/>
+        <limit effort="21" lower="-6.3705" upper="6.3705" velocity="5.4105" acceleration="21.642" jerk="173.136"/>
+        <safety_controller k_position="100.0" k_velocity="40.0" soft_lower_limit="-6.2832" soft_upper_limit="6.2832"/>
+        <flexiv>
+            <mdh_to_rca_coordinate_transform>
+                <offset>0</offset>
+                <direction>1</direction>
+            </mdh_to_rca_coordinate_transform>
+        </flexiv>
+    </joint>
+    <joint name="generated_robot_LL01-D1.arm2.link7_to_flange" type="fixed">
+        <parent link="generated_robot_LL01-D1.arm2.link7"/>
+        <child link="generated_robot_LL01-D1.arm2.flange"/>
+        <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.048"/>
+    </joint>
+    <link name="generated_robot_LL01-D1.arm2.base_link">
+        <inertial>
+            <mass value="2.456"/>
+            <origin rpy="0 0 0" xyz="-0.0001 0.0019 0.0721"/>
+            <inertia ixx="0.0072" ixy="0.0" ixz="0.0" iyy="0.0068" iyz="-0.0002" izz="0.0048"/>
+        </inertial>
+        <visual name="shell">
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="package://flexiv/meshes/AX01L-P1/visual/link0.obj"/>
+            </geometry>
+        </visual>
+        <collision name="convex_mesh">
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="package://flexiv/meshes/AX01L-P1/collision/link0.stl"/>
+            </geometry>
+        </collision>
+        <workspace>
+            <origin rpy="0 0 0" xyz="0 0 0.250"/>
+            <geometry>
+                <sphere radius="0.600"/>
+            </geometry>
+        </workspace>
+    </link>
+    <link name="generated_robot_LL01-D1.arm2.link1">
+        <inertial>
+            <mass value="2.484"/>
+            <origin rpy="0 0 0" xyz="0.0001 0.0105 0.0766"/>
+            <inertia ixx="0.0096" ixy="0.0" ixz="0.0" iyy="0.0094" iyz="0.0007" izz="0.0031"/>
+        </inertial>
+        <visual name="shell">
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="package://flexiv/meshes/AX01L-P1/visual/link1.obj"/>
+            </geometry>
+        </visual>
+        <collision name="convex_mesh">
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="package://flexiv/meshes/AX01L-P1/collision/link1.stl"/>
+            </geometry>
+        </collision>
+    </link>
+    <link name="generated_robot_LL01-D1.arm2.link2">
+        <inertial>
+            <mass value="2.698"/>
+            <origin rpy="0 0 0" xyz="0.0001 0.0861 -0.0262"/>
+            <inertia ixx="0.0133" ixy="0.0" ixz="0.0" iyy="0.0038" iyz="-0.0022" izz="0.0129"/>
+        </inertial>
+        <visual name="shell">
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="package://flexiv/meshes/AX01L-P1/visual/link2.obj"/>
+            </geometry>
+        </visual>
+        <collision name="convex_mesh">
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="package://flexiv/meshes/AX01L-P1/collision/link2.stl"/>
+            </geometry>
+        </collision>
+    </link>
+    <link name="generated_robot_LL01-D1.arm2.link3">
+        <inertial>
+            <mass value="2.475"/>
+            <origin rpy="0 0 0" xyz="0.0001 -0.0105 0.073"/>
+            <inertia ixx="0.009" ixy="0.0" ixz="0.0" iyy="0.0088" iyz="-0.0007" izz="0.0031"/>
+        </inertial>
+        <visual name="shell">
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="package://flexiv/meshes/AX01L-P1/visual/link3.obj"/>
+            </geometry>
+        </visual>
+        <collision name="convex_mesh">
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="package://flexiv/meshes/AX01L-P1/collision/link3.stl"/>
+            </geometry>
+        </collision>
+    </link>
+    <link name="generated_robot_LL01-D1.arm2.link4">
+        <inertial>
+            <mass value="1.96"/>
+            <origin rpy="0 0 0" xyz="0.0002 -0.0643 -0.019"/>
+            <inertia ixx="0.0087" ixy="0.0" ixz="0.0" iyy="0.0026" iyz="0.0019" izz="0.0083"/>
+        </inertial>
+        <visual name="shell">
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="package://flexiv/meshes/AX01L-P1/visual/link4.obj"/>
+            </geometry>
+        </visual>
+        <collision name="convex_mesh">
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="package://flexiv/meshes/AX01L-P1/collision/link4.stl"/>
+            </geometry>
+        </collision>
+    </link>
+    <link name="generated_robot_LL01-D1.arm2.link5">
+        <inertial>
+            <mass value="1.458"/>
+            <origin rpy="0 0 0" xyz="0.0002 0.01 0.0841"/>
+            <inertia ixx="0.0053" ixy="0.0" ixz="0.0" iyy="0.0053" iyz="0.0003" izz="0.0014"/>
+        </inertial>
+        <visual name="shell">
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="package://flexiv/meshes/AX01L-P1/visual/link5.obj"/>
+            </geometry>
+        </visual>
+        <collision name="convex_mesh">
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="package://flexiv/meshes/AX01L-P1/collision/link5.stl"/>
+            </geometry>
+        </collision>
+    </link>
+    <link name="generated_robot_LL01-D1.arm2.link6">
+        <inertial>
+            <mass value="1.384"/>
+            <origin rpy="0 0 0" xyz="0.0003 0.0691 -0.0169"/>
+            <inertia ixx="0.0041" ixy="0.0" ixz="0.0" iyy="0.0016" iyz="-0.0008" izz="0.0039"/>
+        </inertial>
+        <visual name="shell">
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="package://flexiv/meshes/AX01L-P1/visual/link6.obj"/>
+            </geometry>
+        </visual>
+        <collision name="convex_mesh">
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="package://flexiv/meshes/AX01L-P1/collision/link6.stl"/>
+            </geometry>
+        </collision>
+    </link>
+    <link name="generated_robot_LL01-D1.arm2.link7">
+        <inertial>
+            <mass value="0.445"/>
+            <origin rpy="0 0 0" xyz="0.0006 0.0 0.0105"/>
+            <inertia ixx="0.0037" ixy="0.0" ixz="0.0" iyy="0.0037" iyz="0.0" izz="0.0004"/>
+        </inertial>
+        <visual name="shell">
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="package://flexiv/meshes/AX01L-P1/visual/link7.obj"/>
+            </geometry>
+        </visual>
+        <collision name="convex_mesh">
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="package://flexiv/meshes/AX01L-P1/collision/link7.stl"/>
+            </geometry>
+        </collision>
+    </link>
+    <link name="generated_robot_LL01-D1.arm2.flange">
+        <inertial>
+            <mass value="0"/>
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0"/>
+        </inertial>
+    </link>
+</robot>

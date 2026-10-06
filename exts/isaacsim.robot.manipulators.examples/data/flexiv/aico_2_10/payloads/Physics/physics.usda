@@ -1,0 +1,602 @@
+#usda 1.0
+(
+    customLayerData = {
+        string creator = "URDF USD Converter v0.1.3"
+    }
+    defaultPrim = "aico_2_10"
+    doc = """Generated from Composed Stage of root layer Flexiv/aico_2_10/aico_2_10.usd/aico_2_10.usda
+
+
+Generated from Composed Stage of root layer Flexiv/aico_2_10/payloads/base.usd
+"""
+    kilogramsPerUnit = 1
+    metersPerUnit = 1
+    upAxis = "Z"
+)
+
+over "aico_2_10" (
+    prepend apiSchemas = ["PhysicsArticulationRootAPI"]
+)
+{
+    over "Geometry"
+    {
+        over "world"
+        {
+            over "system1_body_base_link" (
+                prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+            )
+            {
+                point3f physics:centerOfMass = (-0.0059929, -0.0063778, 0.15742)
+                float3 physics:diagonalInertia = (0.6480264, 0.6699056, 1.126178)
+                float physics:mass = 30.358
+                quatf physics:principalAxes = (0.004065933, 0.7403807, 0.67215604, -0.0051126154)
+
+                over "system1_body_link1" (
+                    prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+                )
+                {
+                    point3f physics:centerOfMass = (-0.0068471, -0.00020586, -0.072697)
+                    float3 physics:diagonalInertia = (0.082911685, 0.12383037, 0.18578194)
+                    float physics:mass = 3.3142
+                    quatf physics:principalAxes = (0.6991165, -0.001041704, 0.7150062, 0.0010948238)
+
+                    over "system1_body_link2" (
+                        prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+                    )
+                    {
+                        point3f physics:centerOfMass = (0.0021658, 0.000030022, 0.2996)
+                        float3 physics:diagonalInertia = (0.081637, 0.12477798, 0.16718203)
+                        float physics:mass = 4.0152
+                        quatf physics:principalAxes = (-0.49822882, 0.50172484, 0.5017233, 0.49831107)
+
+                        over "system1_left_arm_link1" (
+                            prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+                        )
+                        {
+                            point3f physics:centerOfMass = (-0.0001, 0.0577, 0.164)
+                            float3 physics:diagonalInertia = (0.07413803, 0.16625415, 0.19120783)
+                            float physics:mass = 9.842
+                            quatf physics:principalAxes = (0.67303747, -0.21607278, 0.6695649, 0.22807004)
+
+                            over "system1_left_arm_link2" (
+                                prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+                            )
+                            {
+                                point3f physics:centerOfMass = (-0.0001, 0.0655, 0.0637)
+                                float3 physics:diagonalInertia = (0.041147016, 0.06415173, 0.07520126)
+                                float physics:mass = 7.287
+                                quatf physics:principalAxes = (0.7058284, 0.020244746, 0.70796293, -0.0135951815)
+
+                                over "system1_left_arm_link3" (
+                                    prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+                                )
+                                {
+                                    point3f physics:centerOfMass = (-0.0002, 0.0186, 0.1576)
+                                    float3 physics:diagonalInertia = (0.011925793, 0.054269776, 0.057204433)
+                                    float physics:mass = 4.595
+                                    quatf physics:principalAxes = (0.70709205, -0.03125762, 0.70403826, 0.05808505)
+
+                                    over "system1_left_arm_link4" (
+                                        prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+                                    )
+                                    {
+                                        point3f physics:centerOfMass = (0.0002, 0.0323, 0.0931)
+                                        float3 physics:diagonalInertia = (0.0075771925, 0.029522806, 0.0319)
+                                        float physics:mass = 3.074
+                                        quatf physics:principalAxes = (0.6965571, -0.12168904, 0.6965571, 0.12168904)
+
+                                        over "system1_left_arm_link5" (
+                                            prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+                                        )
+                                        {
+                                            point3f physics:centerOfMass = (0.0003, 0.0029, 0.134)
+                                            float3 physics:diagonalInertia = (0.0036357702, 0.01366423, 0.0143)
+                                            float physics:mass = 2.369
+                                            quatf physics:principalAxes = (0.7065395, -0.028317476, 0.7065395, 0.028317476)
+
+                                            over "system1_left_arm_link6" (
+                                                prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+                                            )
+                                            {
+                                                point3f physics:centerOfMass = (0.0193, 0.0595, 0.0724)
+                                                float3 physics:diagonalInertia = (0.003299514, 0.008253377, 0.009947109)
+                                                float physics:mass = 2.257
+                                                quatf physics:principalAxes = (0.39073998, 0.5001772, 0.27631596, 0.7216609)
+
+                                                over "system1_left_arm_link7" (
+                                                    prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+                                                )
+                                                {
+                                                    point3f physics:centerOfMass = (0.0003, 0.0001, 0.0248)
+                                                    float3 physics:diagonalInertia = (0.0009, 0.001, 0.001)
+                                                    float physics:mass = 0.761
+                                                    quatf physics:principalAxes = (0.5, 0.5, 0.5, 0.5)
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        over "system1_right_arm_link1" (
+                            prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+                        )
+                        {
+                            point3f physics:centerOfMass = (-0.0007, 0.0186, -0.1642)
+                            float3 physics:diagonalInertia = (0.03633582, 0.10944704, 0.11591714)
+                            float physics:mass = 9.413
+                            quatf physics:principalAxes = (0.7093952, 0.054225348, 0.69892323, -0.07296897)
+
+                            over "system1_right_arm_link2" (
+                                prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+                            )
+                            {
+                                point3f physics:centerOfMass = (-0.0009, -0.0572, -0.0941)
+                                float3 physics:diagonalInertia = (0.014535123, 0.07948559, 0.08227929)
+                                float physics:mass = 6.584
+                                quatf physics:principalAxes = (0.533271, 0.46839142, 0.5059692, 0.49012923)
+
+                                over "system1_right_arm_link3" (
+                                    prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+                                )
+                                {
+                                    point3f physics:centerOfMass = (0.0002, -0.0225, -0.1679)
+                                    float3 physics:diagonalInertia = (0.011631538, 0.034167834, 0.037000626)
+                                    float physics:mass = 4.482
+                                    quatf physics:principalAxes = (0.7021934, -0.09392045, 0.698604, 0.10027919)
+
+                                    over "system1_right_arm_link4" (
+                                        prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+                                    )
+                                    {
+                                        point3f physics:centerOfMass = (0.0002, -0.0542, -0.0915)
+                                        float3 physics:diagonalInertia = (0.0047730263, 0.0276, 0.028526973)
+                                        float physics:mass = 3.189
+                                        quatf physics:principalAxes = (0.50835466, 0.49150336, 0.49150336, 0.50835466)
+
+                                        over "system1_right_arm_link5" (
+                                            prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+                                        )
+                                        {
+                                            point3f physics:centerOfMass = (-0.0002, 0.0032, -0.1344)
+                                            float3 physics:diagonalInertia = (0.0037382345, 0.014161766, 0.0149)
+                                            float physics:mass = 2.381
+                                            quatf physics:principalAxes = (0.70658207, 0.027235985, 0.70658207, -0.027235985)
+
+                                            over "system1_right_arm_link6" (
+                                                prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+                                            )
+                                            {
+                                                point3f physics:centerOfMass = (-0.0193, -0.059, -0.0733)
+                                                float3 physics:diagonalInertia = (0.0034939917, 0.008354157, 0.010151851)
+                                                float physics:mass = 2.261
+                                                quatf physics:principalAxes = (0.41659963, 0.48893198, 0.2767111, 0.71471757)
+
+                                                over "system1_right_arm_link7" (
+                                                    prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+                                                )
+                                                {
+                                                    point3f physics:centerOfMass = (0, 0.0002, -0.0216)
+                                                    float3 physics:diagonalInertia = (0.0009, 0.001, 0.001)
+                                                    float physics:mass = 0.736
+                                                    quatf physics:principalAxes = (0.5, 0.5, 0.5, 0.5)
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    over "Physics"
+    {
+        def PhysicsRevoluteJoint "system1_body_joint1" (
+            prepend apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+            float drive:angular:physics:damping = 4.110155
+            float drive:angular:physics:maxForce = 1000
+            float drive:angular:physics:stiffness = 51.376938
+            float drive:angular:physics:targetPosition = 0
+            uniform token drive:angular:physics:type = "force"
+            uniform token physics:axis = "Z"
+            custom rel physics:body0
+            prepend rel physics:body0 = </aico_2_10/Geometry/world/system1_body_base_link>
+            custom rel physics:body1
+            prepend rel physics:body1 = </aico_2_10/Geometry/world/system1_body_base_link/system1_body_link1>
+            point3f physics:localPos0 = (0, 0, 0.804)
+            point3f physics:localPos1 = (0, 0, 0)
+            quatf physics:localRot0 = (1, 0, 0, 0)
+            quatf physics:localRot1 = (1, 0, 0, 0)
+            float physics:lowerLimit = -90.00021
+            float physics:upperLimit = 90.00021
+            float state:angular:physics:position = 0
+            float state:angular:physics:velocity = 0
+        }
+
+        def PhysicsRevoluteJoint "system1_body_joint2" (
+            prepend apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+            float drive:angular:physics:damping = 23.636864
+            float drive:angular:physics:maxForce = 1900
+            float drive:angular:physics:stiffness = 295.4608
+            float drive:angular:physics:targetPosition = 0
+            uniform token drive:angular:physics:type = "force"
+            uniform token physics:axis = "Y"
+            custom rel physics:body0
+            prepend rel physics:body0 = </aico_2_10/Geometry/world/system1_body_base_link/system1_body_link1>
+            custom rel physics:body1
+            prepend rel physics:body1 = </aico_2_10/Geometry/world/system1_body_base_link/system1_body_link1/system1_body_link2>
+            point3f physics:localPos0 = (0, 0, 0.116)
+            point3f physics:localPos1 = (0, 0, 0)
+            quatf physics:localRot0 = (1, 0, 0, 0)
+            quatf physics:localRot1 = (1, 0, 0, 0)
+            float physics:lowerLimit = 0
+            float physics:upperLimit = 90.00021
+            float state:angular:physics:position = 0
+            float state:angular:physics:velocity = 0
+        }
+
+        def PhysicsRevoluteJoint "system1_left_arm_joint1" (
+            prepend apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+            float drive:angular:physics:damping = 0.87266463
+            float drive:angular:physics:maxForce = 261
+            float drive:angular:physics:stiffness = 95.99311
+            float drive:angular:physics:targetPosition = 0
+            uniform token drive:angular:physics:type = "force"
+            uniform token physics:axis = "Z"
+            custom rel physics:body0
+            prepend rel physics:body0 = </aico_2_10/Geometry/world/system1_body_base_link/system1_body_link1/system1_body_link2>
+            custom rel physics:body1
+            prepend rel physics:body1 = </aico_2_10/Geometry/world/system1_body_base_link/system1_body_link1/system1_body_link2/system1_left_arm_link1>
+            point3f physics:localPos0 = (0, 0.2252427, 0.38749215)
+            point3f physics:localPos1 = (0, 0, 0)
+            quatf physics:localRot0 = (6.123234e-17, -1.6569357e-17, 0.3826843, 0.9238792)
+            quatf physics:localRot1 = (1, 0, 0, 0)
+            float physics:lowerLimit = -165.00038
+            float physics:upperLimit = 165.00038
+            float state:angular:physics:position = 0
+            float state:angular:physics:velocity = 0
+        }
+
+        def PhysicsRevoluteJoint "system1_left_arm_joint2" (
+            prepend apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+            float drive:angular:physics:damping = 0.87266463
+            float drive:angular:physics:maxForce = 261
+            float drive:angular:physics:stiffness = 95.99311
+            float drive:angular:physics:targetPosition = -40
+            uniform token drive:angular:physics:type = "force"
+            uniform token physics:axis = "Y"
+            custom rel physics:body0
+            prepend rel physics:body0 = </aico_2_10/Geometry/world/system1_body_base_link/system1_body_link1/system1_body_link2/system1_left_arm_link1>
+            custom rel physics:body1
+            prepend rel physics:body1 = </aico_2_10/Geometry/world/system1_body_base_link/system1_body_link1/system1_body_link2/system1_left_arm_link1/system1_left_arm_link2>
+            point3f physics:localPos0 = (0, 0.0675, 0.24)
+            point3f physics:localPos1 = (0, 0, 0)
+            quatf physics:localRot0 = (1, 0, 0, 0)
+            quatf physics:localRot1 = (1, 0, 0, 0)
+            float physics:lowerLimit = -157.99884
+            float physics:upperLimit = 157.99884
+            float state:angular:physics:position = 0
+            float state:angular:physics:velocity = 0
+        }
+
+        def PhysicsRevoluteJoint "system1_left_arm_joint3" (
+            prepend apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+            float drive:angular:physics:damping = 1.3962634
+            float drive:angular:physics:maxForce = 123
+            float drive:angular:physics:stiffness = 69.81317
+            float drive:angular:physics:targetPosition = 0
+            uniform token drive:angular:physics:type = "force"
+            uniform token physics:axis = "Z"
+            custom rel physics:body0
+            prepend rel physics:body0 = </aico_2_10/Geometry/world/system1_body_base_link/system1_body_link1/system1_body_link2/system1_left_arm_link1/system1_left_arm_link2>
+            custom rel physics:body1
+            prepend rel physics:body1 = </aico_2_10/Geometry/world/system1_body_base_link/system1_body_link1/system1_body_link2/system1_left_arm_link1/system1_left_arm_link2/system1_left_arm_link3>
+            point3f physics:localPos0 = (0, 0.0625, 0.2275)
+            point3f physics:localPos1 = (0, 0, 0)
+            quatf physics:localRot0 = (1, 0, 0, 0)
+            quatf physics:localRot1 = (1, 0, 0, 0)
+            float physics:lowerLimit = -165.00038
+            float physics:upperLimit = 165.00038
+            float state:angular:physics:position = 0
+            float state:angular:physics:velocity = 0
+        }
+
+        def PhysicsRevoluteJoint "system1_left_arm_joint4" (
+            prepend apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+            float drive:angular:physics:damping = 1.3962634
+            float drive:angular:physics:maxForce = 123
+            float drive:angular:physics:stiffness = 69.81317
+            float drive:angular:physics:targetPosition = 90
+            uniform token drive:angular:physics:type = "force"
+            uniform token physics:axis = "Y"
+            custom rel physics:body0
+            prepend rel physics:body0 = </aico_2_10/Geometry/world/system1_body_base_link/system1_body_link1/system1_body_link2/system1_left_arm_link1/system1_left_arm_link2/system1_left_arm_link3>
+            custom rel physics:body1
+            prepend rel physics:body1 = </aico_2_10/Geometry/world/system1_body_base_link/system1_body_link1/system1_body_link2/system1_left_arm_link1/system1_left_arm_link2/system1_left_arm_link3/system1_left_arm_link4>
+            point3f physics:localPos0 = (-1.2325952e-32, -0.0625, 0.2225)
+            point3f physics:localPos1 = (0, 0, 0)
+            quatf physics:localRot0 = (-6.123234e-17, -3.081488e-33, -5.551115e-17, -1)
+            quatf physics:localRot1 = (1, 0, 0, 0)
+            float physics:lowerLimit = -159.99846
+            float physics:upperLimit = 159.99846
+            float state:angular:physics:position = 0
+            float state:angular:physics:velocity = 0
+        }
+
+        def PhysicsRevoluteJoint "system1_left_arm_joint5" (
+            prepend apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+            float drive:angular:physics:damping = 0.2617994
+            float drive:angular:physics:maxForce = 57
+            float drive:angular:physics:stiffness = 26.17994
+            float drive:angular:physics:targetPosition = 0
+            uniform token drive:angular:physics:type = "force"
+            uniform token physics:axis = "Z"
+            custom rel physics:body0
+            prepend rel physics:body0 = </aico_2_10/Geometry/world/system1_body_base_link/system1_body_link1/system1_body_link2/system1_left_arm_link1/system1_left_arm_link2/system1_left_arm_link3/system1_left_arm_link4>
+            custom rel physics:body1
+            prepend rel physics:body1 = </aico_2_10/Geometry/world/system1_body_base_link/system1_body_link1/system1_body_link2/system1_left_arm_link1/system1_left_arm_link2/system1_left_arm_link3/system1_left_arm_link4/system1_left_arm_link5>
+            point3f physics:localPos0 = (-2.4651903e-32, 0.0575, 0.205)
+            point3f physics:localPos1 = (0, 0, 0)
+            quatf physics:localRot0 = (1.6184466e-16, 4.1675096e-17, 5.551115e-17, 1)
+            quatf physics:localRot1 = (1, 0, 0, 0)
+            float physics:lowerLimit = -174.9985
+            float physics:upperLimit = 174.9985
+            float state:angular:physics:position = 0
+            float state:angular:physics:velocity = 0
+        }
+
+        def PhysicsRevoluteJoint "system1_left_arm_joint6" (
+            prepend apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+            float drive:angular:physics:damping = 0.2617994
+            float drive:angular:physics:maxForce = 57
+            float drive:angular:physics:stiffness = 26.17994
+            float drive:angular:physics:targetPosition = 40
+            uniform token drive:angular:physics:type = "force"
+            uniform token physics:axis = "Y"
+            custom rel physics:body0
+            prepend rel physics:body0 = </aico_2_10/Geometry/world/system1_body_base_link/system1_body_link1/system1_body_link2/system1_left_arm_link1/system1_left_arm_link2/system1_left_arm_link3/system1_left_arm_link4/system1_left_arm_link5>
+            custom rel physics:body1
+            prepend rel physics:body1 = </aico_2_10/Geometry/world/system1_body_base_link/system1_body_link1/system1_body_link2/system1_left_arm_link1/system1_left_arm_link2/system1_left_arm_link3/system1_left_arm_link4/system1_left_arm_link5/system1_left_arm_link6>
+            point3f physics:localPos0 = (4.9303807e-32, 0.03, 0.19)
+            point3f physics:localPos1 = (0, 0, 0)
+            quatf physics:localRot0 = (1, 0, 0, 0)
+            quatf physics:localRot1 = (1, 0, 0, 0)
+            float physics:lowerLimit = -84.99829
+            float physics:upperLimit = 264.99872
+            float state:angular:physics:position = 0
+            float state:angular:physics:velocity = 0
+        }
+
+        def PhysicsRevoluteJoint "system1_left_arm_joint7" (
+            prepend apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+            float drive:angular:physics:damping = 0.2617994
+            float drive:angular:physics:maxForce = 57
+            float drive:angular:physics:stiffness = 26.17994
+            float drive:angular:physics:targetPosition = 0
+            uniform token drive:angular:physics:type = "force"
+            uniform token physics:axis = "Z"
+            custom rel physics:body0
+            prepend rel physics:body0 = </aico_2_10/Geometry/world/system1_body_base_link/system1_body_link1/system1_body_link2/system1_left_arm_link1/system1_left_arm_link2/system1_left_arm_link3/system1_left_arm_link4/system1_left_arm_link5/system1_left_arm_link6>
+            custom rel physics:body1
+            prepend rel physics:body1 = </aico_2_10/Geometry/world/system1_body_base_link/system1_body_link1/system1_body_link2/system1_left_arm_link1/system1_left_arm_link2/system1_left_arm_link3/system1_left_arm_link4/system1_left_arm_link5/system1_left_arm_link6/system1_left_arm_link7>
+            point3f physics:localPos0 = (-0.015, 0.073, 0.11)
+            point3f physics:localPos1 = (0, 0, 0)
+            quatf physics:localRot0 = (0.70710677, 3.5691398e-17, -0.70710677, -5.551115e-17)
+            quatf physics:localRot1 = (1, 0, 0, 0)
+            float physics:lowerLimit = -174.9985
+            float physics:upperLimit = 174.9985
+            float state:angular:physics:position = 0
+            float state:angular:physics:velocity = 0
+        }
+
+        def PhysicsRevoluteJoint "system1_right_arm_joint1" (
+            prepend apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+            float drive:angular:physics:damping = 0.87266463
+            float drive:angular:physics:maxForce = 261
+            float drive:angular:physics:stiffness = 95.99311
+            float drive:angular:physics:targetPosition = 0
+            uniform token drive:angular:physics:type = "force"
+            uniform token physics:axis = "Z"
+            custom rel physics:body0
+            prepend rel physics:body0 = </aico_2_10/Geometry/world/system1_body_base_link/system1_body_link1/system1_body_link2>
+            custom rel physics:body1
+            prepend rel physics:body1 = </aico_2_10/Geometry/world/system1_body_base_link/system1_body_link1/system1_body_link2/system1_right_arm_link1>
+            point3f physics:localPos0 = (0, -0.2252427, 0.38749215)
+            point3f physics:localPos1 = (0, 0, 0)
+            quatf physics:localRot0 = (6.123234e-17, 7.3140706e-17, 0.9238792, 0.3826843)
+            quatf physics:localRot1 = (1, 0, 0, 0)
+            float physics:lowerLimit = -165.00038
+            float physics:upperLimit = 165.00038
+            float state:angular:physics:position = 0
+            float state:angular:physics:velocity = 0
+        }
+
+        def PhysicsRevoluteJoint "system1_right_arm_joint2" (
+            prepend apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+            float drive:angular:physics:damping = 0.87266463
+            float drive:angular:physics:maxForce = 261
+            float drive:angular:physics:stiffness = 95.99311
+            float drive:angular:physics:targetPosition = -40
+            uniform token drive:angular:physics:type = "force"
+            uniform token physics:axis = "Y"
+            custom rel physics:body0
+            prepend rel physics:body0 = </aico_2_10/Geometry/world/system1_body_base_link/system1_body_link1/system1_body_link2/system1_right_arm_link1>
+            custom rel physics:body1
+            prepend rel physics:body1 = </aico_2_10/Geometry/world/system1_body_base_link/system1_body_link1/system1_body_link2/system1_right_arm_link1/system1_right_arm_link2>
+            point3f physics:localPos0 = (2.4651903e-32, 0.0675, -0.24)
+            point3f physics:localPos1 = (0, 0, 0)
+            quatf physics:localRot0 = (6.123234e-17, 1.2325952e-32, -5.551115e-17, 1)
+            quatf physics:localRot1 = (1, 0, 0, 0)
+            float physics:lowerLimit = -157.99884
+            float physics:upperLimit = 157.99884
+            float state:angular:physics:position = 0
+            float state:angular:physics:velocity = 0
+        }
+
+        def PhysicsRevoluteJoint "system1_right_arm_joint3" (
+            prepend apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+            float drive:angular:physics:damping = 1.3962634
+            float drive:angular:physics:maxForce = 123
+            float drive:angular:physics:stiffness = 69.81317
+            float drive:angular:physics:targetPosition = 0
+            uniform token drive:angular:physics:type = "force"
+            uniform token physics:axis = "Z"
+            custom rel physics:body0
+            prepend rel physics:body0 = </aico_2_10/Geometry/world/system1_body_base_link/system1_body_link1/system1_body_link2/system1_right_arm_link1/system1_right_arm_link2>
+            custom rel physics:body1
+            prepend rel physics:body1 = </aico_2_10/Geometry/world/system1_body_base_link/system1_body_link1/system1_body_link2/system1_right_arm_link1/system1_right_arm_link2/system1_right_arm_link3>
+            point3f physics:localPos0 = (0, -0.0625, -0.2275)
+            point3f physics:localPos1 = (0, 0, 0)
+            quatf physics:localRot0 = (-4.3297724e-17, 4.3297882e-17, 5.551115e-17, -1)
+            quatf physics:localRot1 = (1, 0, 0, 0)
+            float physics:lowerLimit = -165.00038
+            float physics:upperLimit = 165.00038
+            float state:angular:physics:position = 0
+            float state:angular:physics:velocity = 0
+        }
+
+        def PhysicsRevoluteJoint "system1_right_arm_joint4" (
+            prepend apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+            float drive:angular:physics:damping = 1.3962634
+            float drive:angular:physics:maxForce = 123
+            float drive:angular:physics:stiffness = 69.81317
+            float drive:angular:physics:targetPosition = 90
+            uniform token drive:angular:physics:type = "force"
+            uniform token physics:axis = "Y"
+            custom rel physics:body0
+            prepend rel physics:body0 = </aico_2_10/Geometry/world/system1_body_base_link/system1_body_link1/system1_body_link2/system1_right_arm_link1/system1_right_arm_link2/system1_right_arm_link3>
+            custom rel physics:body1
+            prepend rel physics:body1 = </aico_2_10/Geometry/world/system1_body_base_link/system1_body_link1/system1_body_link2/system1_right_arm_link1/system1_right_arm_link2/system1_right_arm_link3/system1_right_arm_link4>
+            point3f physics:localPos0 = (-4.9303807e-32, -0.0625, -0.2225)
+            point3f physics:localPos1 = (0, 0, 0)
+            quatf physics:localRot0 = (1, 0, 0, 0)
+            quatf physics:localRot1 = (1, 0, 0, 0)
+            float physics:lowerLimit = -159.99846
+            float physics:upperLimit = 159.99846
+            float state:angular:physics:position = 0
+            float state:angular:physics:velocity = 0
+        }
+
+        def PhysicsRevoluteJoint "system1_right_arm_joint5" (
+            prepend apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+            float drive:angular:physics:damping = 0.2617994
+            float drive:angular:physics:maxForce = 57
+            float drive:angular:physics:stiffness = 26.17994
+            float drive:angular:physics:targetPosition = 0
+            uniform token drive:angular:physics:type = "force"
+            uniform token physics:axis = "Z"
+            custom rel physics:body0
+            prepend rel physics:body0 = </aico_2_10/Geometry/world/system1_body_base_link/system1_body_link1/system1_body_link2/system1_right_arm_link1/system1_right_arm_link2/system1_right_arm_link3/system1_right_arm_link4>
+            custom rel physics:body1
+            prepend rel physics:body1 = </aico_2_10/Geometry/world/system1_body_base_link/system1_body_link1/system1_body_link2/system1_right_arm_link1/system1_right_arm_link2/system1_right_arm_link3/system1_right_arm_link4/system1_right_arm_link5>
+            point3f physics:localPos0 = (-4.9303807e-32, -0.0575, -0.205)
+            point3f physics:localPos1 = (0, 0, 0)
+            quatf physics:localRot0 = (1, 0, 0, 0)
+            quatf physics:localRot1 = (1, 0, 0, 0)
+            float physics:lowerLimit = -174.9985
+            float physics:upperLimit = 174.9985
+            float state:angular:physics:position = 0
+            float state:angular:physics:velocity = 0
+        }
+
+        def PhysicsRevoluteJoint "system1_right_arm_joint6" (
+            prepend apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+            float drive:angular:physics:damping = 0.2617994
+            float drive:angular:physics:maxForce = 57
+            float drive:angular:physics:stiffness = 26.17994
+            float drive:angular:physics:targetPosition = 40
+            uniform token drive:angular:physics:type = "force"
+            uniform token physics:axis = "Y"
+            custom rel physics:body0
+            prepend rel physics:body0 = </aico_2_10/Geometry/world/system1_body_base_link/system1_body_link1/system1_body_link2/system1_right_arm_link1/system1_right_arm_link2/system1_right_arm_link3/system1_right_arm_link4/system1_right_arm_link5>
+            custom rel physics:body1
+            prepend rel physics:body1 = </aico_2_10/Geometry/world/system1_body_base_link/system1_body_link1/system1_body_link2/system1_right_arm_link1/system1_right_arm_link2/system1_right_arm_link3/system1_right_arm_link4/system1_right_arm_link5/system1_right_arm_link6>
+            point3f physics:localPos0 = (-1.4791142e-31, 0.03, -0.19)
+            point3f physics:localPos1 = (0, 0, 0)
+            quatf physics:localRot0 = (7.9166955e-17, -4.3297882e-17, -5.551115e-17, 1)
+            quatf physics:localRot1 = (1, 0, 0, 0)
+            float physics:lowerLimit = -84.99829
+            float physics:upperLimit = 264.99872
+            float state:angular:physics:position = 0
+            float state:angular:physics:velocity = 0
+        }
+
+        def PhysicsRevoluteJoint "system1_right_arm_joint7" (
+            prepend apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+            float drive:angular:physics:damping = 0.2617994
+            float drive:angular:physics:maxForce = 57
+            float drive:angular:physics:stiffness = 26.17994
+            float drive:angular:physics:targetPosition = 0
+            uniform token drive:angular:physics:type = "force"
+            uniform token physics:axis = "Z"
+            custom rel physics:body0
+            prepend rel physics:body0 = </aico_2_10/Geometry/world/system1_body_base_link/system1_body_link1/system1_body_link2/system1_right_arm_link1/system1_right_arm_link2/system1_right_arm_link3/system1_right_arm_link4/system1_right_arm_link5/system1_right_arm_link6>
+            custom rel physics:body1
+            prepend rel physics:body1 = </aico_2_10/Geometry/world/system1_body_base_link/system1_body_link1/system1_body_link2/system1_right_arm_link1/system1_right_arm_link2/system1_right_arm_link3/system1_right_arm_link4/system1_right_arm_link5/system1_right_arm_link6/system1_right_arm_link7>
+            point3f physics:localPos0 = (0.015, -0.073, -0.11)
+            point3f physics:localPos1 = (0, 0, 0)
+            quatf physics:localRot0 = (-0.70710677, -9.868135e-17, 0.70710677, 0)
+            quatf physics:localRot1 = (1, 0, 0, 0)
+            float physics:lowerLimit = -174.9985
+            float physics:upperLimit = 174.9985
+            float state:angular:physics:position = 0
+            float state:angular:physics:velocity = 0
+        }
+
+        def PhysicsFixedJoint "system1_system_mount_joint"
+        {
+            custom rel physics:body0
+            prepend rel physics:body0 = </aico_2_10>
+            custom rel physics:body1
+            prepend rel physics:body1 = </aico_2_10/Geometry/world/system1_body_base_link>
+            point3f physics:localPos0 = (0, 0, 0)
+            point3f physics:localPos1 = (0, 0, 0)
+            quatf physics:localRot0 = (1, 0, 0, 0)
+            quatf physics:localRot1 = (1, 0, 0, 0)
+        }
+    }
+}
+
+def PhysicsScene "PhysicsScene" (
+    prepend apiSchemas = ["NewtonSceneAPI"]
+)
+{
+}
+

@@ -39,8 +39,15 @@ This workspace is an example integration of **NVIDIA Isaac Sim** with **Flexiv E
 | ---------------- | ----------------------- | ---------------------- | --------------------- |
 | Ubuntu 22.04     | x86_64                  | Python                 | 6.x                   |
 
-> This branch targets **NVIDIA Isaac Sim 6.x**. For Isaac Sim 5.x, use the
-> `isaac-sim-5` branch.
+Each release of this workspace works with one release line of Flexiv Sim Plugin (the `flexivsimplugin` Python package) and of Flexiv Elements Studio:
+
+| **Workspace release** | **Isaac Sim version** | **flexivsimplugin** | **Elements Studio** |
+| --------------------- | --------------------- | ------------------- | ------------------- |
+| v2.2.x                | 6.x                   | 2.2.x               | v3E.2               |
+| v1.4.0                | 6.x                   | 1.3.0               | v3.11.2             |
+| v1.3                  | 5.x                   | 1.2.0               | v3.10               |
+
+The `v2.x` branch holds the latest release line. For an earlier one, check out its release tag, e.g. `git checkout v1.4.0`.
 
 
 ## Demos
@@ -66,44 +73,49 @@ https://github.com/user-attachments/assets/7462a9bd-3cfd-40cc-95f7-b4fda0a74f30
 
 Before using the Flexiv Isaac Sim Workspace, install Flexiv Elements Studio and
 create a simulated robot by following
-[Flexiv Elements Studio Setup](https://github.com/flexivrobotics/flexiv_sim_plugin/blob/main/docs/elements_studio_setup.md).
+[Flexiv Elements Studio Setup](https://github.com/flexivrobotics/flexiv_sim_plugin/blob/v2.x/docs/elements_studio_setup.md).
 
 
 ## Workspace setup
 
+The workspace setup installs Flexiv's extensions and apps into Isaac Sim and then installs the `flexivsimplugin` Python package into Isaac Sim's bundled Python. That plugin is the middleware connecting the Flexiv-Isaac Bridge App to Elements Studio. This workspace runs against either a natively installed Isaac Sim or the Isaac Sim container. Where later sections say `<isaac_sim_root_dir>`, they mean wherever Isaac Sim lives: `~/isaacsim` (or your install path) for Option A, and `/isaac-sim` inside the container for Option B.
+
+### Option A: native Isaac Sim
+
 1. Install NVIDIA [Isaac Sim](https://docs.isaacsim.omniverse.nvidia.com/latest/installation/index.html).
 2. Note down Isaac Sim's installation directory, e.g. `~/isaacsim`.
-3. Run the following script in this repo to install Flexiv's Isaac Sim extensions and apps to the Isaac Sim installation directory so that Isaac Sim can load them:
+3. From this repo, set up the workspace:
 
-       bash install_ws.sh <isaac_sim_root_dir>
+       bash setup_ws.sh ~/isaacsim
 
-   For example:
+### Option B: Isaac Sim container
 
-       bash install_ws.sh ~/isaacsim
+1. Follow NVIDIA's [container installation guide](https://docs.isaacsim.omniverse.nvidia.com/latest/installation/install_container.html) to set up the NGC prerequisites (an NGC account and `docker login`). The image itself is pulled automatically on first launch.
 
-4. Install the Python dependencies into Isaac Sim's bundled Python:
+2. From this repo, launch a shell in the container:
 
-       cd <isaac_sim_root_dir>
-       ./python.sh -m pip install spdlog
+       bash launch_isaac_sim.sh shell
 
-5. Install the `flexivsimplugin` Python package into Isaac Sim's bundled Python.
-   This is the middleware that connects the Flexiv-Isaac Bridge App to Elements
-   Studio, so its version must match your robot software (Elements Studio) and
-   RDK version.
+   This mounts this repo at `/workspace` inside the container, along with the persistent cache directories, and sets the options Isaac Sim needs. When a local display is available, the shell forwards it, so the bridge app and the examples open their Isaac Sim window. The script's other modes, `native` and `webrtc`, start the plain Isaac Sim app straight away, without a shell to set up this workspace in; run `bash launch_isaac_sim.sh -h` for all options.
 
-   Look up the plugin version compatible with your robot software (Elements
-   Studio) version in the
-   [Flexiv Sim Plugin release notes](https://github.com/flexivrobotics/flexiv_sim_plugin/releases).
+3. Inside the container, set up the workspace:
 
-       cd <isaac_sim_root_dir>
-       ./python.sh -m pip install -i https://test.pypi.org/simple/ flexivsimplugin==<version>
+       bash /workspace/setup_ws.sh
+
+   Isaac Sim is auto-detected at `/isaac-sim`.
+
+   The container runs with `--rm`, so everything installed inside it is discarded on exit. Re-run this step after each launch; it takes seconds once the wheel is cached.
+
+> The container runs on the host network, because the plugin discovers Elements Studio over Zenoh multicast, which does not cross Docker's default bridge network. On the default network the Bridge App starts normally but never connects.
+
+The setup installs the newest 2.2.x release of `flexivsimplugin`, the release line this workspace supports, so re-running it picks up plugin bug fixes. To install a specific version instead, pass it with `--plugin-version`, e.g. `--plugin-version 2.2.0`.
 
 ## Verify setup
 
 To verify that the workspace setup is successful, run the example Python application:
 
     cd <isaac_sim_root_dir>
-    ./python.sh standalone_examples/api/isaacsim.robot.manipulators/flexiv/follow_target_with_rmpflow.py extsDeprecated/isaacsim.robot.manipulators.examples/data/flexiv/Rizon4/Rizon4.usda
+    ./python.sh standalone_examples/api/isaacsim.robot.manipulators/flexiv/follow_target_with_rmpflow.py extsDeprecated/isaacsim.robot.manipulators.examples/data/flexiv/rizon_4/rizon_4.usda
 
 WARNING: When running Isaac Sim for the first time, it takes a couple of minutes to warm up the shader cache. You will notice that the CPU is fully loaded and the Isaac Sim window seems frozen. Please wait patiently and do not force quit the program.
 
@@ -113,6 +125,12 @@ After the example program is up and running, select the `TargetCube` prim under 
 ### Run Flexiv-Isaac Bridge App
 
 1. Edit the configuration file `standalone_examples/api/isaacsim.robot.manipulators/flexiv/single_arm_app_config.yaml` according to the instructions in it.
+   Optionally, with the simulated robot started in Elements Studio, check that Isaac Sim can reach it before starting the app:
+
+       cd <isaac_sim_root_dir>
+       ./python.sh <this repo>/tools/check_sim_plugin_connection.py "Rizon 4-123456"
+
+   It reports for each serial number whether the plugin finds the robot, and what to check if not.
 2. Start Flexiv-Isaac Bridge App using configurations in `single_arm_app_config.yaml`:
 
        cd <isaac_sim_root_dir>
@@ -153,7 +171,7 @@ Alternatively, you can leave the simulated robot running and just restart the Is
 
 ## Multi-robot support
 
-This framework supports simulating and controlling multiple robots:
+This framework supports simulating and controlling multiple robots, each with its own Elements Studio. (`dual_arm_app_config.yaml` sets up two single-arm robots; for one robot with two arms, see [Dual-arm robots](#dual-arm-robots-mico-enlight-ll).)
 
 1. Add multiple robots in the configuration file `standalone_examples/api/isaacsim.robot.manipulators/flexiv/dual_arm_app_config.yaml`.
 2. Start Flexiv-Isaac Bridge App using the updated configurations in `dual_arm_app_config.yaml`:
@@ -167,6 +185,26 @@ This framework supports simulating and controlling multiple robots:
 6. Start the first simulated robot on the first computer, then wait for connection with Isaac Sim. You should see one of the robots in Isaac Sim moves a little bit when the connection is established.
 7. Start the second simulated robot on the second computer, then wait for connection with Isaac Sim. You should see the other robot in Isaac Sim moves a little bit when the connection is established.
 8. Execute test projects from both Elements Studios and check that both robots are working in Isaac Sim.
+
+## Dual-arm robots (MICO, Enlight LL)
+
+A dual-arm robot, such as MICO Core, MICO Plus or MICO Ultra, is **one** robot: one serial number and one controller drive both arms and any waist joints (external robot axes). So it is a single robot block in the configuration file, not two, and it needs only one Elements Studio. The number of joints comes from the robot USD:
+
+| USD | Joints, in controller order |
+| --- | --- |
+| `rizon_*`, `enlight_l` | 7: `joint1` - `joint7` |
+| `aico_1_4` | 8: waist 1, arm 1-7 |
+| `mico_core`, `enlight_ll` | 14: left arm 1-7, right arm 1-7 |
+| `mico_plus`, `mico_ultra`, `aico_2_*` | 16: waist 1-2, left arm 1-7, right arm 1-7 |
+
+1. Edit the configuration file `standalone_examples/api/isaacsim.robot.manipulators/flexiv/mico_app_config.yaml`: set `serial_number` to the simulated robot you created in Elements Studio, and `usd` to the USD of the same model.
+   For an Enlight LL, use `enlight_ll_app_config.yaml` instead. Where its two arms are mounted is part of the robot's calibration, so the bundled `enlight_ll` USD has both arms at the origin, overlapping. Generate a calibrated USD for the robot and point `usd` at it, see [tools/calibration/README.md](tools/calibration/README.md#enlight-ll).
+2. Start Flexiv-Isaac Bridge App using configurations in `mico_app_config.yaml` (or `enlight_ll_app_config.yaml`):
+
+       cd <isaac_sim_root_dir>
+       ./python.sh standalone_examples/api/isaacsim.robot.manipulators/flexiv/flexiv_isaac_bridge_app.py --config standalone_examples/api/isaacsim.robot.manipulators/flexiv/mico_app_config.yaml
+
+The robot states and commands carry joint values without joint names, so the app sends and applies them in the order the controller uses, which it derives from the USD the same way the controller derives it from the URDF; the order is printed at startup. If the controller's robot model has a different number of joints than the USD, the app logs an error and ignores the commands. Each arm can carry its own gripper, mounted on `system1_left_arm_flange` or `system1_right_arm_flange` and driven by its own pair of digital outputs (`DOUT[0]` / `DOUT[1]` open / close the first gripper, `DOUT[2]` / `DOUT[3]` the second, by default).
 
 ## Collect data from the simulated robot(s)
 
@@ -187,5 +225,9 @@ Besides using the drag-and-drop graphical interface in Elements Studio to create
 3. In Elements Studio, go to *Settings* → *Remote Mode*, then enable Remote Mode and select *Ethernet* from the drop-down list.
 4. Restart the simulated robot by clicking *CHANGE CONNECTION*, then toggle off and on the *Connect* button.
 5. Run RDK programs to control one or more simulated robots.
+
+   For example, [tools/rdk/dual_arm_joint_swing.py](tools/rdk/dual_arm_joint_swing.py) swings every joint of every arm of a robot around its home pose, so you can see both arms of a dual-arm robot move in Isaac Sim:
+
+       python3 tools/rdk/dual_arm_joint_swing.py "Enlight LL-123456" --amplitude 6 --cycles 3
 
 Note: the RDK program doesn't have to run on the same computer as the Elements Studio, it can be any computer that's under the same local network as the Elements Studio computer.

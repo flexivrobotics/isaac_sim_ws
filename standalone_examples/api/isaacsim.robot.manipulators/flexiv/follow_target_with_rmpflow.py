@@ -7,6 +7,11 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+# Send the Flexiv extension modules' log messages to the console.
+import logging
+
+logging.basicConfig(level=logging.INFO, format="[%(name)s] [%(levelname)s] %(message)s")
+
 # Start simulation
 from isaacsim import SimulationApp
 
@@ -35,7 +40,7 @@ import sys
 
 _DEFAULT_USD = (
     "extsDeprecated/isaacsim.robot.manipulators.examples/"
-    "data/flexiv/Rizon4/Rizon4.usda"
+    "data/flexiv/rizon_4/rizon_4.usda"
 )
 usd_path = sys.argv[1] if len(sys.argv) > 1 else _DEFAULT_USD
 if not os.path.isabs(usd_path):

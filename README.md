@@ -73,7 +73,7 @@ https://github.com/user-attachments/assets/7462a9bd-3cfd-40cc-95f7-b4fda0a74f30
 
 Before using the Flexiv Isaac Sim Workspace, install Flexiv Elements Studio and
 create a simulated robot by following
-[Flexiv Elements Studio Setup](https://github.com/flexivrobotics/flexiv_sim_plugin/blob/main/docs/elements_studio_setup.md).
+[Flexiv Elements Studio Setup](https://github.com/flexivrobotics/flexiv_sim_plugin/blob/v2.x/docs/elements_studio_setup.md).
 
 
 ## Workspace setup

@@ -1,0 +1,141 @@
+#usda 1.0
+(
+    customLayerData = {
+        string creator = "URDF USD Converter v0.1.3"
+    }
+    defaultPrim = "enlight_l"
+    doc = """Generated from Composed Stage of root layer Flexiv/enlight_l/enlight_l.usd/enlight_l.usda
+"""
+    kilogramsPerUnit = 1
+    metersPerUnit = 1
+    upAxis = "Z"
+)
+
+over "enlight_l" (
+    prepend apiSchemas = ["IsaacRobotAPI"]
+)
+{
+    prepend rel isaac:physics:robotJoints = [
+        </enlight_l/Physics/root_joint>,
+        </enlight_l/Physics/joint1>,
+        </enlight_l/Physics/joint2>,
+        </enlight_l/Physics/joint3>,
+        </enlight_l/Physics/joint4>,
+        </enlight_l/Physics/joint5>,
+        </enlight_l/Physics/joint6>,
+        </enlight_l/Physics/joint7>,
+    ]
+    prepend rel isaac:physics:robotLinks = [
+        </enlight_l/Geometry/base_link>,
+        </enlight_l/Geometry/base_link/link1>,
+        </enlight_l/Geometry/base_link/link1/link2>,
+        </enlight_l/Geometry/base_link/link1/link2/link3>,
+        </enlight_l/Geometry/base_link/link1/link2/link3/link4>,
+        </enlight_l/Geometry/base_link/link1/link2/link3/link4/link5>,
+        </enlight_l/Geometry/base_link/link1/link2/link3/link4/link5/link6>,
+        </enlight_l/Geometry/base_link/link1/link2/link3/link4/link5/link6/link7>,
+        </enlight_l/Geometry/base_link/link1/link2/link3/link4/link5/link6/link7/flange>,
+    ]
+    token isaac:robotType = "Manipulator"
+
+    over "Geometry"
+    {
+        over "base_link" (
+            prepend apiSchemas = ["IsaacLinkAPI"]
+        )
+        {
+            over "link1" (
+                prepend apiSchemas = ["IsaacLinkAPI"]
+            )
+            {
+                over "link2" (
+                    prepend apiSchemas = ["IsaacLinkAPI"]
+                )
+                {
+                    over "link3" (
+                        prepend apiSchemas = ["IsaacLinkAPI"]
+                    )
+                    {
+                        over "link4" (
+                            prepend apiSchemas = ["IsaacLinkAPI"]
+                        )
+                        {
+                            over "link5" (
+                                prepend apiSchemas = ["IsaacLinkAPI"]
+                            )
+                            {
+                                over "link6" (
+                                    prepend apiSchemas = ["IsaacLinkAPI"]
+                                )
+                                {
+                                    over "link7" (
+                                        prepend apiSchemas = ["IsaacLinkAPI"]
+                                    )
+                                    {
+                                        over "flange" (
+                                            prepend apiSchemas = ["IsaacSiteAPI"]
+                                        )
+                                        {
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    over "Physics"
+    {
+        over "root_joint" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "joint1" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "joint2" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "joint3" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "joint4" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "joint5" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "joint6" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "joint7" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+    }
+}
+

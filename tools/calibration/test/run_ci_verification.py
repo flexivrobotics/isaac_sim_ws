@@ -7,10 +7,14 @@
 # What it does:
 #   1. Validate the example calibrated kinematics YAML parses and has the
 #      expected joint set.
-#   2. Apply the example YAML to the in-repo Rizon4s asset, then run
+#   2. Apply the example YAML to the in-repo asset, then run
 #      verify_calibration_against_urdf.py to confirm the calibrated USD matches
 #      the reference URDF. Skipped (with a clear message) only if the reference
-#      URDF or base USD is missing -- see REFERENCE_URDF / DEFAULT_BASE_USD.
+#      URDF or base USD is missing.
+#
+# Both steps run for each robot in CASES: a Rizon 4s (single arm) and an
+# Enlight LL (dual arm, with calibrated arm adapters), then for a variant of the
+# Enlight LL with rotated arm adapters (make_rotated_ll_example).
 #
 # Exit codes: 0 = pass (or skipped), non-zero = failure.
 
@@ -28,8 +32,8 @@ EXAMPLE_YAML = os.path.join(HERE, "Rizon4_calibrated_kinematics.example.yaml")
 # The reference calibrated URDF for the example robot (RDK Model.SyncURDF).
 REFERENCE_URDF = os.path.join(HERE, "Rizon4_calibrated.example.urdf")
 
-# Base USD to apply the calibration onto. The example robot (serial A02LS-P2) is
-# a Rizon4s, so the calibration is applied onto the in-repo Rizon4s asset (which
+# Base USD to apply the calibration onto. The example robot (hardware type A02LS-P2) is
+# a Rizon4s, so the calibration is applied onto the in-repo rizon_4s asset (which
 # is tracked, so it is available in CI). Override with BASE_USD_ENV if needed.
 BASE_USD_ENV = "CALIBRATION_TEST_BASE_USD"
 _REPO_ROOT = os.path.abspath(os.path.join(HERE, "..", "..", ".."))
@@ -39,8 +43,8 @@ DEFAULT_BASE_USD = os.path.join(
     "isaacsim.robot.manipulators.examples",
     "data",
     "flexiv",
-    "Rizon4s",
-    "Rizon4s.usda",
+    "rizon_4s",
+    "rizon_4s.usda",
 )
 
 EXPECTED_JOINTS = [
@@ -55,44 +59,118 @@ EXPECTED_JOINTS = [
 ]
 REQUIRED_FIELDS = {"x", "y", "z", "roll", "pitch", "yaw"}
 
+# The Enlight LL example: a simulated robot's calibrated kinematics (synced with
+# the EXT_AXIS arm adapters) and the URDF its controller generated, applied onto
+# the in-repo enlight_ll asset.
+LL_EXAMPLE_YAML = os.path.join(HERE, "EnlightLL_calibrated_kinematics.example.yaml")
+LL_REFERENCE_URDF = os.path.join(HERE, "EnlightLL_calibrated.example.urdf")
+LL_BASE_USD_ENV = "CALIBRATION_TEST_LL_BASE_USD"
+LL_DEFAULT_BASE_USD = os.path.join(
+    _REPO_ROOT,
+    "exts",
+    "isaacsim.robot.manipulators.examples",
+    "data",
+    "flexiv",
+    "enlight_ll",
+    "enlight_ll.usda",
+)
+LL_EXPECTED_JOINTS = [("EXT_AXIS", "left_arm_adapter"), ("EXT_AXIS", "right_arm_adapter")] + [
+    (arm, j) for arm in ("ARM_1", "ARM_2") for j in EXPECTED_JOINTS
+]
 
-def check_example_yaml():
-    """Validate the example calibrated kinematics YAML. Raises on any problem."""
-    print(f"[ci] Validating example YAML: {EXAMPLE_YAML}")
-    with open(EXAMPLE_YAML) as f:
+# The example Enlight LL's arm adapters are pure translations, so a variant of it
+# with rotated (and offset) adapters, written into both the YAML and the
+# reference URDF, covers how a mount's rotation is composed into the arm.
+# {adapter: (x, y, z, roll, pitch, yaw)}
+ROTATED_LL_ADAPTERS = {
+    "left_arm_adapter": (0.05, 0.25, 0.3, -1.5707963, 0.1, 0.2),
+    "right_arm_adapter": (-0.05, -0.25, 0.3, 1.5707963, -0.1, 3.1415927),
+}
+
+
+def make_rotated_ll_example(workdir):
+    """Write the Enlight LL example with ROTATED_LL_ADAPTERS into workdir and
+    return (example YAML, reference URDF)."""
+    import xml.etree.ElementTree as ET
+
+    with open(LL_EXAMPLE_YAML) as f:
+        doc = yaml.safe_load(f)
+    tree = ET.parse(LL_REFERENCE_URDF)
+    joints = {j.get("name"): j for j in tree.getroot().findall("joint")}
+    for adapter, (x, y, z, roll, pitch, yaw) in ROTATED_LL_ADAPTERS.items():
+        doc["kinematics"]["EXT_AXIS"][adapter] = {
+            "x": x, "y": y, "z": z, "roll": roll, "pitch": pitch, "yaw": yaw
+        }
+        matches = [j for n, j in joints.items() if n.endswith("." + adapter)]
+        if len(matches) != 1:
+            raise KeyError(f"reference URDF has {len(matches)} joints named [*{adapter}]")
+        origin = matches[0].find("origin")
+        origin.set("xyz", f"{x} {y} {z}")
+        origin.set("rpy", f"{roll} {pitch} {yaw}")
+    out_yaml = os.path.join(workdir, "EnlightLL_rotated_mounts.yaml")
+    out_urdf = os.path.join(workdir, "EnlightLL_rotated_mounts.urdf")
+    with open(out_yaml, "w") as f:
+        yaml.safe_dump(doc, f, sort_keys=False)
+    tree.write(out_urdf)
+    return out_yaml, out_urdf
+
+
+# (name, example YAML, expected joints, reference URDF, base USD env var, default base USD)
+CASES = [
+    ("Rizon 4s", EXAMPLE_YAML, EXPECTED_JOINTS, REFERENCE_URDF, BASE_USD_ENV, DEFAULT_BASE_USD),
+    ("Enlight LL", LL_EXAMPLE_YAML, LL_EXPECTED_JOINTS, LL_REFERENCE_URDF, LL_BASE_USD_ENV, LL_DEFAULT_BASE_USD),
+]
+
+
+def _entry(kine, joint):
+    """Template entry of a joint name, or of a (section, name) path. Mirrors the
+    applier's lookup on purpose rather than importing it, so the check stays
+    independent of the code it verifies."""
+    if isinstance(joint, str):
+        return kine.get(joint)
+    node = kine
+    for part in joint:
+        node = node.get(part) if isinstance(node, dict) else None
+    return node
+
+
+def check_example_yaml(example_yaml, expected_joints):
+    """Validate an example calibrated kinematics YAML. Raises on any problem."""
+    print(f"[ci] Validating example YAML: {example_yaml}")
+    with open(example_yaml) as f:
         doc = yaml.safe_load(f)
     kine = (doc or {}).get("kinematics")
     if not kine:
         raise ValueError("example YAML has no top-level 'kinematics' node")
-    missing = [j for j in EXPECTED_JOINTS if j not in kine]
+    missing = [j for j in expected_joints if _entry(kine, j) is None]
     if missing:
         raise ValueError(f"example YAML missing joints: {missing}")
-    for j in EXPECTED_JOINTS:
-        have = set(kine[j])
+    for j in expected_joints:
+        have = set(_entry(kine, j))
         if not REQUIRED_FIELDS.issubset(have):
             raise ValueError(
                 f"joint [{j}] missing fields: {REQUIRED_FIELDS - have}"
             )
         for f in REQUIRED_FIELDS:
-            float(kine[j][f])  # must be numeric
-    print(f"[ci] OK: {len(EXPECTED_JOINTS)} joints, all fields present & numeric.")
+            float(_entry(kine, j)[f])  # must be numeric
+    print(f"[ci] OK: {len(expected_joints)} joints, all fields present & numeric.")
 
 
-def run_full_verification():
+def run_full_verification(example_yaml, reference_urdf, base_usd_env, default_base_usd):
     """Apply the example YAML to a base USD and verify against the reference URDF.
 
     Returns True if it ran and passed, False if it was skipped for missing inputs.
     Raises (non-zero exit) if it ran and FAILED.
     """
-    if not os.path.isfile(REFERENCE_URDF):
-        print(f"[ci] SKIP full verification: no reference URDF at [{REFERENCE_URDF}].")
+    if not os.path.isfile(reference_urdf):
+        print(f"[ci] SKIP full verification: no reference URDF at [{reference_urdf}].")
         return False
 
-    base_usd = os.environ.get(BASE_USD_ENV) or DEFAULT_BASE_USD
+    base_usd = os.environ.get(base_usd_env) or default_base_usd
     if not os.path.isfile(base_usd):
         print(
             f"[ci] SKIP full verification: base USD not found at [{base_usd}] "
-            f"(override with ${BASE_USD_ENV})."
+            f"(override with ${base_usd_env})."
         )
         return False
 
@@ -124,7 +202,7 @@ def run_full_verification():
 
     print(f"[ci] Applying example calibration to a copy of [{base_usd}] ...")
     out_usd = cal.materialize_per_robot_usd(tmp_base_usd, "calibration-ci-test")
-    cal.apply_calibration_to_usd(out_usd, EXAMPLE_YAML)
+    cal.apply_calibration_to_usd(out_usd, example_yaml)
 
     print("[ci] Verifying calibrated USD against reference URDF ...")
     verify_cmd = [
@@ -133,7 +211,7 @@ def run_full_verification():
         "--usd",
         out_usd,
         "--from-urdf",
-        REFERENCE_URDF,
+        reference_urdf,
     ]
     subprocess.run(verify_cmd, check=True)  # non-zero exit propagates as failure
     print("[ci] Full verification PASSED.")
@@ -141,13 +219,22 @@ def run_full_verification():
 
 
 def main():
-    check_example_yaml()
-    ran = run_full_verification()
-    if not ran:
-        print(
-            "[ci] Verification step skipped (a required input was missing); "
-            "example data validated."
-        )
+    import tempfile
+
+    rotated_yaml, rotated_urdf = make_rotated_ll_example(tempfile.mkdtemp(prefix="calib_ci_"))
+    cases = CASES + [
+        ("Enlight LL, rotated arm mounts", rotated_yaml, LL_EXPECTED_JOINTS, rotated_urdf,
+         LL_BASE_USD_ENV, LL_DEFAULT_BASE_USD),
+    ]
+    for name, example_yaml, expected_joints, reference_urdf, base_usd_env, default_base_usd in cases:
+        print(f"[ci] ===== {name} =====")
+        check_example_yaml(example_yaml, expected_joints)
+        ran = run_full_verification(example_yaml, reference_urdf, base_usd_env, default_base_usd)
+        if not ran:
+            print(
+                "[ci] Verification step skipped (a required input was missing); "
+                "example data validated."
+            )
     print("[ci] Done.")
     return 0
 

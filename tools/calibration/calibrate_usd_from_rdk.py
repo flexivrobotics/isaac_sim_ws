@@ -29,20 +29,21 @@
 # importable, e.g.
 #   ~/isaacsim/kit/python/bin/python3 calibrate_usd_from_rdk.py \
 #       --robot-sn "Rizon4-000001" \
-#       --usd ~/isaacsim/extsDeprecated/.../data/flexiv/Rizon4/Rizon4.usda
+#       --usd ~/isaacsim/extsDeprecated/.../data/flexiv/rizon_4/rizon_4.usda
 
 import argparse
 import math
 import os
+import re
 import shutil
 import sys
 import urllib.request
 
 import yaml
-from pxr import Gf, Sdf, Usd
+from pxr import Gf, Sdf
 
 # The nominal kinematics template is fetched from flexiv_description on GitHub,
-# one per model at config/<Model>/default_kinematics.yaml. The Rizon templates are
+# one per model at config/<Model>/default_kinematics.yaml. The templates are
 # identical across the repo's branches (for the fields this tool uses), so the
 # branch is pinned rather than exposed as an option.
 FLEXIV_DESCRIPTION_REPO = "flexivrobotics/flexiv_description"
@@ -53,16 +54,25 @@ FLEXIV_DESCRIPTION_BRANCH = "humble"
 #   yaml_name      key in the `kinematics` YAML / URDF joint name
 #   link_rel_path  child link Xform path under <defaultPrim>/Geometry
 #   joint_name     joint prim name under <defaultPrim>/Physics
-#   fixed_pre      optional constant (x, y, z) offset composed before this entry,
-#                  for a rigid USD segment the YAML does not model (else None)
+#   fixed_pre      optional rigid USD segment composed before this entry, which
+#                  the YAML does not model (else None): the name of the fixed
+#                  joint under <defaultPrim>/Physics whose parent-relative pose
+#                  (localPos0/localRot0) is the segment
 #
-# Rizon4s ("s" variant) carries a wrist FT sensor that splits link7 into
-# link7_proximal/link7_distal, with a fixed sensor segment between them. RDK
-# reports the collapsed chain (single link7_to_flange), so it maps onto the
-# distal->flange joint with the 0.094 m sensor segment as fixed_pre.
+# rizon_4s ("s" variant) carries a wrist FT sensor that splits link7 into
+# link7_proximal/link7_distal, with the fixed link7_ft_sensor joint between them
+# (0.094 m along link7 z). RDK reports the collapsed chain (single
+# link7_to_flange), so it maps onto the distal->flange pose, with the sensor
+# segment as fixed_pre. The segment is read from the asset, because its rotation
+# differs between assets: the newer ones orient link7_distal like the flange.
+#
+# The flange is a rigid body on a fixed joint (link7_to_flange /
+# link7_distal_to_flange) in the older assets, and a site (a plain frame, no
+# physics and no joint) in the newer SimReady assets. The joint anchor is only
+# written when the joint exists.
 _RIZON4_CHAIN = "base_link/link1/link2/link3/link4/link5/link6"
 JOINTS_BY_MODEL = {
-    "Rizon4": [
+    "rizon_4": [
         ("joint1", "base_link/link1", "joint1", None),
         ("joint2", "base_link/link1/link2", "joint2", None),
         ("joint3", "base_link/link1/link2/link3", "joint3", None),
@@ -72,7 +82,7 @@ JOINTS_BY_MODEL = {
         ("joint7", f"{_RIZON4_CHAIN}/link7", "joint7", None),
         ("link7_to_flange", f"{_RIZON4_CHAIN}/link7/flange", "link7_to_flange", None),
     ],
-    "Rizon4s": [
+    "rizon_4s": [
         ("joint1", "base_link/link1", "joint1", None),
         ("joint2", "base_link/link1/link2", "joint2", None),
         ("joint3", "base_link/link1/link2/link3", "joint3", None),
@@ -84,32 +94,82 @@ JOINTS_BY_MODEL = {
             "link7_to_flange",
             f"{_RIZON4_CHAIN}/link7_distal/flange",
             "link7_distal_to_flange",
-            (0.0, 0.0, 0.094),
+            "link7_ft_sensor",
         ),
     ],
 }
 
 
-def joints_for_model(model):
-    """Return the joint mapping table for a model name (e.g. 'Rizon4s').
+def _dual_arm_chain(arm, section):
+    """Joint mapping of one arm of a dual-arm robot, in the same form as
+    JOINTS_BY_MODEL. The YAML nests the arm's joints under `section` (ARM_1 /
+    ARM_2), and the USD prefixes its links and joints with `arm`. Each link is
+    found by its (unique) name, and the flange is a site with no joint."""
+    chain = [
+        ((section, f"joint{i}"), f"{arm}_link{i}", f"{arm}_joint{i}", None)
+        for i in range(1, 8)
+    ]
+    chain.append(((section, "link7_to_flange"), f"{arm}_flange", f"{arm}_link7_to_flange", None))
+    return chain
 
-    Only the 7-DoF Rizon series is supported. A Rizon variant reuses the base
-    layout, or the split-link7 layout for an 's' (FT-sensor) variant. Any
-    non-Rizon model (Enlight, MICO, ...) raises -- its USD has a different prim
-    chain that these tables do not describe.
+
+# Dual-arm robots: each arm is a chain like a Rizon's, mounted on the body by an
+# arm adapter whose pose is part of the robot's calibration (where the arms are
+# installed). Each chain is (adapter YAML key, joint mapping); the adapter is
+# composed before the arm's joint1. The YAML's ARM_1 is the arm on the left
+# adapter, ARM_2 the one on the right adapter.
+CHAINS_BY_MODEL = {
+    "enlight_ll": [
+        (("EXT_AXIS", "left_arm_adapter"), _dual_arm_chain("system1_left_arm", "ARM_1")),
+        (("EXT_AXIS", "right_arm_adapter"), _dual_arm_chain("system1_right_arm", "ARM_2")),
+    ],
+}
+
+# Template entries this tool needs synced beyond what a model's template lists,
+# by asset name. SyncKinematicsYAML fills in only the entries the template lists,
+# and the robot has its arm adapters' calibration, but the Enlight-LL template
+# lists only the arms (ARM_1 / ARM_2). The adapters are added to the working copy
+# at their nominal pose (identity, as in the model) so the sync fills them in
+# too; entries the template already lists are left as they are.
+_NOMINAL_ADAPTER = {"x": 0.0, "y": 0.0, "z": 0.0, "roll": 0.0, "pitch": 0.0, "yaw": 0.0}
+TEMPLATE_ADDITIONS_BY_MODEL = {
+    "enlight_ll": {
+        "EXT_AXIS": {
+            "left_arm_adapter": dict(_NOMINAL_ADAPTER),
+            "right_arm_adapter": dict(_NOMINAL_ADAPTER),
+        },
+    },
+}
+
+
+def chains_for_model(model):
+    """Return the kinematic chains of a model or asset name, as a list of
+    (mount YAML key or None, joint mapping).
+
+    Accepts either the model from a serial number (e.g. 'Rizon4s', 'EnlightLL')
+    or the SimReady asset / USD defaultPrim name (e.g. 'rizon_4s'); both are
+    normalized to the asset name.
+
+    Supported: the 7-DoF Rizon series, as one chain from the robot root, and the
+    dual-arm Enlight LL, as one chain per arm. A Rizon variant reuses the base
+    layout, or the split-link7 layout for an 's' (FT-sensor) variant. Any other
+    model raises -- its USD has a prim layout these tables do not describe.
     """
-    if model in JOINTS_BY_MODEL:
-        return JOINTS_BY_MODEL[model]
-    if not model.startswith("Rizon"):
+    asset = asset_name_for_model(model)
+    if asset in CHAINS_BY_MODEL:
+        return CHAINS_BY_MODEL[asset]
+    if asset in JOINTS_BY_MODEL:
+        return [(None, JOINTS_BY_MODEL[asset])]
+    if not asset.startswith("rizon"):
         raise ValueError(
             f"Model [{model}] is not supported. This tool handles the 7-DoF "
-            f"Rizon series only (Rizon4, Rizon4s, Rizon10, ...); Enlight/MICO and "
+            f"Rizon series (Rizon4, Rizon4s, Rizon10, ...) and the Enlight LL; "
             f"other models have a different USD structure. Supported explicitly: "
-            f"{sorted(JOINTS_BY_MODEL)}."
+            f"{sorted(set(JOINTS_BY_MODEL) | set(CHAINS_BY_MODEL))}."
         )
     # Rizon variant not explicitly listed: reuse the split-link7 layout for an
     # 's' (FT-sensor) model, otherwise the base Rizon layout.
-    return JOINTS_BY_MODEL["Rizon4s" if model.endswith("s") else "Rizon4"]
+    return [(None, JOINTS_BY_MODEL["rizon_4s" if asset.endswith("s") else "rizon_4"])]
 
 
 def rpy_to_quatf(roll, pitch, yaw):
@@ -174,13 +234,34 @@ def _isaac_root():
     return os.path.abspath(os.path.join(os.path.dirname(sys.executable), *[".."] * 3))
 
 
+# Models whose SimReady asset name and flexiv_description config dir do not
+# follow from the model by the default rules: (asset name, config dir).
+_MODEL_NAMES = {
+    "EnlightLL": ("enlight_ll", "Enlight-LL"),
+}
+
+
+def asset_name_for_model(model):
+    """SimReady asset name of a model: snake_case, e.g. "Rizon4s" -> "rizon_4s"."""
+    if model in _MODEL_NAMES:
+        return _MODEL_NAMES[model][0]
+    return re.sub(r"(?<=[A-Za-z])(?=\d)", "_", model).lower()
+
+
+def description_dir_for_model(model):
+    """flexiv_description config dir of a model, e.g. "Rizon4s" -> "Rizon4s"."""
+    return _MODEL_NAMES[model][1] if model in _MODEL_NAMES else model
+
+
 def usd_for_model(model):
     """Locate the bundled source USD for a model in the Isaac Sim install.
 
-    Returns <isaac_root>/extsDeprecated/.../data/flexiv/<model>/<model>.usda.
+    Returns <isaac_root>/extsDeprecated/.../data/flexiv/<asset>/<asset>.usda,
+    where <asset> is the snake_case asset name (e.g. rizon_4s for Rizon4s).
     Used when --usd is omitted, so the common case is just --robot-sn.
     """
-    path = os.path.join(_isaac_root(), _FLEXIV_DATA_REL, model, f"{model}.usda")
+    asset = asset_name_for_model(model)
+    path = os.path.join(_isaac_root(), _FLEXIV_DATA_REL, asset, f"{asset}.usda")
     if not os.path.isfile(path):
         raise FileNotFoundError(
             f"No bundled USD for model [{model}] at [{path}]. Pass --usd "
@@ -190,10 +271,11 @@ def usd_for_model(model):
 
 
 def _nominal_from_github(model):
-    """Fetch config/<model>/default_kinematics.yaml from flexiv_description raw."""
+    """Fetch config/<model dir>/default_kinematics.yaml from flexiv_description raw."""
     url = (
         f"https://raw.githubusercontent.com/{FLEXIV_DESCRIPTION_REPO}/"
-        f"{FLEXIV_DESCRIPTION_BRANCH}/config/{model}/default_kinematics.yaml"
+        f"{FLEXIV_DESCRIPTION_BRANCH}/config/{description_dir_for_model(model)}/"
+        f"default_kinematics.yaml"
     )
     print(f"[template] Fetching nominal template from {url}")
     try:
@@ -212,9 +294,30 @@ def resolve_working_template(usd_path, model):
 
     The template is fetched from flexiv_description on GitHub and copied to a
     working file next to the USD (<usd_dir>/<model>_synced_kinematics.yaml), so
-    SyncKinematicsYAML writes into that copy. Returns the working path.
+    SyncKinematicsYAML writes into that copy. Sections the tool needs but the
+    template does not list (TEMPLATE_ADDITIONS_BY_MODEL) are added at their
+    nominal values first, so they are synced too. Returns the working path.
     """
     content, origin = _nominal_from_github(model)
+    additions = TEMPLATE_ADDITIONS_BY_MODEL.get(asset_name_for_model(model), {})
+    if additions:
+        doc = yaml.safe_load(content) or {}
+        kine = doc.get("kinematics") or {}
+        added = []
+        for section, entries in additions.items():
+            missing = {k: v for k, v in entries.items() if k not in (kine.get(section) or {})}
+            if not missing:
+                continue
+            added += [f"{section}.{k}" for k in missing]
+            if section in kine:
+                kine[section] = {**(kine[section] or {}), **missing}
+            else:
+                # Prepend, as in the templates that carry it (e.g. MICO-Core's EXT_AXIS)
+                kine = {section: missing, **kine}
+        if added:
+            doc["kinematics"] = kine
+            content = yaml.safe_dump(doc, sort_keys=False)
+            print(f"[template] Added {added} to the template, at nominal values")
 
     usd_dir = os.path.dirname(os.path.abspath(usd_path)) if usd_path else os.getcwd()
     working = os.path.join(usd_dir, f"{model}_synced_kinematics.yaml")
@@ -291,6 +394,56 @@ def _default_prim_name(layer):
     return layer.defaultPrim
 
 
+def _link_prim_path(base_layer, robot_name, link_rel_path):
+    """Path of a link prim under <robot_name>/Geometry.
+
+    The link tables give the older assets' paths. The newer SimReady assets nest
+    each link under its parent (link7_distal under link7_proximal, rather than
+    beside it), so when the exact path is missing, find the link by its name,
+    which is unique in the robot.
+    """
+    prim_path = f"/{robot_name}/Geometry/{link_rel_path}"
+    if base_layer.GetPrimAtPath(prim_path) is not None:
+        return prim_path
+    name = link_rel_path.rsplit("/", 1)[-1]
+    found = []
+
+    def visit(path):
+        if path.IsPrimPath() and path.name == name and path.HasPrefix(f"/{robot_name}/Geometry"):
+            found.append(path)
+
+    base_layer.Traverse(Sdf.Path(f"/{robot_name}/Geometry"), visit)
+    return str(found[0]) if len(found) == 1 else prim_path
+
+
+def _is_site(base_layer, robot_name, link_rel_path):
+    """True if the link is a site: a plain frame with no rigid body, like the
+    flange of the newer SimReady assets.
+
+    A rigid-body link is authored with xformOpOrder ["!resetXformStack!",
+    "xformOp:transform"], a root-relative pose. A site keeps the converter's
+    parent-relative xformOp:translate/orient, and has no xformOp:transform.
+    """
+    prim_path = _link_prim_path(base_layer, robot_name, link_rel_path)
+    spec = base_layer.GetPrimAtPath(prim_path)
+    if spec is None:
+        raise KeyError(f"[base.usda] missing link prim [{prim_path}]")
+    return spec.properties.get("xformOp:transform") is None
+
+
+def _set_site_local_xform(base_layer, robot_name, link_rel_path, xyz, quat):
+    """Write the parent-relative xformOp:translate/orient of a site."""
+    prim_path = _link_prim_path(base_layer, robot_name, link_rel_path)
+    spec = base_layer.GetPrimAtPath(prim_path)
+    t = spec.properties.get("xformOp:translate")
+    o = spec.properties.get("xformOp:orient")
+    if t is None or o is None:
+        raise KeyError(f"[base.usda] site {prim_path} has no xformOp:translate/orient")
+    t.default = Gf.Vec3d(xyz[0], xyz[1], xyz[2])
+    # orient is a quatd or a quatf, depending on the converter
+    o.default = type(o.default)(quat.GetReal(), *quat.GetImaginary()) if o.default is not None else quat
+
+
 def _set_link_world_xform(base_layer, robot_name, link_rel_path, world_matrix):
     """Write the root-relative xformOp:transform 4x4 on a link Xform.
 
@@ -300,7 +453,7 @@ def _set_link_world_xform(base_layer, robot_name, link_rel_path, world_matrix):
     attributes to the decomposed local values via _refresh_link_srt so the file
     stays self-consistent when someone reads it; those are cosmetic only.
     """
-    prim_path = f"/{robot_name}/Geometry/{link_rel_path}"
+    prim_path = _link_prim_path(base_layer, robot_name, link_rel_path)
     spec = base_layer.GetPrimAtPath(prim_path)
     if spec is None:
         raise KeyError(f"[base.usda] missing link prim [{prim_path}]")
@@ -314,6 +467,23 @@ def _set_link_world_xform(base_layer, robot_name, link_rel_path, world_matrix):
     x.default = world_matrix
 
 
+def _get_joint_anchor(physics_layer, robot_name, joint_name):
+    """Return the parent-relative pose (localPos0/localRot0) of a joint, as a matrix."""
+    prim_path = f"/{robot_name}/Physics/{joint_name}"
+    spec = physics_layer.GetPrimAtPath(prim_path)
+    if spec is None:
+        raise KeyError(f"[physics.usda] missing joint prim [{prim_path}]")
+    p0 = spec.properties.get("physics:localPos0")
+    r0 = spec.properties.get("physics:localRot0")
+    xyz = p0.default if p0 is not None else Gf.Vec3f(0.0)
+    quat = r0.default if r0 is not None else Gf.Quatf(1.0)
+    return joint_local_matrix(xyz, quat)
+
+
+def _has_joint(physics_layer, robot_name, joint_name):
+    return physics_layer.GetPrimAtPath(f"/{robot_name}/Physics/{joint_name}") is not None
+
+
 def _refresh_link_srt(base_layer, robot_name, link_rel_path, xyz, quat):
     """Refresh the ignored-but-readable xformOp:translate/orient to local S/R/T.
 
@@ -321,7 +491,7 @@ def _refresh_link_srt(base_layer, robot_name, link_rel_path, xyz, quat):
     pose. We keep them in sync with the local origin purely so the .usda reads
     consistently. Missing attributes are tolerated silently.
     """
-    prim_path = f"/{robot_name}/Geometry/{link_rel_path}"
+    prim_path = _link_prim_path(base_layer, robot_name, link_rel_path)
     spec = base_layer.GetPrimAtPath(prim_path)
     if spec is None:
         return
@@ -412,16 +582,16 @@ def materialize_per_robot_usd(src_usd_path, robot_sn):
     The copy is a SIBLING of the source model dir, with an identical internal
     structure at the same directory depth:
 
-        <flexiv>/<Model>/<Model>.usda        (source, unchanged; keeps the meshes)
+        <flexiv>/<asset>/<asset>.usda        (source, unchanged; keeps the meshes)
         <flexiv>/<robot_sn>/<robot_sn>.usda  (this copy, same payloads/ layout)
 
     Every small layer is copied; geometries.usd (the bulk of the bytes) is NOT --
     the copied instances.usda is repointed to the source model's geometries.usd
-    with a RELATIVE path (../<Model>/payloads/geometries.usd), so the whole
+    with a RELATIVE path (../<asset>/payloads/geometries.usd), so the whole
     data/flexiv tree stays relocatable as a unit. Returns the path to the new
     per-robot root USD (which is what then gets calibrated).
     """
-    src_dir = os.path.dirname(os.path.abspath(src_usd_path))  # <flexiv>/<Model>
+    src_dir = os.path.dirname(os.path.abspath(src_usd_path))  # <flexiv>/<asset>
     src_model = os.path.basename(src_dir)
     flexiv_dir = os.path.dirname(src_dir)  # <flexiv>
     src_payloads = os.path.join(src_dir, "payloads")
@@ -430,9 +600,9 @@ def materialize_per_robot_usd(src_usd_path, robot_sn):
             f"Expected a payloads/ dir next to [{src_usd_path}] (SimReady layout)"
         )
 
-    out_dir = os.path.join(flexiv_dir, robot_sn)  # sibling of <Model>
+    out_dir = os.path.join(flexiv_dir, robot_sn)  # sibling of <asset>
     # Never let the output land on the source dir (would happen if the
-    # output name equals the model, e.g. the no-serial case on a "Rizon4" asset).
+    # output name equals the model, e.g. --robot-sn rizon_4 on a "rizon_4" asset).
     if os.path.abspath(out_dir) == os.path.abspath(src_dir):
         raise ValueError(
             f"Refusing to write the per-robot copy onto the source model dir "
@@ -460,7 +630,7 @@ def materialize_per_robot_usd(src_usd_path, robot_sn):
 
     # Share the meshes: repoint the copied instances.usda to the source model's
     # geometries.usd via a RELATIVE path. From <robot_sn>/payloads/instances.usda
-    # up to <flexiv>/ is ../../, then down into <Model>/payloads/geometries.usd.
+    # up to <flexiv>/ is ../../, then down into <asset>/payloads/geometries.usd.
     rel_geo = os.path.join("..", "..", src_model, "payloads", _SHARED_MESHES)
     inst_layer = Sdf.Layer.FindOrOpen(os.path.join(out_payloads, "instances.usda"))
     n = _repoint_shared_meshes(inst_layer, rel_geo)
@@ -471,6 +641,28 @@ def materialize_per_robot_usd(src_usd_path, robot_sn):
         f"[copy] Shared meshes : {rel_geo} (relative; {n} references repointed)"
     )
     return out_root
+
+
+def _kine_entry(kine, key):
+    """Look up a template entry by its key: a joint name, or a (section, name)
+    path for a template that groups joints, e.g. ("ARM_1", "joint1")."""
+    if isinstance(key, str):
+        return kine.get(key)
+    node = kine
+    for part in key:
+        node = node.get(part) if isinstance(node, dict) else None
+    return node
+
+
+def _kine_key_name(key):
+    return key if isinstance(key, str) else ".".join(key)
+
+
+def _matrix_to_xyz_quatf(matrix):
+    """Split a rigid transform into (xyz, Gf.Quatf)."""
+    t = matrix.ExtractTranslation()
+    q = matrix.ExtractRotationQuat()
+    return (t[0], t[1], t[2]), Gf.Quatf(q.GetReal(), Gf.Vec3f(*[float(x) for x in q.GetImaginary()]))
 
 
 def apply_calibration_to_usd(usd_path, template_path):
@@ -489,71 +681,116 @@ def apply_calibration_to_usd(usd_path, template_path):
     print(f"[apply] Editing link xforms: {base_layer.realPath}")
     print(f"[apply] Editing joint anchors: {physics_layer.realPath}")
 
-    # Compose forward down the chain. base_link is fixed to the robot root at the
-    # origin (root_joint), so the running world transform starts at identity and
-    # W_i = W_{i-1} * L_i, where L_i is joint i's local origin. Each entry is in
-    # chain order, so we can accumulate as we iterate.
-    # The USD defaultPrim name is the model (e.g. "Rizon4s"), which selects the
-    # joint mapping (base layout vs. the FT-sensor split-link7 layout).
-    joints = joints_for_model(robot_name)
-    world = Gf.Matrix4d(1.0)
+    # Compose forward down each chain. A single arm's base_link is fixed to the
+    # robot root at the origin (root_joint), so its running world transform starts
+    # at identity and W_i = W_{i-1} * L_i, where L_i is joint i's local origin. Each
+    # arm of a dual-arm robot is its own chain, starting at its calibrated arm
+    # adapter on the root body instead. Entries are in chain order, so we can
+    # accumulate as we iterate.
+    # The USD defaultPrim name is the asset name (e.g. "rizon_4s"), which selects the
+    # chains (base layout, the FT-sensor split-link7 layout, or one per arm).
     updated = 0
-    for yaml_name, link_rel_path, joint_name, fixed_pre in joints:
-        j = kine.get(yaml_name)
-        if j is None:
-            print(f"[apply]  - {yaml_name}: not in template, skipping")
-            continue
+    for mount_key, joints in chains_for_model(robot_name):
+        world = Gf.Matrix4d(1.0)
+        if mount_key is not None:
+            m = _kine_entry(kine, mount_key)
+            if m is None:
+                raise KeyError(
+                    f"Template [{template_path}] has no [{_kine_key_name(mount_key)}], "
+                    f"the arm mount this robot's calibration needs"
+                )
+            mount_xyz = (float(m["x"]), float(m["y"]), float(m["z"]))
+            world = joint_local_matrix(
+                mount_xyz, rpy_to_quatf(float(m["roll"]), float(m["pitch"]), float(m["yaw"]))
+            )
+            print(
+                f"[apply]  = {_kine_key_name(mount_key)}: xyz=({mount_xyz[0]:.6g}, "
+                f"{mount_xyz[1]:.6g}, {mount_xyz[2]:.6g})"
+            )
+        first = True
+        for yaml_name, link_rel_path, joint_name, fixed_pre in joints:
+            j = _kine_entry(kine, yaml_name)
+            name = _kine_key_name(yaml_name)
+            if j is None:
+                if mount_key is not None:
+                    # Every later link of a mounted chain is placed from this one,
+                    # so skipping it would misplace the rest of the arm silently
+                    raise KeyError(f"Template [{template_path}] has no [{name}]")
+                print(f"[apply]  - {name}: not in template, skipping")
+                continue
 
-        xyz = (float(j["x"]), float(j["y"]), float(j["z"]))
-        quat = rpy_to_quatf(float(j["roll"]), float(j["pitch"]), float(j["yaw"]))
-        local = joint_local_matrix(xyz, quat)  # child pose relative to parent
+            xyz = (float(j["x"]), float(j["y"]), float(j["z"]))
+            quat = rpy_to_quatf(float(j["roll"]), float(j["pitch"]), float(j["yaw"]))
+            local = joint_local_matrix(xyz, quat)  # child pose relative to parent
 
-        if fixed_pre is None:
-            # Normal joint: accumulate its local origin onto the running world
-            # transform and write the resulting ROOT-relative matrix.
-            world = local * world
-            _set_link_world_xform(base_layer, robot_name, link_rel_path, world)
-            _refresh_link_srt(base_layer, robot_name, link_rel_path, xyz, quat)
-            _set_joint_anchor(physics_layer, robot_name, joint_name, xyz, quat)
+            if fixed_pre is None:
+                # Normal joint: accumulate its local origin onto the running world
+                # transform and write the resulting ROOT-relative matrix. A site
+                # (the flange of the SimReady assets) takes its parent-relative
+                # origin instead, and has no joint.
+                world = local * world
+                # The joint anchor is relative to the parent body: the previous
+                # link, so the local origin, except for the first joint of a
+                # mounted chain, whose parent is the body the arms are mounted on
+                # and whose anchor takes the mount too. That body is fixed to the
+                # robot root at identity (system1_system_mount_joint), so the
+                # chain's world transform is also its pose on that body.
+                anchor_xyz, anchor_quat = xyz, quat
+                if first and mount_key is not None:
+                    anchor_xyz, anchor_quat = _matrix_to_xyz_quatf(world)
+                first = False
+                if _is_site(base_layer, robot_name, link_rel_path):
+                    _set_site_local_xform(base_layer, robot_name, link_rel_path, xyz, quat)
+                else:
+                    _set_link_world_xform(base_layer, robot_name, link_rel_path, world)
+                    _refresh_link_srt(base_layer, robot_name, link_rel_path, anchor_xyz, anchor_quat)
+                if _has_joint(physics_layer, robot_name, joint_name):
+                    _set_joint_anchor(physics_layer, robot_name, joint_name, anchor_xyz, anchor_quat)
+                wt = world.ExtractTranslation()
+                print(
+                    f"[apply]  + {name}: local xyz=({xyz[0]:.6g}, {xyz[1]:.6g}, "
+                    f"{xyz[2]:.6g}) -> world xyz=({wt[0]:.6g}, {wt[1]:.6g}, {wt[2]:.6g})"
+                )
+                updated += 1
+                continue
+
+            # The YAML value is the COLLAPSED offset (e.g. rizon_4s reports one
+            # link7_to_flange), but the USD splits it across the fixed segment
+            # (fixed_pre) and this joint. Place the flange at the collapsed offset and
+            # the intermediate link at the fixed segment; this joint's parent-relative
+            # local is then the remainder = fixed_pre^-1 * local.
+            world_flange = local * world
+            pre = _get_joint_anchor(physics_layer, robot_name, fixed_pre)
+            world_inter = pre * world
+            inter_rel = link_rel_path.rsplit("/", 1)[0]  # e.g. .../link7_distal
+            _set_link_world_xform(base_layer, robot_name, inter_rel, world_inter)
+
+            remainder = local * pre.GetInverse()
+            rt = remainder.ExtractTranslation()
+            rq = remainder.ExtractRotationQuat()
+            rquat = Gf.Quatf(rq.GetReal(), Gf.Vec3f(*[float(x) for x in rq.GetImaginary()]))
+            if _is_site(base_layer, robot_name, link_rel_path):
+                _set_site_local_xform(
+                    base_layer, robot_name, link_rel_path, (rt[0], rt[1], rt[2]), rquat
+                )
+            else:
+                _set_link_world_xform(base_layer, robot_name, link_rel_path, world_flange)
+                _refresh_link_srt(
+                    base_layer, robot_name, link_rel_path,
+                    (rt[0], rt[1], rt[2]), rquat,
+                )
+            if _has_joint(physics_layer, robot_name, joint_name):
+                _set_joint_anchor(
+                    physics_layer, robot_name, joint_name, (rt[0], rt[1], rt[2]), rquat
+                )
+            world = world_flange
             wt = world.ExtractTranslation()
             print(
-                f"[apply]  + {yaml_name}: local xyz=({xyz[0]:.6g}, {xyz[1]:.6g}, "
-                f"{xyz[2]:.6g}) -> world xyz=({wt[0]:.6g}, {wt[1]:.6g}, {wt[2]:.6g})"
+                f"[apply]  + {name}: collapsed local xyz=({xyz[0]:.6g}, "
+                f"{xyz[1]:.6g}, {xyz[2]:.6g}); fixed_pre={fixed_pre} -> flange world "
+                f"xyz=({wt[0]:.6g}, {wt[1]:.6g}, {wt[2]:.6g})"
             )
             updated += 1
-            continue
-
-        # The YAML value is the COLLAPSED offset (e.g. Rizon4s reports one
-        # link7_to_flange), but the USD splits it across the fixed segment
-        # (fixed_pre) and this joint. Place the flange at the collapsed offset and
-        # the intermediate link at the fixed segment; this joint's parent-relative
-        # local is then the remainder = fixed_pre^-1 * local.
-        world_flange = local * world
-        pre = joint_local_matrix(fixed_pre, Gf.Quatf(1.0))
-        world_inter = pre * world
-        inter_rel = link_rel_path.rsplit("/", 1)[0]  # e.g. .../link7_distal
-        _set_link_world_xform(base_layer, robot_name, inter_rel, world_inter)
-        _set_link_world_xform(base_layer, robot_name, link_rel_path, world_flange)
-
-        remainder = pre.GetInverse() * local
-        rt = remainder.ExtractTranslation()
-        rq = remainder.ExtractRotationQuat()
-        rquat = Gf.Quatf(rq.GetReal(), Gf.Vec3f(*[float(x) for x in rq.GetImaginary()]))
-        _refresh_link_srt(
-            base_layer, robot_name, link_rel_path,
-            (rt[0], rt[1], rt[2]), rquat,
-        )
-        _set_joint_anchor(
-            physics_layer, robot_name, joint_name, (rt[0], rt[1], rt[2]), rquat
-        )
-        world = world_flange
-        wt = world.ExtractTranslation()
-        print(
-            f"[apply]  + {yaml_name}: collapsed local xyz=({xyz[0]:.6g}, "
-            f"{xyz[1]:.6g}, {xyz[2]:.6g}); fixed_pre={fixed_pre} -> flange world "
-            f"xyz=({wt[0]:.6g}, {wt[1]:.6g}, {wt[2]:.6g})"
-        )
-        updated += 1
 
     base_layer.Save()
     physics_layer.Save()
@@ -586,8 +823,8 @@ def main():
     model = model_from_serial(args.robot_sn)
 
     # Fail fast on an unsupported model, before copying the USD or fetching a
-    # template. joints_for_model() raises for anything but the Rizon series.
-    joints_for_model(model)
+    # template. chains_for_model() raises for a model it does not describe.
+    chains_for_model(model)
 
     # Source USD: use --usd if given, else the bundled asset for this model.
     source_usd = args.usd or usd_for_model(model)

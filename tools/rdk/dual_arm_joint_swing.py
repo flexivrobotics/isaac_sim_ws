@@ -17,7 +17,7 @@ import time
 import math
 import argparse
 import logging
-import flexivrdk  # pip install flexivrdk
+import flexivrdk  # pip install "flexivrdk==2.2.*", the RDK release line of Elements Studio v3E.2
 
 logging.basicConfig(level=logging.INFO, format="[%(asctime)s] [Example] [%(levelname)s] %(message)s")
 logger = logging.getLogger()

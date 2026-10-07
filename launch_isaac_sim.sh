@@ -13,7 +13,7 @@ CONTAINER_NAME="${ISAACSIM_CONTAINER:-isaac-sim}"
 CACHE_ROOT="$HOME/docker/isaac-sim"
 # This workspace on the host, mounted at /workspace in the container. Isaac Sim
 # itself only exists inside the image, so the workspace has to be visible in
-# there for setup_ws.sh to have anything to copy from.
+# there for the examples to run from it.
 WS_DIR="${ISAACSIM_WS_DIR:-$(dirname "$(readlink -f "$0")")}"
 
 # Defaults come from the environment when set, and flags override them.
@@ -202,9 +202,9 @@ COMMON_ARGS=(
     -v "$CACHE_ROOT/data:/isaac-sim/.local/share/ov/data:rw"
     -v "$CACHE_ROOT/pkg:/isaac-sim/.local/share/ov/pkg:rw"
     -v "$HOME/.cache/ov/hub:/var/cache/hub:rw"
-    # Flexiv's Isaac workspace, so setup_ws.sh can be run from inside the
-    # container. Read-only: the script only ever copies out of it, and this
-    # keeps a stray write in the container from touching the git checkout.
+    # Flexiv's Isaac workspace, so setup_ws.sh and the examples can be run from
+    # inside the container. Read-only: they only read from it, and this keeps a
+    # stray write in the container from touching the git checkout.
     -v "$WS_DIR:/workspace:ro"
     -u 1234:1234
 )
@@ -304,7 +304,8 @@ case "$MODE" in
         if [ -n "${DISPLAY:-}" ] && [ -d /tmp/.X11-unix ]; then
             setup_x11_forwarding
         fi
-        LAUNCH_CMD="bash"
+        # Start in this workspace, where the examples are run from.
+        LAUNCH_CMD="cd /workspace && bash"
         ;;
     *)
         echo "Unknown mode: $MODE (expected: native | webrtc | shell)" >&2

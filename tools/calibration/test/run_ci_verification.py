@@ -11,8 +11,11 @@
 #      verify_calibration_against_urdf.py to confirm the calibrated USD matches
 #      the reference URDF. Skipped (with a clear message) only if the reference
 #      URDF or base USD is missing.
+#   3. Calibrate one of two robots referencing the asset on a stage, as the
+#      bridge app does (apply_calibration_to_stage), verify it against the
+#      reference URDF, and check that the other robot keeps the nominal kinematics.
 #
-# Both steps run for each robot in CASES: a Rizon 4s (single arm) and an
+# All steps run for each robot in CASES: a Rizon 4s (single arm) and an
 # Enlight LL (dual arm, with calibrated arm adapters), then for a variant of the
 # Enlight LL with rotated arm adapters (make_rotated_ll_example).
 #
@@ -24,6 +27,9 @@ import sys
 import yaml
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+
+# The flexiv_isaac package, at the root of this repo
+sys.path.insert(0, os.path.abspath(os.path.join(HERE, "..", "..", "..")))
 
 # The example calibrated kinematics pulled from a real robot via RDK
 # (Model.SyncKinematicsYAML). Structure/joint names are asserted below.
@@ -37,15 +43,7 @@ REFERENCE_URDF = os.path.join(HERE, "Rizon4_calibrated.example.urdf")
 # is tracked, so it is available in CI). Override with BASE_USD_ENV if needed.
 BASE_USD_ENV = "CALIBRATION_TEST_BASE_USD"
 _REPO_ROOT = os.path.abspath(os.path.join(HERE, "..", "..", ".."))
-DEFAULT_BASE_USD = os.path.join(
-    _REPO_ROOT,
-    "exts",
-    "isaacsim.robot.manipulators.examples",
-    "data",
-    "flexiv",
-    "rizon_4s",
-    "rizon_4s.usda",
-)
+DEFAULT_BASE_USD = os.path.join(_REPO_ROOT, "assets", "rizon_4s", "rizon_4s.usda")
 
 EXPECTED_JOINTS = [
     "joint1",
@@ -65,15 +63,7 @@ REQUIRED_FIELDS = {"x", "y", "z", "roll", "pitch", "yaw"}
 LL_EXAMPLE_YAML = os.path.join(HERE, "EnlightLL_calibrated_kinematics.example.yaml")
 LL_REFERENCE_URDF = os.path.join(HERE, "EnlightLL_calibrated.example.urdf")
 LL_BASE_USD_ENV = "CALIBRATION_TEST_LL_BASE_USD"
-LL_DEFAULT_BASE_USD = os.path.join(
-    _REPO_ROOT,
-    "exts",
-    "isaacsim.robot.manipulators.examples",
-    "data",
-    "flexiv",
-    "enlight_ll",
-    "enlight_ll.usda",
-)
+LL_DEFAULT_BASE_USD = os.path.join(_REPO_ROOT, "assets", "enlight_ll", "enlight_ll.usda")
 LL_EXPECTED_JOINTS = [("EXT_AXIS", "left_arm_adapter"), ("EXT_AXIS", "right_arm_adapter")] + [
     (arm, j) for arm in ("ARM_1", "ARM_2") for j in EXPECTED_JOINTS
 ]
@@ -186,8 +176,8 @@ def run_full_verification(example_yaml, reference_urdf, base_usd_env, default_ba
 
     calib_dir = os.path.dirname(HERE)  # .../calibration
     spec = importlib.util.spec_from_file_location(
-        "calibrate_usd_from_rdk",
-        os.path.join(calib_dir, "calibrate_usd_from_rdk.py"),
+        "export_calibrated_usd",
+        os.path.join(calib_dir, "export_calibrated_usd.py"),
     )
     cal = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(cal)
@@ -200,7 +190,7 @@ def run_full_verification(example_yaml, reference_urdf, base_usd_env, default_ba
     shutil.copytree(src_model_dir, tmp_model_dir)
     tmp_base_usd = os.path.join(tmp_model_dir, os.path.basename(base_usd))
 
-    print(f"[ci] Applying example calibration to a copy of [{base_usd}] ...")
+    print(f"[ci] Applying example calibration to a copy of [{base_usd}] ...", flush=True)
     out_usd = cal.materialize_per_robot_usd(tmp_base_usd, "calibration-ci-test")
     cal.apply_calibration_to_usd(out_usd, example_yaml)
 
@@ -215,7 +205,62 @@ def run_full_verification(example_yaml, reference_urdf, base_usd_env, default_ba
     ]
     subprocess.run(verify_cmd, check=True)  # non-zero exit propagates as failure
     print("[ci] Full verification PASSED.")
+
+    run_stage_verification(cal, example_yaml, reference_urdf, base_usd, workdir)
     return True
+
+
+def run_stage_verification(cal, example_yaml, reference_urdf, base_usd, workdir):
+    """Calibrate one of two robots referencing the base USD on a stage, the way the
+    bridge app does, then verify it against the reference URDF and check that the
+    other robot keeps the nominal kinematics. Raises if either check fails."""
+    import subprocess
+
+    from pxr import Usd, UsdGeom
+
+    from flexiv_isaac.calibration import apply_calibration_to_stage
+    from flexiv_isaac.kinematics_sync import load_kinematics
+
+    stage_path = os.path.join(workdir, "two_robots.usda")
+    stage = Usd.Stage.CreateNew(stage_path)
+    for name in ("calibrated_robot", "nominal_robot"):
+        stage.DefinePrim(f"/{name}").GetReferences().AddReference(os.path.abspath(base_usd))
+    stage.SetDefaultPrim(stage.GetPrimAtPath("/calibrated_robot"))
+    print(f"[ci] Calibrating one of two robots referencing [{base_usd}] on a stage ...")
+    n = apply_calibration_to_stage(
+        stage, "/calibrated_robot", base_usd, load_kinematics(example_yaml)
+    )
+    stage.GetRootLayer().Save()
+    print(f"[ci] {n} attributes overridden.", flush=True)
+
+    asset = Usd.Stage.Open(base_usd)
+    subprocess.run(
+        [
+            sys.executable,
+            os.path.join(HERE, "verify_calibration_against_urdf.py"),
+            "--usd",
+            stage_path,
+            "--from-urdf",
+            reference_urdf,
+            "--model",
+            asset.GetDefaultPrim().GetName(),
+        ],
+        check=True,
+    )
+
+    # The other robot must still match the asset, link by link.
+    asset_root = asset.GetDefaultPrim().GetPath()
+    xc_asset, xc_stage = UsdGeom.XformCache(), UsdGeom.XformCache()
+    for prim in Usd.PrimRange(asset.GetDefaultPrim()):
+        if not prim.IsA(UsdGeom.Xformable):
+            continue
+        other = stage.GetPrimAtPath(prim.GetPath().ReplacePrefix(asset_root, "/nominal_robot"))
+        a = xc_asset.GetLocalToWorldTransform(prim)
+        b = xc_stage.GetLocalToWorldTransform(other)
+        d = max(abs(a[i][j] - b[i][j]) for i in range(4) for j in range(4))
+        if d > 1e-9:
+            raise AssertionError(f"[{other.GetPath()}] moved by {d:.3e}, but was not calibrated")
+    print("[ci] Stage verification PASSED: the other robot keeps the nominal kinematics.")
 
 
 def main():

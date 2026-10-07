@@ -1,6 +1,7 @@
 # Calibration tests
 
-Regression test for the calibration tools, run in CI
+Regression test for the calibration code the bridge app and
+`export_calibrated_usd.py` share (`flexiv_isaac/calibration.py`), run in CI
 (`.github/workflows/calibration-verify.yml`) in a plain Python environment — no
 Isaac Sim, no robot.
 
@@ -33,11 +34,14 @@ For the Rizon 4s and then the Enlight LL:
 
 1. Validates the example YAML (structure, joints, numeric fields).
 2. Applies the example calibration to the in-repo asset
-   (`exts/.../data/flexiv/rizon_4s` or `enlight_ll`) and cross-checks the result
+   (`assets/rizon_4s` or `assets/enlight_ll`) and cross-checks the result
    against the example URDF, failing on a mm-scale mismatch. For the Enlight LL
    this checks both arms, and so where each arm adapter mounts its arm.
 3. Checks that every joint of the calibrated USD is anchored where its links are,
    since the link poses alone do not show a wrong joint anchor.
+4. Calibrates one of two robots referencing the asset on a stage, the way the
+   bridge app does, checks it the same way, and checks that the other robot
+   keeps the nominal kinematics.
 
 The Enlight LL is checked a second time with rotated arm adapters, written into a
 temporary copy of both example files, since the example's adapters only
@@ -50,8 +54,8 @@ Override the base assets with the `CALIBRATION_TEST_BASE_USD` (Rizon 4s) and
 
 ```
 python run_ci_verification.py
-# or with Isaac Sim's Python, against the installed assets instead of the repo's:
+# or against other assets than the repo's:
 CALIBRATION_TEST_BASE_USD=/path/to/rizon_4s/rizon_4s.usda \
 CALIBRATION_TEST_LL_BASE_USD=/path/to/enlight_ll/enlight_ll.usda \
-    ~/isaacsim/kit/python/bin/python3 run_ci_verification.py
+    python run_ci_verification.py
 ```

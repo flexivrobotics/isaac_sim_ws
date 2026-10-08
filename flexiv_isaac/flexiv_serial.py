@@ -341,7 +341,8 @@ class FlexivSerial(Robot):
             if p.GetName() == leaf_name
         ]
         # Multi-arm assets prefix the names per arm, e.g. "system1_left_arm_flange"
-        if not matches:
+        per_arm = not matches
+        if per_arm:
             matches = [
                 p.GetPath().pathString
                 for p in Usd.PrimRange(root_prim)
@@ -356,9 +357,15 @@ class FlexivSerial(Robot):
 
         # PrimRange is a depth-first pre-order walk, so matches[0] is the first
         # (shallowest, left-most) hit under prim_path. Prefer it and log if the
-        # search was ambiguous.
+        # search was ambiguous. One prefixed match per arm is the expected layout of a
+        # multi-arm asset, so the first arm's is used without a warning.
         resolved = matches[0]
-        if len(matches) > 1:
+        if len(matches) > 1 and per_arm:
+            self._logger.info(
+                f"Resolved end-effector [{leaf_name}] to the first arm's [{resolved}]; "
+                f"name another arm's, e.g. [{matches[1].rsplit('/', 1)[-1]}], to use it instead"
+            )
+        elif len(matches) > 1:
             self._logger.warning(
                 f"Multiple prims named [{leaf_name}] under [{prim_path}]: "
                 f"{matches}; using [{resolved}]"

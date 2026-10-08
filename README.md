@@ -162,12 +162,11 @@ To use a calibrated USD outside this app, e.g. in your own Isaac Sim scenes, exp
 
 ### Verify everything is working
 
-Jogging from Elements Studio is not possible in Remote Mode. Once the app has logged `Calibrated robot [...]`, turn Remote Mode off in Elements Studio and restart the simulated robot (*CHANGE CONNECTION*, then toggle the *Connect* button off and on). The robot keeps its calibration until the app is restarted.
+Drive the robot through RDK, with Remote Mode still on. [tools/rdk/joint_swing.py](tools/rdk/joint_swing.py) swings every joint of every arm of the robot around its home pose. Run it with Isaac Sim's Python, which `setup_ws.sh` installed RDK into, and check that the robot in Isaac Sim swings with it:
 
-1. In Elements Studio, use the simulated motion bar to enter free-drive mode.
-2. Use Cartesian or joint jogging to move the robot around, check that the robot in Isaac Sim is also moving.
-3. Jog the robot along Cartesian Z axis and let the robot make contact with the ground (or, with `multi_robot_app_config.yaml`, the desk in the example environment), check that a large TCP force is rendered as an orange line in Elements Studio visualization.
-4. Create a test project and add some primitives, then execute the project and check that the robot in Isaac Sim is acting as desired.
+    <isaac_sim_root_dir>/python.sh tools/rdk/joint_swing.py "Enlight L-123456" --amplitude 6 --cycles 3
+
+In Remote Mode, Elements Studio's jogging and free-drive controls are disabled, so drive the robot through RDK, see [Control the simulated robot(s) programmatically](#control-the-simulated-robots-programmatically).
 
 ## After the first run
 
@@ -227,14 +226,12 @@ Note: the DDK program doesn't have to run on the same computer as the Elements S
 
 Besides using the drag-and-drop graphical interface in Elements Studio to create projects to control the simulated robot(s), you can also control them programmatically using [Flexiv RDK](https://github.com/flexivrobotics/flexiv_rdk) (Robotic Development Kit) in a real-time or non-real-time manner:
 
-1. Set up Flexiv RDK according to the instructions found in the repo.
-2. Start Isaac Sim and Elements Studio.
-3. In Elements Studio, go to *Settings* → *Remote Mode*, then enable Remote Mode and select *Ethernet* from the drop-down list.
-4. Restart the simulated robot by clicking *CHANGE CONNECTION*, then toggle off and on the *Connect* button.
-5. Run RDK programs to control one or more simulated robots.
+1. `setup_ws.sh` installs RDK into Isaac Sim's Python. To run RDK programs with another Python, set up Flexiv RDK according to the instructions found in the repo.
+2. Start Isaac Sim and Elements Studio, with Remote Mode on, as in [Run Flexiv-Isaac Bridge App](#run-flexiv-isaac-bridge-app).
+3. Run RDK programs to control one or more simulated robots.
 
-   For example, [tools/rdk/dual_arm_joint_swing.py](tools/rdk/dual_arm_joint_swing.py) swings every joint of every arm of a robot around its home pose, so you can see both arms of a dual-arm robot move in Isaac Sim:
+   For example, [tools/rdk/joint_swing.py](tools/rdk/joint_swing.py) swings every joint of every arm of a robot around its home pose, so you can see both arms of a dual-arm robot move in Isaac Sim:
 
-       python3 tools/rdk/dual_arm_joint_swing.py "Enlight LL-123456" --amplitude 6 --cycles 3
+       <isaac_sim_root_dir>/python.sh tools/rdk/joint_swing.py "Enlight LL-123456" --amplitude 6 --cycles 3
 
 Note: the RDK program doesn't have to run on the same computer as the Elements Studio, it can be any computer that's under the same local network as the Elements Studio computer.

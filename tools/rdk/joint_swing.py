@@ -10,7 +10,7 @@
 #
 # Needs a flexivrdk with multi-arm support (tested with 2.2). Enable Remote Mode in
 # Elements Studio first, then run, e.g.
-#   python3 dual_arm_joint_swing.py "Enlight LL-123456" --amplitude 6 --cycles 3
+#   python3 joint_swing.py "Enlight LL-123456" --amplitude 6 --cycles 3
 
 import sys
 import time

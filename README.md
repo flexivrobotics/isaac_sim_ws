@@ -44,10 +44,13 @@ Each release of this workspace works with one release line of Flexiv Sim Plugin 
 | **Workspace release** | **Isaac Sim version** | **flexivsimplugin** | **Elements Studio** |
 | --------------------- | --------------------- | ------------------- | ------------------- |
 | v2.2.x                | 6.x                   | 2.2.x               | v3E.2               |
+| v2.1.x                | 6.x                   | 2.1.x               | v3E.1               |
 | v1.4.0                | 6.x                   | 1.3.0               | v3.11.2             |
 | v1.3                  | 4.5, 5.0              | 1.2.x               | v3.10, v3.11        |
 
-The `v2.x` branch holds the latest release line. For an earlier one, check out its release tag, e.g. `git checkout v1.4.0`.
+This is the `v2.1.x` branch, the release line for Elements Studio v3E.1. The `v2.x` branch holds the latest release line. For an earlier one, check out its release tag, e.g. `git checkout v1.4.0`.
+
+Elements Studio v3E.1 simulates the Enlight series (Enlight L, Enlight LL) and the MICO series. The Rizon and AICO USDs are included too, so that every Flexiv robot model is in one place, but Elements Studio v3E.1 can't simulate them. It also doesn't receive the simulated wrist force-torque sensor reading.
 
 
 ## Demos
@@ -71,9 +74,29 @@ https://github.com/user-attachments/assets/7462a9bd-3cfd-40cc-95f7-b4fda0a74f30
 
 ## Pre-requisites
 
-Before using the Flexiv Isaac Sim Workspace, install Flexiv Elements Studio and
+Before using the Flexiv Isaac Sim Workspace, install Flexiv Elements Studio v3E.1 and
 create a simulated robot by following
-[Flexiv Elements Studio Setup](https://github.com/flexivrobotics/flexiv_sim_plugin/blob/v2.x/docs/elements_studio_setup.md).
+[Flexiv Elements Studio Setup](https://github.com/flexivrobotics/flexiv_sim_plugin/blob/v2.1.x/docs/elements_studio_setup.md).
+
+Elements Studio runs on Ubuntu 22.04 only. On a newer Ubuntu, run it in a container instead of installing it, see [Run Elements Studio in a container](#run-elements-studio-in-a-container).
+
+### Run Elements Studio in a container
+
+`launch_elements_studio.sh` runs Elements Studio from its release package, unchanged, in an Ubuntu 22.04 container. It needs Docker Engine and a local display.
+
+1. Extract the Elements Studio package, e.g. to `~/FlexivElementsStudio`. Don't run its `setup_FlexivElements.sh`: the container image already has what it installs.
+2. Select the external physics engine, once per package, so that Isaac Sim can connect:
+
+       cd ~/FlexivElementsStudio && bash switch_physics_engine.sh
+
+   Select *External* when prompted.
+3. From this repo, start Elements Studio:
+
+       bash launch_elements_studio.sh ~/FlexivElementsStudio
+
+   The first launch builds the image, which takes a few minutes. Then the Elements Studio window opens; create a simulated robot in it as the setup guide describes.
+
+The container runs as your user and keeps everything in the package folder, so the simulated robots you create persist. It shares this computer's network, so the Flexiv-Isaac Bridge App, RDK and DDK reach the simulated robot just as with a native install. For the same reason, only one Elements Studio can run on a computer at a time. To open a shell in the container instead, e.g. to debug, run `bash launch_elements_studio.sh ~/FlexivElementsStudio shell`; run `bash launch_elements_studio.sh -h` for all options.
 
 
 ## Workspace setup
@@ -115,11 +138,11 @@ This workspace runs against either a natively installed Isaac Sim or the Isaac S
 
    The container runs with `--rm`, so everything installed inside it is discarded on exit. Re-run this step after each launch; it takes seconds once the wheel is cached.
 
-> The container runs on the host network, because the plugin discovers Elements Studio over Zenoh multicast, which does not cross Docker's default bridge network. On the default network the Bridge App starts normally but never connects.
+> The container runs on the host network, because the plugin discovers Elements Studio by Fast-DDS multicast discovery, which does not cross Docker's default bridge network. On the default network the Bridge App starts normally but never connects.
 
 If you used an earlier release of this workspace, its files installed into Isaac Sim are no longer used, and the Python package `isaacsim.robot.manipulators.examples.flexiv` is now `flexiv_isaac`.
 
-The setup installs the newest 2.2.x release of `flexivsimplugin`, the release line this workspace supports, so re-running it picks up plugin bug fixes. To install a specific version instead, pass it with `--plugin-version`, e.g. `--plugin-version 2.2.0`.
+The setup installs the newest 2.1.x release of `flexivsimplugin` and of `flexivrdk`, the release lines for Elements Studio v3E.1, so re-running it picks up plugin bug fixes. To install a specific plugin version instead, pass it with `--plugin-version`, e.g. `--plugin-version 2.1.0`.
 
 ## Verify setup
 
@@ -205,9 +228,9 @@ This framework supports simulating and controlling multiple robots, each with it
 
        <isaac_sim_root_dir>/python.sh examples/flexiv_isaac_bridge_app.py --config examples/multi_robot_app_config.yaml
 
-3. Find a second Ubuntu 22.04 computer, connect it to the first computer via Ethernet cable. Then on the first computer, check that this wired Ethernet connection is visible in the network settings, then change the IPv4 setting of this wired connection to "Shared to other computers". Alternatively, connect both computers to the same network router via **wired** connection.
+3. Find a second computer, connect it to the first computer via Ethernet cable. Then on the first computer, check that this wired Ethernet connection is visible in the network settings, then change the IPv4 setting of this wired connection to "Shared to other computers". Alternatively, connect both computers to the same network router via **wired** connection.
 4. Make sure both computers are able to ping each other.
-5. Install Flexiv Elements Studio on the **second** computer, then create a new simulated robot. Now each computer has a robot controller with Elements Studio.
+5. Install Flexiv Elements Studio on the **second** computer, or on a newer Ubuntu [run it in a container](#run-elements-studio-in-a-container) there, then create a new simulated robot. Now each computer has a robot controller with Elements Studio.
 6. Start the first simulated robot on the first computer, then wait for connection with Isaac Sim. You should see one of the robots in Isaac Sim moves a little bit when the connection is established.
 7. Start the second simulated robot on the second computer, then wait for connection with Isaac Sim. You should see the other robot in Isaac Sim moves a little bit when the connection is established.
 8. Execute test projects from both Elements Studios and check that both robots are working in Isaac Sim.

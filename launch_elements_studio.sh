@@ -30,9 +30,8 @@ settings in it.
 Modes:
   studio        Start Elements Studio (default). A window opens on this
                 machine's display.
-  shell         Open a bash shell in the container instead, in STUDIO_DIR. Use
-                it to run switch_physics_engine.sh, or to start Elements Studio
-                by hand with: bash run_FlexivElements.sh
+  shell         Open a bash shell in the container instead, in STUDIO_DIR,
+                e.g. to debug.
 
 Options:
   -n, --name NAME       Container name (default: $CONTAINER_NAME). Each
@@ -169,6 +168,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libxml2 libxslt1.1 \
     && rm -rf /var/lib/apt/lists/*
 
+# RobotControlApp unmounts the encrypted specs with fusermount, the FUSE 2 name
+# of what fuse3 calls fusermount3
+RUN ln -s /usr/bin/fusermount3 /usr/local/bin/fusermount
+
 ARG LOCAL_UID=1000
 ARG LOCAL_GID=1000
 RUN if ! getent group "${LOCAL_GID}" >/dev/null; then \
@@ -214,6 +217,9 @@ RUN_ARGS=(
     --device /dev/fuse
     --cap-add SYS_ADMIN
     --security-opt apparmor=unconfined
+    # The host's machine ID, which Elements Studio reads, so it sees the same
+    # machine as a native install does.
+    -v /etc/machine-id:/etc/machine-id:ro
     # The host's X server: its socket, DISPLAY, and access for local clients.
     # The container user is the host user, so it can also read the host's cookie.
     -e DISPLAY
@@ -232,7 +238,15 @@ fi
 
 case "$MODE" in
     studio)
-        LAUNCH_CMD="bash run_FlexivElements.sh"
+        # What run_FlexivElements.sh does, minus its sudo step: some releases
+        # pipe a password into sudo to set the host-wide kernel.core_pattern,
+        # which fails here and is not for a container to change anyway.
+        LAUNCH_CMD='unset http_proxy https_proxy
+            ulimit -c unlimited
+            export LD_LIBRARY_PATH="$PWD/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+            export QT_QPA_PLATFORM_PLUGIN_PATH="$PWD/plugins"
+            export QTWEBENGINE_DISABLE_SANDBOX=1
+            exec ./FlexivElementsStudio -p ubuntu_pc'
         ;;
     shell)
         LAUNCH_CMD="bash"

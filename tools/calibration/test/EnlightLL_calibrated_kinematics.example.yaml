@@ -1,0 +1,135 @@
+# Calibrated kinematics of a simulated Enlight LL (Elements Studio), from
+# Model.SyncKinematicsYAML on the Enlight-LL template with an EXT_AXIS section
+# added (as flexiv_isaac/kinematics_sync.py does). The arms carry nominal kinematics;
+# the arm adapters place the arms at y = +0.2 m (ARM_1, left) and -0.2 m
+# (ARM_2, right).
+kinematics:
+  EXT_AXIS:
+    left_arm_adapter:
+      x: 0
+      y: 0.20000000000000001
+      z: 0
+      roll: 0
+      pitch: 0
+      yaw: 0
+    right_arm_adapter:
+      x: 0
+      y: -0.20000000000000001
+      z: 0
+      roll: 0
+      pitch: 0
+      yaw: 0
+  ARM_1:
+    joint1:
+      x: 0
+      y: 0
+      z: 0.14599999999999999
+      roll: 0
+      pitch: 0
+      yaw: 0
+    joint2:
+      x: 0
+      y: -0.036999999999999998
+      z: 0.114
+      roll: 1.5707963267948959
+      pitch: 0
+      yaw: 0
+    joint3:
+      x: 0
+      y: 0.18099999999999999
+      z: -0.036999999999999998
+      roll: -1.5707963267948959
+      pitch: 0
+      yaw: 0
+    joint4:
+      x: 0
+      y: 0.036999999999999998
+      z: 0.109
+      roll: -1.5707963267948959
+      pitch: 0
+      yaw: 0
+    joint5:
+      x: 0
+      y: -0.156
+      z: -0.036999999999999998
+      roll: 1.5707963267948959
+      pitch: 0
+      yaw: 0
+    joint6:
+      x: 0
+      y: -0.026100000000000002
+      z: 0.124
+      roll: 1.5707963267948959
+      pitch: 0
+      yaw: 0
+    joint7:
+      x: 0
+      y: 0.13400000000000001
+      z: -0.026100000000000002
+      roll: -1.5707963267948959
+      pitch: 0
+      yaw: 0
+    link7_to_flange:
+      x: 0
+      y: 0
+      z: 0.048000000000000001
+      roll: 0
+      pitch: 0
+      yaw: 0
+  ARM_2:
+    joint1:
+      x: 0
+      y: 0
+      z: 0.14599999999999999
+      roll: 0
+      pitch: 0
+      yaw: 0
+    joint2:
+      x: 0
+      y: -0.036999999999999998
+      z: 0.114
+      roll: 1.5707963267948959
+      pitch: 0
+      yaw: 0
+    joint3:
+      x: 0
+      y: 0.18099999999999999
+      z: -0.036999999999999998
+      roll: -1.5707963267948959
+      pitch: 0
+      yaw: 0
+    joint4:
+      x: 0
+      y: 0.036999999999999998
+      z: 0.109
+      roll: -1.5707963267948959
+      pitch: 0
+      yaw: 0
+    joint5:
+      x: 0
+      y: -0.156
+      z: -0.036999999999999998
+      roll: 1.5707963267948959
+      pitch: 0
+      yaw: 0
+    joint6:
+      x: 0
+      y: -0.026100000000000002
+      z: 0.124
+      roll: 1.5707963267948959
+      pitch: 0
+      yaw: 0
+    joint7:
+      x: 0
+      y: 0.13400000000000001
+      z: -0.026100000000000002
+      roll: -1.5707963267948959
+      pitch: 0
+      yaw: 0
+    link7_to_flange:
+      x: 0
+      y: 0
+      z: 0.048000000000000001
+      roll: 0
+      pitch: 0
+      yaw: 0

@@ -1,0 +1,39 @@
+# Dual-arm robot configuration: one Enlight LL (two 7-DoF Enlight L arms, no waist) in an empty
+# environment.
+#
+# NOTE:
+# A dual-arm robot is ONE robot with one serial number: its controller drives both arms, so it is
+# one [serial_number] block, not two. Set `serial_number` to match the simulated robot you created
+# in Flexiv Elements Studio.
+#
+# Where the two arms are mounted is part of an Enlight LL's calibration, not of the model, so the
+# bundled enlight_ll USD mounts both arms at the origin, where they overlap. The bridge app moves
+# them to where the robot has them once it connects and pulls the robot's calibration.
+# The `usd` and `env_usd` paths may be absolute, or relative to the root of this repo.
+robots:
+  - serial_number: "Enlight LL-000001" # Serial number of robot 1
+    usd: "assets/enlight_ll/enlight_ll.usda" # Robot 1 USD
+    position:                     # Position in world frame to put robot 1
+      x: 0.0
+      y: 0.0
+      z: 0.0
+    orientation:                  # Orientation (quaternion) in world frame to put robot 1
+      w: 1.0
+      x: 0.0
+      y: 0.0
+      z: 0.0
+    # Optional initial joint positions [rad], one per joint in controller order (the left arm, then
+    # the right arm). Defaults to the home pose authored in the USD, which is the home pose the
+    # controller starts from.
+    # initial_q: [0.0, -0.698, 0.0, 1.571, 0.0, -0.873, 0.0,
+    #             0.0, -0.698, 0.0, 1.571, 0.0, -0.873, 0.0]
+    # Optional end-effector tools, one per arm: see mico_app_config.yaml for the `tools` block.
+
+  # More robots ...
+
+# Empty environment (ground plane only), so a robot at the origin sits correctly on the floor.
+env_usd: "assets/empty_env.usd"
+
+# Enable GPU dynamics. Use this argument if any object in the scene requires GPU for dynamics computation.
+# For example, deformable body material and SDF mesh collider.
+gpu_dynamics: false

@@ -1,0 +1,480 @@
+#usda 1.0
+(
+    customLayerData = {
+        string creator = "URDF USD Converter v0.1.3"
+    }
+    doc = """Generated from Composed Stage of root layer Flexiv/mico_core/mico_core.usd/mico_core.usda
+
+
+Generated from Composed Stage of root layer Flexiv/mico_core/payloads/base.usd
+"""
+    kilogramsPerUnit = 1
+    metersPerUnit = 1
+    upAxis = "Z"
+)
+
+over "mico_core"
+{
+    over "Geometry"
+    {
+        over "world"
+        {
+            over "system1_body_base_link"
+            {
+                over "system1_body_neck_link"
+                {
+                    over "system1_body_head_link"
+                    {
+                        over "head_link"
+                        {
+                        }
+
+                        over "head_link_1"
+                        {
+                        }
+                    }
+
+                    over "neck_link"
+                    {
+                    }
+
+                    over "neck_link_1"
+                    {
+                    }
+                }
+
+                over "system1_left_arm_link1"
+                {
+                    over "system1_left_arm_link2"
+                    {
+                        over "system1_left_arm_link3"
+                        {
+                            over "system1_left_arm_link4"
+                            {
+                                over "system1_left_arm_link5"
+                                {
+                                    over "system1_left_arm_link6"
+                                    {
+                                        over "system1_left_arm_link7"
+                                        {
+                                            over "system1_left_arm_flange"
+                                            {
+                                            }
+
+                                            over "shell"
+                                            {
+                                                over "Link7_0"
+                                                {
+                                                }
+
+                                                over "Link7_1"
+                                                {
+                                                }
+
+                                                over "Link7_2"
+                                                {
+                                                }
+                                            }
+
+                                            over "convex_mesh"
+                                            {
+                                            }
+                                        }
+
+                                        over "shell"
+                                        {
+                                            over "Link6_0"
+                                            {
+                                            }
+
+                                            over "Link6_1"
+                                            {
+                                            }
+
+                                            over "Link6_2"
+                                            {
+                                            }
+                                        }
+
+                                        over "convex_mesh"
+                                        {
+                                        }
+                                    }
+
+                                    over "shell"
+                                    {
+                                        over "Link5_0"
+                                        {
+                                        }
+
+                                        over "Link5_1"
+                                        {
+                                        }
+
+                                        over "Link5_2"
+                                        {
+                                        }
+                                    }
+
+                                    over "convex_mesh"
+                                    {
+                                    }
+                                }
+
+                                over "shell"
+                                {
+                                    over "Link4_0"
+                                    {
+                                    }
+
+                                    over "Link4_1"
+                                    {
+                                    }
+
+                                    over "Link4_2"
+                                    {
+                                    }
+                                }
+
+                                over "convex_mesh"
+                                {
+                                }
+                            }
+
+                            over "shell"
+                            {
+                                over "Link3_0"
+                                {
+                                }
+
+                                over "Link3_1"
+                                {
+                                }
+
+                                over "Link3_2"
+                                {
+                                }
+                            }
+
+                            over "convex_mesh"
+                            {
+                            }
+                        }
+
+                        over "shell"
+                        {
+                            over "Link2_0"
+                            {
+                            }
+
+                            over "Link2_1"
+                            {
+                            }
+
+                            over "Link2_2"
+                            {
+                            }
+                        }
+
+                        over "convex_mesh"
+                        {
+                        }
+                    }
+
+                    over "shell"
+                    {
+                        over "Link1_0"
+                        {
+                        }
+
+                        over "Link1_1"
+                        {
+                        }
+
+                        over "Link1_2"
+                        {
+                        }
+                    }
+
+                    over "convex_mesh"
+                    {
+                    }
+                }
+
+                over "system1_right_arm_link1"
+                {
+                    over "system1_right_arm_link2"
+                    {
+                        over "system1_right_arm_link3"
+                        {
+                            over "system1_right_arm_link4"
+                            {
+                                over "system1_right_arm_link5"
+                                {
+                                    over "system1_right_arm_link6"
+                                    {
+                                        over "system1_right_arm_link7"
+                                        {
+                                            over "system1_right_arm_flange"
+                                            {
+                                            }
+
+                                            over "shell"
+                                            {
+                                                over "Link7_0"
+                                                {
+                                                }
+
+                                                over "Link7_1"
+                                                {
+                                                }
+
+                                                over "Link7_2"
+                                                {
+                                                }
+                                            }
+
+                                            over "convex_mesh"
+                                            {
+                                            }
+                                        }
+
+                                        over "shell"
+                                        {
+                                            over "Link6_0"
+                                            {
+                                            }
+
+                                            over "Link6_1"
+                                            {
+                                            }
+
+                                            over "Link6_2"
+                                            {
+                                            }
+                                        }
+
+                                        over "convex_mesh"
+                                        {
+                                        }
+                                    }
+
+                                    over "shell"
+                                    {
+                                        over "Link5_0"
+                                        {
+                                        }
+
+                                        over "Link5_1"
+                                        {
+                                        }
+
+                                        over "Link5_2"
+                                        {
+                                        }
+                                    }
+
+                                    over "convex_mesh"
+                                    {
+                                    }
+                                }
+
+                                over "shell"
+                                {
+                                    over "Link4_0"
+                                    {
+                                    }
+
+                                    over "Link4_1"
+                                    {
+                                    }
+
+                                    over "Link4_2"
+                                    {
+                                    }
+                                }
+
+                                over "convex_mesh"
+                                {
+                                }
+                            }
+
+                            over "shell"
+                            {
+                                over "Link3_0"
+                                {
+                                }
+
+                                over "Link3_1"
+                                {
+                                }
+
+                                over "Link3_2"
+                                {
+                                }
+                            }
+
+                            over "convex_mesh"
+                            {
+                            }
+                        }
+
+                        over "shell"
+                        {
+                            over "Link2_0"
+                            {
+                            }
+
+                            over "Link2_1"
+                            {
+                            }
+
+                            over "Link2_2"
+                            {
+                            }
+                        }
+
+                        over "convex_mesh"
+                        {
+                        }
+                    }
+
+                    over "shell"
+                    {
+                        over "Link1_0"
+                        {
+                        }
+
+                        over "Link1_1"
+                        {
+                        }
+
+                        over "Link1_2"
+                        {
+                        }
+                    }
+
+                    over "convex_mesh"
+                    {
+                    }
+                }
+
+                over "base_link"
+                {
+                }
+
+                over "base_link_1"
+                {
+                }
+            }
+        }
+    }
+
+    over "Physics"
+    {
+        over "system1_system_mount_joint"
+        {
+        }
+
+        over "system1_left_arm_joint1" (
+            delete apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+        }
+
+        over "system1_left_arm_joint2" (
+            delete apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+        }
+
+        over "system1_left_arm_joint3" (
+            delete apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+        }
+
+        over "system1_left_arm_joint4" (
+            delete apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+        }
+
+        over "system1_left_arm_joint5" (
+            delete apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+        }
+
+        over "system1_left_arm_joint6" (
+            delete apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+        }
+
+        over "system1_left_arm_joint7" (
+            delete apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+        }
+
+        over "system1_right_arm_joint1" (
+            delete apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+        }
+
+        over "system1_right_arm_joint2" (
+            delete apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+        }
+
+        over "system1_right_arm_joint3" (
+            delete apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+        }
+
+        over "system1_right_arm_joint4" (
+            delete apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+        }
+
+        over "system1_right_arm_joint5" (
+            delete apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+        }
+
+        over "system1_right_arm_joint6" (
+            delete apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+        }
+
+        over "system1_right_arm_joint7" (
+            delete apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+        }
+
+        over "system1_body_neck_joint"
+        {
+        }
+
+        over "system1_body_head_joint"
+        {
+        }
+    }
+
+    over "Materials"
+    {
+    }
+
+    over "VisualMaterials"
+    {
+    }
+}
+

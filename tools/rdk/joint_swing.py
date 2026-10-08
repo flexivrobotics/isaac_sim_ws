@@ -55,6 +55,17 @@ def wait_until_settled(robot, groups, timeout=15.0):
     raise RuntimeError("Timed out waiting for the arms to settle")
 
 
+def move_j(robot, groups, targets_deg, on_arms):
+    """MoveJ every arm to its target, on each arm, or on both arms as a whole (ARMS)."""
+    if on_arms:
+        target = flexivrdk.DJPos(*(targets_deg[g] for g in groups))
+        robot.ExecutePrimitive({flexivrdk.JointGroup.ARMS: flexivrdk.PrimitiveArgs("MoveJ", {"target": target})})
+    else:
+        robot.ExecutePrimitive(
+            {g: flexivrdk.PrimitiveArgs("MoveJ", {"target": flexivrdk.JPos(targets_deg[g], [0.0] * 6)}) for g in groups}
+        )
+
+
 def main():
     argparser = argparse.ArgumentParser()
     argparser.add_argument("robot_sn", help="Serial number of the robot, e.g. Enlight LL-123456")
@@ -82,11 +93,17 @@ def main():
     groups = list(robot.info().single_arm_groups)
     logger.info(f"Arms: {[g.name for g in groups]}")
 
+    # The arms of a dual-arm robot with external axes, e.g. a MICO's waist, can't each run a
+    # primitive at once, as both would claim the axes. Move them as a whole on ARMS instead, and
+    # skip Home, which only runs on a single arm, so swing around the current pose.
+    on_arms = len(groups) == 2 and robot.info().DoF.get(flexivrdk.JointGroup.EXT_AXIS, 0) > 0
+
     robot.SwitchMode(flexivrdk.Mode.NRT_PRIMITIVE_EXECUTION)
-    logger.info("Moving to home pose")
-    robot.ExecutePrimitive({g: flexivrdk.PrimitiveArgs("Home", {}) for g in groups})
-    time.sleep(0.2)
-    wait_until_settled(robot, groups)
+    if not on_arms:
+        logger.info("Moving to home pose")
+        robot.ExecutePrimitive({g: flexivrdk.PrimitiveArgs("Home", {}) for g in groups})
+        time.sleep(0.2)
+        wait_until_settled(robot, groups)
 
     states = robot.states()
     home_deg = {g: [math.degrees(q) for q in states[g].q] for g in groups}
@@ -98,12 +115,7 @@ def main():
     sign = 1.0
     while args.cycles == 0 or cycle < 2 * args.cycles:
         targets = {g: [q + sign * args.amplitude for q in home_deg[g]] for g in groups}
-        robot.ExecutePrimitive(
-            {
-                g: flexivrdk.PrimitiveArgs("MoveJ", {"target": flexivrdk.JPos(targets[g], [0.0] * 6)})
-                for g in groups
-            }
-        )
+        move_j(robot, groups, targets, on_arms)
         wait_until_reached(robot, groups, targets)
         # Let the arms come to rest before reversing: preempting a MoveJ while the arms still
         # move commands a sudden reversal, which trips collision detection
@@ -113,9 +125,7 @@ def main():
         cycle += 1
 
     # Back to home
-    robot.ExecutePrimitive(
-        {g: flexivrdk.PrimitiveArgs("MoveJ", {"target": flexivrdk.JPos(home_deg[g], [0.0] * 6)}) for g in groups}
-    )
+    move_j(robot, groups, home_deg, on_arms)
     wait_until_reached(robot, groups, home_deg)
     logger.info("Back at home, done")
     return 0

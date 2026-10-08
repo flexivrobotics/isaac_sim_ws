@@ -28,9 +28,10 @@ Options:
                             default, the newest patch release in the
                             COMPATIBLE_SIM_PLUGIN_VER line the bridge app pins,
                             e.g. 2.2.x, is installed.
-  -t, --test-pypi           Install flexivsimplugin and flexivrdk from the PyPI
-                            test server instead of the real one. Use for a
-                            release candidate that has not been published yet.
+  -t, --test-pypi           Install flexivrdk from the PyPI test server instead
+                            of the real one. Use while the RDK release this
+                            workspace needs has not been published yet.
+                            flexivsimplugin still comes from the real PyPI.
   -h, --help                Show this help and exit.
 
 Isaac Sim root auto-detection, in order:
@@ -112,12 +113,14 @@ RDK_SPEC="flexivrdk==$(release_line COMPATIBLE_RDK_VER).*"
 # is what actually runs the examples.
 echo "Installing $PLUGIN_SPEC $RDK_SPEC ..."
 if $USE_TEST_PYPI; then
-    # Only the plugin and RDK are test builds, so real PyPI stays available for
-    # their deps.
+    # Only RDK is a test build. The plugin is installed on its own from the real
+    # PyPI, as the test server also holds its dev builds, which would win over the
+    # release. Real PyPI stays available for RDK's deps.
+    "$ISAAC_ROOT/python.sh" -m pip install --upgrade "$PLUGIN_SPEC"
     "$ISAAC_ROOT/python.sh" -m pip install --upgrade \
         --index-url https://test.pypi.org/simple/ \
         --extra-index-url https://pypi.org/simple/ \
-        "$PLUGIN_SPEC" "$RDK_SPEC"
+        "$RDK_SPEC"
 else
     "$ISAAC_ROOT/python.sh" -m pip install --upgrade "$PLUGIN_SPEC" "$RDK_SPEC"
 fi

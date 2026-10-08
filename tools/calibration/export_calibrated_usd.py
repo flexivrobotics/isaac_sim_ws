@@ -10,15 +10,16 @@
 #   1. The user provides a robot serial number. The source USD is the bundled
 #      asset for that model in this repo's assets/, or an explicit --usd.
 #   2. Create a per-robot copy of the source USD (a sibling dir named after the
-#      serial). The shared meshes (geometries.usd, ~90% of the asset) are reused
-#      via a relative reference rather than duplicated, so each copy is ~100 KB.
+#      robot as the bridge app names it in Isaac Sim, e.g. "Rizon4_000001"). The
+#      shared meshes (geometries.usd, ~90% of the asset) are reused via a relative
+#      reference rather than duplicated, so each copy is ~100 KB.
 #      The source asset is never modified.
 #   3. Pull the robot's calibrated kinematics through RDK (before step 2, so a
 #      failed pull leaves an earlier copy as it is), and keep them in the copy as
 #      <model>_synced_kinematics.yaml (flexiv_isaac.kinematics_sync).
 #   4. Write them into the copy's link transforms (base.usda) and joint anchors
 #      (physics.usda) (flexiv_isaac.calibration), producing the calibrated USD at
-#      <assets>/<robot-sn>/<robot-sn>.usda.
+#      <assets>/<robot-name>/<robot-name>.usda.
 #
 # Needs flexivrdk, usd-core (pxr) and PyYAML, but not Isaac Sim, e.g. from the
 # root of this repo:
@@ -42,6 +43,7 @@ from flexiv_isaac.kinematics_sync import (  # noqa: E402
     asset_name_for_model,
     load_kinematics,
     model_from_serial,
+    robot_name_from_serial,
     sync_kinematics_yaml,
 )
 
@@ -111,14 +113,17 @@ def _repoint_shared_meshes(instances_layer, shared_geometries_abspath):
     return total
 
 
-def materialize_per_robot_usd(src_usd_path, robot_sn):
+def materialize_per_robot_usd(src_usd_path, robot_name):
     """Create a per-robot copy of the USD asset that reuses the shared meshes.
 
     The copy is a SIBLING of the source model dir, with an identical internal
     structure at the same directory depth:
 
-        <assets>/<asset>/<asset>.usda        (source, unchanged; keeps the meshes)
-        <assets>/<robot_sn>/<robot_sn>.usda  (this copy, same payloads/ layout)
+        <assets>/<asset>/<asset>.usda            (source, unchanged; keeps the meshes)
+        <assets>/<robot_name>/<robot_name>.usda  (this copy, same payloads/ layout)
+
+    robot_name is the robot's name in Isaac Sim (robot_name_from_serial), which
+    has no spaces, so the copy's path is safe to use unquoted.
 
     Every small layer is copied; geometries.usd (the bulk of the bytes) is NOT --
     the copied instances.usda is repointed to the source model's geometries.usd
@@ -135,20 +140,20 @@ def materialize_per_robot_usd(src_usd_path, robot_sn):
             f"Expected a payloads/ dir next to [{src_usd_path}] (SimReady layout)"
         )
 
-    out_dir = os.path.join(assets_dir, robot_sn)  # sibling of <asset>
+    out_dir = os.path.join(assets_dir, robot_name)  # sibling of <asset>
     # Never let the output land on the source dir (would happen if the
     # output name equals the model, e.g. --robot-sn rizon_4 on a "rizon_4" asset).
     if os.path.abspath(out_dir) == os.path.abspath(src_dir):
         raise ValueError(
             f"Refusing to write the per-robot copy onto the source model dir "
             f"[{src_dir}]. Pass a distinct --robot-sn so the output is a sibling "
-            f"like <assets>/<robot-sn>/."
+            f"like <assets>/<robot-name>/."
         )
     out_payloads = os.path.join(out_dir, "payloads")
     os.makedirs(os.path.join(out_payloads, "Physics"), exist_ok=True)
 
     # Root: copy verbatim; its ./payloads/... refs still resolve inside the copy.
-    out_root = os.path.join(out_dir, f"{robot_sn}.usda")
+    out_root = os.path.join(out_dir, f"{robot_name}.usda")
     shutil.copyfile(src_usd_path, out_root)
 
     # Small layers: copy, preserving the ./payloads/ structure so their relative
@@ -164,7 +169,7 @@ def materialize_per_robot_usd(src_usd_path, robot_sn):
         )
 
     # Share the meshes: repoint the copied instances.usda to the source model's
-    # geometries.usd via a RELATIVE path. From <robot_sn>/payloads/instances.usda
+    # geometries.usd via a RELATIVE path. From <robot_name>/payloads/instances.usda
     # up to <assets>/ is ../../, then down into <asset>/payloads/geometries.usd.
     rel_geo = os.path.join("..", "..", src_model, "payloads", _SHARED_MESHES)
     inst_layer = Sdf.Layer.FindOrOpen(os.path.join(out_payloads, "instances.usda"))
@@ -198,7 +203,8 @@ def main():
         "--robot-sn",
         required=True,
         help="Robot serial number, e.g. 'Rizon4-000001'. Its calibration is "
-        "synced in and written to a per-robot USD named after it.",
+        "synced in and written to a per-robot USD named after the robot as the "
+        "bridge app names it, e.g. assets/Rizon4_000001/Rizon4_000001.usda.",
     )
     p.add_argument(
         "--usd",
@@ -211,8 +217,9 @@ def main():
     model = model_from_serial(args.robot_sn)
 
     # Fail fast on an unsupported model, before copying the USD. chains_for_model()
-    # raises for a model it does not describe.
-    chains_for_model(model)
+    # raises for a model it does not describe. Each arm of a dual-arm robot is
+    # mounted on an arm adapter, which is synced along with the joints.
+    adapters = sum(mount_key is not None for mount_key, _ in chains_for_model(model))
 
     source_usd = args.usd or usd_for_model(model)
     if not args.usd:
@@ -223,11 +230,14 @@ def main():
     with tempfile.TemporaryDirectory() as tmp:
         synced_yaml = os.path.join(tmp, "kinematics.yaml")
         n = sync_kinematics_yaml(args.robot_sn, synced_yaml)
-        print(f"[sync] Synced {n} joints")
+        if adapters:
+            print(f"[sync] Synced {n} entries: {n - adapters} joints, {adapters} arm adapters")
+        else:
+            print(f"[sync] Synced {n} joints")
 
         # A per-robot copy of the USD (reusing the shared meshes), so the source asset
         # is never modified and robots don't collide. The synced YAML is kept in it.
-        per_robot_usd = materialize_per_robot_usd(source_usd, args.robot_sn)
+        per_robot_usd = materialize_per_robot_usd(source_usd, robot_name_from_serial(args.robot_sn))
         kinematics_yaml = os.path.join(
             os.path.dirname(per_robot_usd), f"{model}_synced_kinematics.yaml"
         )

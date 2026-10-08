@@ -17,7 +17,7 @@
 #   --from-urdf     : compare against an already-synced URDF file (no robot).
 # Example:
 #   verify_calibration_against_urdf.py --from-urdf Rizon4_calibrated.urdf \
-#       --usd .../Rizon4-000001/Rizon4-000001.usda
+#       --usd .../Rizon4_000001/Rizon4_000001.usda
 
 import argparse
 import os

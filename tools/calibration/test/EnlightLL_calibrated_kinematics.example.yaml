@@ -1,6 +1,6 @@
 # Calibrated kinematics of a simulated Enlight LL (Elements Studio), from
 # Model.SyncKinematicsYAML on the Enlight-LL template with an EXT_AXIS section
-# added (as calibrate_usd_from_rdk.py does). The arms carry nominal kinematics;
+# added (as flexiv_isaac/kinematics_sync.py does). The arms carry nominal kinematics;
 # the arm adapters place the arms at y = +0.2 m (ARM_1, left) and -0.2 m
 # (ARM_2, right).
 kinematics:

@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+<!-- Kinematics of the Flexiv Enlight L, for Lula motion generation (RMPflow).
+     Generated from flexivrobotics/flexiv_description, branch humble:
+     config/Enlight-L/default_kinematics.yaml (joint origins) and joint_limits.yaml
+     (soft position limits, velocity limits). No meshes: Lula only needs the chain. -->
+<robot name="enlight_l">
+  <link name="base_link"/>
+  <link name="link1"/>
+  <joint name="joint1" type="revolute">
+    <parent link="base_link"/>
+    <child link="link1"/>
+    <origin xyz="0.0 0.0 0.146" rpy="0.0 0.0 0.0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-6.2832" upper="6.2832" effort="100" velocity="2.0944"/>
+  </joint>
+  <link name="link2"/>
+  <joint name="joint2" type="revolute">
+    <parent link="link1"/>
+    <child link="link2"/>
+    <origin xyz="0.0 -0.037 0.114" rpy="1.5707963267948966 0.0 0.0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-2.0944" upper="2.0944" effort="100" velocity="2.0944"/>
+  </joint>
+  <link name="link3"/>
+  <joint name="joint3" type="revolute">
+    <parent link="link2"/>
+    <child link="link3"/>
+    <origin xyz="0.0 0.181 -0.037" rpy="-1.5707963267948966 0.0 0.0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-6.2832" upper="6.2832" effort="100" velocity="2.0944"/>
+  </joint>
+  <link name="link4"/>
+  <joint name="joint4" type="revolute">
+    <parent link="link3"/>
+    <child link="link4"/>
+    <origin xyz="0.0 0.037 0.109" rpy="-1.5707963267948966 0.0 0.0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-2.0944" upper="2.0944" effort="100" velocity="2.0944"/>
+  </joint>
+  <link name="link5"/>
+  <joint name="joint5" type="revolute">
+    <parent link="link4"/>
+    <child link="link5"/>
+    <origin xyz="0.0 -0.156 -0.037" rpy="1.5707963267948966 0.0 0.0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-6.2832" upper="6.2832" effort="21" velocity="6.0214"/>
+  </joint>
+  <link name="link6"/>
+  <joint name="joint6" type="revolute">
+    <parent link="link5"/>
+    <child link="link6"/>
+    <origin xyz="0.0 -0.0261 0.124" rpy="1.5707963267948966 0.0 0.0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-2.0944" upper="2.0944" effort="21" velocity="6.0214"/>
+  </joint>
+  <link name="link7"/>
+  <joint name="joint7" type="revolute">
+    <parent link="link6"/>
+    <child link="link7"/>
+    <origin xyz="0.0 0.134 -0.0261" rpy="-1.5707963267948966 0.0 0.0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-6.2832" upper="6.2832" effort="21" velocity="6.0214"/>
+  </joint>
+  <link name="flange"/>
+  <joint name="link7_to_flange" type="fixed">
+    <parent link="link7"/>
+    <child link="flange"/>
+    <origin xyz="0.0 0.0 0.048" rpy="0.0 0.0 0.0"/>
+  </joint>
+</robot>

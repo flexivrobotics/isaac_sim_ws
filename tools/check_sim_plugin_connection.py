@@ -11,7 +11,7 @@
 # into Isaac Sim's), while the simulated robot is started in Elements Studio and
 # the bridge app is NOT running for the same robot:
 #   cd <isaac_sim_root_dir>
-#   ./python.sh /path/to/check_sim_plugin_connection.py "Rizon 4-123456"
+#   ./python.sh /path/to/check_sim_plugin_connection.py "Enlight L-123456"
 
 import argparse
 import shutil
@@ -52,7 +52,7 @@ def main():
     p.add_argument(
         "serial_numbers",
         nargs="+",
-        help="Serial number of each robot, as Elements Studio shows it, e.g. 'Rizon 4-123456'",
+        help="Serial number of each robot, as Elements Studio shows it, e.g. 'Enlight L-123456'",
     )
     p.add_argument("--timeout", type=float, default=10.0, help="Seconds to wait per robot")
     args = p.parse_args()

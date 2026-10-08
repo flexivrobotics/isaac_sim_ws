@@ -18,7 +18,7 @@ python3 -m pip install flexivrdk usd-core pyyaml
 ```
 
 - `flexivrdk` — connects to the robot. Use the version that matches the robot's
-  software, e.g. 2.2 for Elements Studio v3E.2.
+  software, e.g. 2.1 for Elements Studio v3E.1.
 - `usd-core` — provides `pxr` for editing the USD.
 - `pyyaml` — reads the kinematics template.
 

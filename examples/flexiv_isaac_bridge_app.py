@@ -8,14 +8,14 @@
 #
 
 # App version
-APP_VERSION = "2.2.0"
+APP_VERSION = "2.1.0"
 
 # Compatible flexivsimplugin release line: any patch release in it works, e.g.
-# 2.2.0 or 2.2.1, so plugin fixes need no new release of this app
-COMPATIBLE_SIM_PLUGIN_VER = "2.2"
+# 2.1.0 or 2.1.1, so plugin fixes need no new release of this app
+COMPATIBLE_SIM_PLUGIN_VER = "2.1"
 
 # Compatible flexivrdk release line, for pulling each robot's calibration
-COMPATIBLE_RDK_VER = "2.2"
+COMPATIBLE_RDK_VER = "2.1"
 
 import os
 import sys

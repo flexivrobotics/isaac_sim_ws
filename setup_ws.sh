@@ -27,7 +27,7 @@ Options:
   -v, --plugin-version VER  Install exactly this flexivsimplugin version. By
                             default, the newest patch release in the
                             COMPATIBLE_SIM_PLUGIN_VER line the bridge app pins,
-                            e.g. 2.2.x, is installed.
+                            e.g. 2.1.x, is installed.
   -t, --test-pypi           Install flexivsimplugin and flexivrdk from the PyPI
                             test server instead of the real one. Use for a
                             release candidate that has not been published yet.
@@ -48,7 +48,7 @@ while [ "$#" -gt 0 ]; do
     case "$1" in
         -v|--plugin-version)
             if [ "$#" -lt 2 ]; then
-                echo "Error: $1 needs a version, e.g. $1 2.2.0" >&2
+                echo "Error: $1 needs a version, e.g. $1 2.1.0" >&2
                 exit 1
             fi
             PLUGIN_VER="$2"; shift 2 ;;

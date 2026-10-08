@@ -21,8 +21,11 @@ import time
 
 import flexivsimplugin
 
-# Zenoh multicast scouting group the plugin discovers Elements Studio on
-SCOUTING_GROUP = "224.0.0.224"
+# Fast-DDS discovery multicast group and port the plugin discovers Elements Studio
+# on: the default SPDP group, and port 7400 + 250 * domain for the plugin's DDS
+# domain 30
+DISCOVERY_GROUP = "239.255.0.1"
+DISCOVERY_PORT = 14900
 
 
 def check(serial_number, timeout):
@@ -36,11 +39,11 @@ def check(serial_number, timeout):
 
 
 def multicast_route():
-    """The route multicast scouting takes, e.g. through a VPN interface, if `ip` is available."""
+    """The route discovery multicast takes, e.g. through a VPN interface, if `ip` is available."""
     if not shutil.which("ip"):
         return None
     result = subprocess.run(
-        ["ip", "route", "get", SCOUTING_GROUP], capture_output=True, text=True
+        ["ip", "route", "get", DISCOVERY_GROUP], capture_output=True, text=True
     )
     return result.stdout.strip().splitlines()[0] if result.returncode == 0 else None
 
@@ -72,9 +75,11 @@ def main():
             "  * the simulated robot is started in Elements Studio (the Connect toggle is on);\n"
             "  * the serial number matches the robot in Elements Studio (spaces do not matter);\n"
             "  * the Flexiv-Isaac Bridge App is not running for the same robot;\n"
-            f"  * multicast to {SCOUTING_GROUP} reaches the Elements Studio computer: the plugin\n"
-            "    discovers Elements Studio by Zenoh multicast scouting, which a VPN can route away\n"
-            "    and Docker's default bridge network does not pass."
+            f"  * multicast to {DISCOVERY_GROUP}, UDP port {DISCOVERY_PORT}, reaches the Elements\n"
+            "    Studio computer: the plugin discovers Elements Studio by Fast-DDS multicast\n"
+            "    discovery, which a VPN can route away and Docker's default bridge network does\n"
+            "    not pass;\n"
+            "  * Elements Studio is v3E.1, the version this release of the workspace supports."
         )
         if route:
             print(f"    Multicast route on this computer: {route}")

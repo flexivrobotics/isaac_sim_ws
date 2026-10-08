@@ -8,7 +8,7 @@
 # Based on the RDK example intermediate1_non_realtime_joint_position_control.py,
 # but uses primitive execution instead of streamed joint position commands.
 #
-# Needs a flexivrdk with multi-arm support (tested with 2.2). Enable Remote Mode in
+# Needs a flexivrdk with multi-arm support (2.1 or newer). Enable Remote Mode in
 # Elements Studio first, then run, e.g.
 #   python3 joint_swing.py "Enlight LL-123456" --amplitude 6 --cycles 3
 
@@ -17,7 +17,7 @@ import time
 import math
 import argparse
 import logging
-import flexivrdk  # pip install "flexivrdk==2.2.*", the RDK release line of Elements Studio v3E.2
+import flexivrdk  # pip install "flexivrdk==2.1.*", the RDK release line of Elements Studio v3E.1
 
 logging.basicConfig(level=logging.INFO, format="[%(asctime)s] [Example] [%(levelname)s] %(message)s")
 logger = logging.getLogger()

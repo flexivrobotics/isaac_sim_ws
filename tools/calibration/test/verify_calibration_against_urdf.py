@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # Copyright (c) 2026, Flexiv Ltd. All rights reserved.
 #
-# Verification test for calibrate_usd_from_rdk.py. Used by the CI runner
+# Verification test for the calibration code in flexiv_isaac/calibration.py. Used by the CI runner
 # (run_ci_verification.py); can also be run by hand to debug a suspicious
 # calibration.
 #
@@ -29,7 +29,7 @@ import numpy as np
 from pxr import Gf, Usd, UsdGeom, UsdPhysics
 
 # Maps the (collapsed) URDF joint name to the USD child-link prim path under
-# <defaultPrim>/Geometry. Kept independent of calibrate_usd_from_rdk.py so this
+# <defaultPrim>/Geometry. Kept independent of flexiv_isaac/calibration.py so this
 # check does not share code with the applier it verifies.
 #
 # The URDF is always the collapsed chain (a single link7_to_flange). The USD link
@@ -305,6 +305,11 @@ def main():
         "--robot-sn). Generate from flexiv_description.",
     )
     p.add_argument(
+        "--model",
+        help="Asset name of the robot, e.g. rizon_4s, which selects the joint to link "
+        "mapping. Defaults to the name of the USD's defaultPrim, the robot.",
+    )
+    p.add_argument(
         "--dump-urdf",
         help="Also copy the synced URDF here for manual inspection / running "
         "through the Isaac URDF importer.",
@@ -327,7 +332,7 @@ def main():
     # Pick the joint->link mapping from the USD's model (its defaultPrim name),
     # so the FK comparison uses the right tail geometry (e.g. rizon_4s split link7).
     stage = Usd.Stage.Open(args.usd)
-    model = stage.GetDefaultPrim().GetName() if stage else "rizon_4"
+    model = args.model or (stage.GetDefaultPrim().GetName() if stage else "rizon_4")
     print(f"[verify] URDF : {urdf_path}")
     print(f"[verify] USD  : {args.usd}  (model {model})")
 

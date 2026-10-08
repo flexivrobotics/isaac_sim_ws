@@ -50,7 +50,7 @@ Each release of this workspace works with one release line of Flexiv Sim Plugin 
 
 This is the `v2.1.x` branch, the release line for Elements Studio v3E.1. The `v2.x` branch holds the latest release line. For an earlier one, check out its release tag, e.g. `git checkout v1.4.0`.
 
-Elements Studio v3E.1 simulates the Enlight series (Enlight L, Enlight LL) and the MICO series. The Rizon and AICO USDs are included too, so that every Flexiv robot model is in one place, but Elements Studio v3E.1 can't simulate them. It also doesn't receive the simulated wrist force-torque sensor reading.
+Of the robots in this workspace, Elements Studio v3E.1 simulates the Enlight L only. The USDs and configuration files of the other robots, e.g. Enlight LL, MICO, Rizon and AICO, are included too, so that every Flexiv robot model is in one place, but Elements Studio v3E.1 can't simulate them. It also doesn't receive the simulated wrist force-torque sensor reading.
 
 
 ## Demos

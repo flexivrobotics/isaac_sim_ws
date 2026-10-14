@@ -1,0 +1,269 @@
+#usda 1.0
+(
+    customLayerData = {
+        string creator = "URDF USD Converter v0.1.3"
+    }
+    defaultPrim = "mico_core"
+    doc = """Generated from Composed Stage of root layer Flexiv/mico_core/mico_core.usd/mico_core.usda
+"""
+    kilogramsPerUnit = 1
+    metersPerUnit = 1
+    upAxis = "Z"
+)
+
+over "mico_core" (
+    prepend apiSchemas = ["IsaacRobotAPI"]
+)
+{
+    prepend rel isaac:physics:robotJoints = [
+        </mico_core/Physics/system1_system_mount_joint>,
+        </mico_core/Physics/system1_left_arm_joint1>,
+        </mico_core/Physics/system1_left_arm_joint2>,
+        </mico_core/Physics/system1_left_arm_joint3>,
+        </mico_core/Physics/system1_left_arm_joint4>,
+        </mico_core/Physics/system1_left_arm_joint5>,
+        </mico_core/Physics/system1_left_arm_joint6>,
+        </mico_core/Physics/system1_left_arm_joint7>,
+        </mico_core/Physics/system1_right_arm_joint1>,
+        </mico_core/Physics/system1_right_arm_joint2>,
+        </mico_core/Physics/system1_right_arm_joint3>,
+        </mico_core/Physics/system1_right_arm_joint4>,
+        </mico_core/Physics/system1_right_arm_joint5>,
+        </mico_core/Physics/system1_right_arm_joint6>,
+        </mico_core/Physics/system1_right_arm_joint7>,
+        </mico_core/Physics/system1_body_neck_joint>,
+        </mico_core/Physics/system1_body_head_joint>,
+    ]
+    prepend rel isaac:physics:robotLinks = [
+        </mico_core/Geometry/world/system1_body_base_link>,
+        </mico_core/Geometry/world/system1_body_base_link/system1_body_neck_link>,
+        </mico_core/Geometry/world/system1_body_base_link/system1_body_neck_link/system1_body_head_link>,
+        </mico_core/Geometry/world/system1_body_base_link/system1_left_arm_link1>,
+        </mico_core/Geometry/world/system1_body_base_link/system1_left_arm_link1/system1_left_arm_link2>,
+        </mico_core/Geometry/world/system1_body_base_link/system1_left_arm_link1/system1_left_arm_link2/system1_left_arm_link3>,
+        </mico_core/Geometry/world/system1_body_base_link/system1_left_arm_link1/system1_left_arm_link2/system1_left_arm_link3/system1_left_arm_link4>,
+        </mico_core/Geometry/world/system1_body_base_link/system1_left_arm_link1/system1_left_arm_link2/system1_left_arm_link3/system1_left_arm_link4/system1_left_arm_link5>,
+        </mico_core/Geometry/world/system1_body_base_link/system1_left_arm_link1/system1_left_arm_link2/system1_left_arm_link3/system1_left_arm_link4/system1_left_arm_link5/system1_left_arm_link6>,
+        </mico_core/Geometry/world/system1_body_base_link/system1_left_arm_link1/system1_left_arm_link2/system1_left_arm_link3/system1_left_arm_link4/system1_left_arm_link5/system1_left_arm_link6/system1_left_arm_link7>,
+        </mico_core/Geometry/world/system1_body_base_link/system1_right_arm_link1>,
+        </mico_core/Geometry/world/system1_body_base_link/system1_right_arm_link1/system1_right_arm_link2>,
+        </mico_core/Geometry/world/system1_body_base_link/system1_right_arm_link1/system1_right_arm_link2/system1_right_arm_link3>,
+        </mico_core/Geometry/world/system1_body_base_link/system1_right_arm_link1/system1_right_arm_link2/system1_right_arm_link3/system1_right_arm_link4>,
+        </mico_core/Geometry/world/system1_body_base_link/system1_right_arm_link1/system1_right_arm_link2/system1_right_arm_link3/system1_right_arm_link4/system1_right_arm_link5>,
+        </mico_core/Geometry/world/system1_body_base_link/system1_right_arm_link1/system1_right_arm_link2/system1_right_arm_link3/system1_right_arm_link4/system1_right_arm_link5/system1_right_arm_link6>,
+        </mico_core/Geometry/world/system1_body_base_link/system1_right_arm_link1/system1_right_arm_link2/system1_right_arm_link3/system1_right_arm_link4/system1_right_arm_link5/system1_right_arm_link6/system1_right_arm_link7>,
+        </mico_core/Geometry/world/system1_body_base_link/system1_left_arm_link1/system1_left_arm_link2/system1_left_arm_link3/system1_left_arm_link4/system1_left_arm_link5/system1_left_arm_link6/system1_left_arm_link7/system1_left_arm_flange>,
+        </mico_core/Geometry/world/system1_body_base_link/system1_right_arm_link1/system1_right_arm_link2/system1_right_arm_link3/system1_right_arm_link4/system1_right_arm_link5/system1_right_arm_link6/system1_right_arm_link7/system1_right_arm_flange>,
+    ]
+    token isaac:robotType = "Manipulator"
+
+    over "Geometry"
+    {
+        over "world"
+        {
+            over "system1_body_base_link" (
+                prepend apiSchemas = ["IsaacLinkAPI"]
+            )
+            {
+                over "system1_body_neck_link" (
+                    prepend apiSchemas = ["IsaacLinkAPI"]
+                )
+                {
+                    over "system1_body_head_link" (
+                        prepend apiSchemas = ["IsaacLinkAPI"]
+                    )
+                    {
+                    }
+                }
+
+                over "system1_left_arm_link1" (
+                    prepend apiSchemas = ["IsaacLinkAPI"]
+                )
+                {
+                    over "system1_left_arm_link2" (
+                        prepend apiSchemas = ["IsaacLinkAPI"]
+                    )
+                    {
+                        over "system1_left_arm_link3" (
+                            prepend apiSchemas = ["IsaacLinkAPI"]
+                        )
+                        {
+                            over "system1_left_arm_link4" (
+                                prepend apiSchemas = ["IsaacLinkAPI"]
+                            )
+                            {
+                                over "system1_left_arm_link5" (
+                                    prepend apiSchemas = ["IsaacLinkAPI"]
+                                )
+                                {
+                                    over "system1_left_arm_link6" (
+                                        prepend apiSchemas = ["IsaacLinkAPI"]
+                                    )
+                                    {
+                                        over "system1_left_arm_link7" (
+                                            prepend apiSchemas = ["IsaacLinkAPI"]
+                                        )
+                                        {
+                                            over "system1_left_arm_flange" (
+                                                prepend apiSchemas = ["IsaacSiteAPI"]
+                                            )
+                                            {
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                over "system1_right_arm_link1" (
+                    prepend apiSchemas = ["IsaacLinkAPI"]
+                )
+                {
+                    over "system1_right_arm_link2" (
+                        prepend apiSchemas = ["IsaacLinkAPI"]
+                    )
+                    {
+                        over "system1_right_arm_link3" (
+                            prepend apiSchemas = ["IsaacLinkAPI"]
+                        )
+                        {
+                            over "system1_right_arm_link4" (
+                                prepend apiSchemas = ["IsaacLinkAPI"]
+                            )
+                            {
+                                over "system1_right_arm_link5" (
+                                    prepend apiSchemas = ["IsaacLinkAPI"]
+                                )
+                                {
+                                    over "system1_right_arm_link6" (
+                                        prepend apiSchemas = ["IsaacLinkAPI"]
+                                    )
+                                    {
+                                        over "system1_right_arm_link7" (
+                                            prepend apiSchemas = ["IsaacLinkAPI"]
+                                        )
+                                        {
+                                            over "system1_right_arm_flange" (
+                                                prepend apiSchemas = ["IsaacSiteAPI"]
+                                            )
+                                            {
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    over "Physics"
+    {
+        over "system1_system_mount_joint" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "system1_left_arm_joint1" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "system1_left_arm_joint2" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "system1_left_arm_joint3" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "system1_left_arm_joint4" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "system1_left_arm_joint5" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "system1_left_arm_joint6" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "system1_left_arm_joint7" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "system1_right_arm_joint1" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "system1_right_arm_joint2" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "system1_right_arm_joint3" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "system1_right_arm_joint4" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "system1_right_arm_joint5" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "system1_right_arm_joint6" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "system1_right_arm_joint7" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "system1_body_neck_joint" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "system1_body_head_joint" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+    }
+}
+

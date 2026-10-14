@@ -1,0 +1,62 @@
+# Single-arm configuration: one Enlight L in an empty environment.
+#
+# NOTE:
+# Add or remove [serial_number] blocks to control which robots are added to the scene.
+# Set each robot's `serial_number` to match the simulated robot you created in Flexiv Elements Studio.
+# The `usd` and `env_usd` paths may be absolute, or relative to the root of this repo.
+robots:
+  - serial_number: "Enlight L-123456" # Serial number of robot 1
+    usd: "assets/enlight_l/enlight_l.usda" # Robot 1 USD
+    position:                     # Position in world frame to put robot 1
+      x: 0.0
+      y: 0.0
+      z: 0.0
+    orientation:                  # Orientation (quaternion) in world frame to put robot 1
+      w: 1.0
+      x: 0.0
+      y: 0.0
+      z: 0.0
+    # Optional end-effector tool. When present, the tool USD is referenced onto
+    # the arm and fixed to the flange at load time, and gripper control is enabled.
+    #   usd:       path to the tool USD (absolute, or relative to the root of this repo)
+    #   prim_name: mount prim name; must match a built-in gripper profile in
+    #              flexiv_isaac_bridge_app.py (GRIPPER_PROFILES). Currently: Grav_gripper.
+    # Uncomment to add a Grav gripper. Make sure the tool clears the floor at the
+    # home pose: an Enlight L's flange points down about 0.12 m above its base, so a
+    # tool reaches the ground, and Elements Studio faults on the contact force
+    # (Robot_Error_EstPayloadExceedMaxLimitMsg). Raise the robot, e.g. z: 0.3, or
+    # mount it on a table in your environment. Also configure the same tool in
+    # Elements Studio, so its controller models the mass.
+    # tool:
+    #   usd: "assets/grippers/Grav_gripper.usd"
+    #   prim_name: "Grav_gripper"
+
+  # More robots ...
+
+# Empty environment (ground plane only), so a robot at the origin sits correctly
+# on the floor.
+env_usd: "assets/empty_env.usd"
+
+# Enable GPU dynamics. Use this argument if any object in the scene requires GPU for dynamics computation.
+# For example, deformable body material and SDF mesh collider.
+gpu_dynamics: false
+
+# One or more cameras to add to the scene.
+# NOTE: Add or remove [name] blocks to control which cameras are added to the scene.
+#       Remove or comment out the whole [cameras] section if no camera is needed.
+# cameras:
+#   - name: "camera_1"        # Unique name of camera 1
+#     resolution: [1280, 720] # Resolution of camera 1
+#     fps: 30                 # Frames per second of camera 1
+#     focal_length: 2.5       # Focal length in meter of camera 1
+#     position:               # Position in world frame to put camera 1
+#       x: 0.0
+#       y: 0.0
+#       z: 0.0
+#     orientation:            # Orientation (quaternion) in USD frame to put camera 1
+#       w: 1.0
+#       x: 0.0
+#       y: 0.0
+#       z: 0.0
+#
+#   # More cameras ...

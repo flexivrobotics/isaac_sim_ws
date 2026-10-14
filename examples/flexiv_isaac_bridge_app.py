@@ -65,7 +65,7 @@ from isaacsim.core.api import World
 from isaacsim.core.utils.stage import add_reference_to_stage, get_current_stage
 from isaacsim.sensors.camera import Camera
 from flexiv_isaac.calibration import apply_calibration_to_stage, chains_for_model, find_layers
-from flexiv_isaac.kinematics_sync import KinematicsSync
+from flexiv_isaac.kinematics_sync import KinematicsSync, robot_name_from_serial
 from flexiv_isaac.flexiv_serial import (
     FlexivSerial,
     controller_joint_order,
@@ -249,12 +249,9 @@ class BridgeRunner(object):
                     f"Robot [{serial_num}] is an 's' variant; wrist force-torque sensor enabled"
                 )
 
-            # Sanitize the serial number for use in a prim path, which allows
-            # neither spaces nor dashes. Studio displays serial numbers with a
-            # space in the model name ("Rizon 4-123456"), so stripping spaces is
-            # required, not cosmetic. This is also exactly how the plugin derives
-            # its own topic suffix, so both sides stay in agreement.
-            serial_num = serial_num.replace(" ", "").replace("-", "_")
+            # Sanitize the serial number for use in a prim path, the same way the plugin
+            # derives its own topic suffix, so both sides stay in agreement
+            serial_num = robot_name_from_serial(serial_num)
 
             # Add this robot to stage
             prim_path = "/World/Flexiv/" + serial_num

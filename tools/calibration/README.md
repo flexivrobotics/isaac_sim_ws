@@ -46,12 +46,13 @@ the tool on the host. For all options, run
 ### Output
 
 The source USD is not modified. The tool writes a sibling of the source model
-dir, named after `--robot-sn`, with the same internal layout:
+dir, named after the robot as the bridge app names it in Isaac Sim (the serial
+number without spaces, and `_` for `-`), with the same internal layout:
 
 ```
 assets/rizon_4/                <- source (unchanged; keeps geometries.usd)
-assets/Rizon4-000001/          <- calibrated copy
-  Rizon4-000001.usda              (the calibrated USD)
+assets/Rizon4_000001/          <- calibrated copy
+  Rizon4_000001.usda              (the calibrated USD)
   Rizon4_synced_kinematics.yaml   (the values that were applied)
   payloads/ ...                   (no geometries.usd -- shared from the source)
 ```

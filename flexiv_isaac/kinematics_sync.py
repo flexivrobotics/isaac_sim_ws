@@ -53,6 +53,14 @@ def model_from_serial(robot_sn):
     return robot_sn.split("-")[0].strip().replace(" ", "")
 
 
+def robot_name_from_serial(robot_sn):
+    """Name of a robot in Isaac Sim, which allows neither spaces nor dashes, e.g.
+    "Enlight L-zAVAA2" -> "EnlightL_zAVAA2". Elements Studio displays serial numbers
+    with a space in the model name, so stripping spaces is required, not cosmetic.
+    This is also exactly how the plugin derives its own topic suffix."""
+    return robot_sn.replace(" ", "").replace("-", "_")
+
+
 def asset_name_for_model(model):
     """SimReady asset name of a model, e.g. "Rizon4s" -> "rizon_4s"."""
     if model in _MODEL_NAMES:

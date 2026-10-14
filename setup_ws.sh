@@ -28,9 +28,12 @@ Options:
                             default, the newest patch release in the
                             COMPATIBLE_SIM_PLUGIN_VER line the bridge app pins,
                             e.g. 2.2.x, is installed.
-  -t, --test-pypi           Install flexivsimplugin and flexivrdk from the PyPI
-                            test server instead of the real one. Use for a
-                            release candidate that has not been published yet.
+  --rdk-test-pypi           Install flexivrdk from the PyPI test server instead
+                            of the real one. Use for a release candidate that
+                            has not been published yet.
+  --plugin-test-pypi        Same for flexivsimplugin. The test server also holds
+                            its dev builds, so the newest one, not the release,
+                            is installed unless --plugin-version pins it.
   -h, --help                Show this help and exit.
 
 Isaac Sim root auto-detection, in order:
@@ -43,7 +46,8 @@ USAGE
 # Parse arguments
 ISAAC_ROOT=""
 PLUGIN_VER=""
-USE_TEST_PYPI=false
+RDK_TEST_PYPI=false
+PLUGIN_TEST_PYPI=false
 while [ "$#" -gt 0 ]; do
     case "$1" in
         -v|--plugin-version)
@@ -52,7 +56,8 @@ while [ "$#" -gt 0 ]; do
                 exit 1
             fi
             PLUGIN_VER="$2"; shift 2 ;;
-        -t|--test-pypi)      USE_TEST_PYPI=true; shift ;;
+        --rdk-test-pypi)     RDK_TEST_PYPI=true; shift ;;
+        --plugin-test-pypi)  PLUGIN_TEST_PYPI=true; shift ;;
         -h|--help)           usage; exit 0 ;;
         -*)                  echo "Unknown option: $1" >&2; usage >&2; exit 1 ;;
         *)
@@ -109,18 +114,25 @@ fi
 RDK_SPEC="flexivrdk==$(release_line COMPATIBLE_RDK_VER).*"
 
 # Install into Isaac Sim's bundled interpreter, not a separate venv -- python.sh
-# is what actually runs the examples.
-echo "Installing $PLUGIN_SPEC $RDK_SPEC ..."
-if $USE_TEST_PYPI; then
-    # Only the plugin and RDK are test builds, so real PyPI stays available for
-    # their deps.
-    "$ISAAC_ROOT/python.sh" -m pip install --upgrade \
-        --index-url https://test.pypi.org/simple/ \
-        --extra-index-url https://pypi.org/simple/ \
-        "$PLUGIN_SPEC" "$RDK_SPEC"
-else
-    "$ISAAC_ROOT/python.sh" -m pip install --upgrade "$PLUGIN_SPEC" "$RDK_SPEC"
-fi
+# is what actually runs the examples. Each package is installed on its own, as each
+# may come from a different server.
+pip_install() {
+    local from_test_pypi=$1 spec=$2
+    if $from_test_pypi; then
+        echo "Installing $spec from the PyPI test server ..."
+        # Only the package itself is a test build, so real PyPI stays available
+        # for its deps.
+        "$ISAAC_ROOT/python.sh" -m pip install --upgrade \
+            --index-url https://test.pypi.org/simple/ \
+            --extra-index-url https://pypi.org/simple/ \
+            "$spec"
+    else
+        echo "Installing $spec ..."
+        "$ISAAC_ROOT/python.sh" -m pip install --upgrade "$spec"
+    fi
+}
+pip_install "$PLUGIN_TEST_PYPI" "$PLUGIN_SPEC"
+pip_install "$RDK_TEST_PYPI" "$RDK_SPEC"
 
 # Confirm the interpreter can actually import what was just installed, so a
 # broken wheel is caught here rather than part-way into an Isaac Sim launch.
